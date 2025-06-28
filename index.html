@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Belief Graph</title>
+  <!-- Link to your stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Cytoscape core + plugins (even if ghosted) -->
+  <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+  <script src="https://unpkg.com/cytoscape-cose-bilkent/cytoscape-cose-bilkent.js"></script>
+  <script src="https://unpkg.com/cytoscape-edgehandles/cytoscape-edgehandles.js"></script>
+
+  <!-- SheetJS for Excel export -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <!-- Canvas -->
+  <div id="cy"></div>
+
+  <!-- Controls -->
+  <div id="controls">
+    <button id="btnResetLayout">Reset Layout</button>
+    <button id="btnClearGraph">Clear</button>
+    <button id="btnExportExcel">Export to Excel</button>
+    <button id="btnSaveGraph">Save</button>
+    <button id="btnLoadGraph">Load</button>
+    <button id="btnBayesTime">Bayes Time</button>
+    <button id="btnRestoreAutosave">Restore</button>
+  </div>
+
+  <!-- Custom context menu -->
+  <div id="menu">
+    <ul id="menu-list"></ul>
+  </div>
+
+  <!-- Your own JS file last -->
+  <script src="script.js"></script>
+</body>
+</html>
+
+

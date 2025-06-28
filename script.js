@@ -1,0 +1,1351 @@
+/*
+All belief and modifier propagation uses a single centralized function (`propagateFromParents`),
+run modifiers→edges to convergence first, then nodes→nodes to convergence, with all logic modular
+and no cycles between layers.
+*/
+// ===============================
+// 🔧 SECTION 1: Config & Utilities
+// ===============================
+
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+const DEBUG = true;
+let pendingEdgeSource = null;
+let lastClickTime = 0;
+let lastTappedNode = null;
+let lastTappedEdge = null;
+
+const config = { epsilon: .01 };
+const WEIGHT_MIN = 0.01;
+
+// Debug utility: logs with node context if DEBUG is true
+function logMath(nodeId, msg) {
+  if (DEBUG) console.log(`[${nodeId}] ${msg}`);
+}
+
+function likertToWeight(val) {
+  // Maps Likert -5..+5 to [-1, -0.85, ..., 0, ..., +1]
+  const weights = [-1, -0.85, -0.60, -0.35, -0.15, 0, 0.15, 0.35, 0.60, 0.85, 1];
+  // -5 maps to index 0, 0 maps to 5, +5 maps to 10
+  const idx = val + 5;
+  return weights[idx] ?? 0;
+}
+window.likertToWeight = likertToWeight;
+
+function weightToLikert(w) {
+  // Maps a weight in [-1, 1] back to the closest Likert -5..+5
+  if (typeof w !== 'number' || isNaN(w)) return 0;
+  // Array from likertToWeight (should match exactly!)
+  const weights = [-1, -0.85, -0.60, -0.35, -0.15, 0, 0.15, 0.35, 0.60, 0.85, 1];
+  let closest = 0;
+  let minDiff = Infinity;
+  for (let i = 0; i < weights.length; ++i) {
+    const diff = Math.abs(w - weights[i]);
+    if (diff < minDiff) {
+      minDiff = diff;
+      closest = i - 5; // Index 0 is -5, so subtract 5
+    }
+  }
+  return closest;
+}
+window.weightToLikert = weightToLikert;
+
+
+function likertDescriptor(val) {
+  switch (val) {
+    case -5: return "Abs Neg(−5)";
+    case -4: return "Strong Neg(−4)";
+    case -3: return "Med Neg(−3)";
+    case -2: return "Small Neg(−2)";
+    case -1: return "Minimal Neg (−1)";
+    case  1: return "Minimal(+1)";
+    case  2: return "Small(+2)";
+    case  3: return "Med(+3)";
+    case  4: return "Strong(+4)";
+    case  5: return "Abs(+5)";
+    default: return `Custom (${val})`;
+  }
+}
+
+function updateEdgeModifierLabel(edge) {
+  const mods = edge.data('modifiers') ?? [];
+  let baseLabel = '–';
+  if (typeof edge.data('weight') === 'number' && !isNaN(edge.data('weight'))) {
+    baseLabel = edge.data('weight').toFixed(2);
+  }
+  if (!mods.length) {
+    edge.data('weightLabel', baseLabel);
+  } else {
+    edge.data('weightLabel', `${baseLabel} [${mods.length}]`);
+  }
+}
+  function openEditModifiersModal(edge) {
+  // Remove existing modal if present
+  const prevModal = document.getElementById('modifier-modal');
+  if (prevModal) prevModal.remove();
+
+  const mods = edge.data('modifiers') ?? [];
+  const modal = document.createElement('div');
+  modal.id = 'modifier-modal';
+  modal.className = 'modifier-modal';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
+  modal.setAttribute('tabindex', '-1');
+
+  const title = document.createElement('div');
+  title.textContent = 'Edit Modifiers';
+  title.className = 'modifier-modal-title';
+  modal.appendChild(title);
+
+  // Build modifier rows via fragment
+  const frag = document.createDocumentFragment();
+  mods.forEach((mod, i) => {
+    const row = document.createElement('div');
+    row.className = 'modifier-modal-row';
+
+    // Label
+    const labelInput = document.createElement('input');
+    labelInput.type = 'text';
+    labelInput.value = mod.label ?? '';
+    labelInput.onchange = () => {
+      mods[i].label = labelInput.value;
+      edge.data('modifiers', mods);
+      updateEdgeModifierLabel(edge);
+    };
+    row.appendChild(labelInput);
+
+    // Likert
+    const likertInput = document.createElement('input');
+    likertInput.type = 'number';
+    likertInput.min = -5;
+    likertInput.max = 5;
+    likertInput.step = 1;
+    likertInput.value = mod.likert;
+    likertInput.onchange = () => {
+      mods[i].likert = Number(likertInput.value);
+      mods[i].weight = likertToWeight(Number(likertInput.value));
+      edge.data('modifiers', mods);
+      updateEdgeModifierLabel(edge);
+      convergeAll({ cy });
+      computeVisuals();
+    };
+    row.appendChild(likertInput);
+
+    // Delete button
+    const delBtn = document.createElement('button');
+    delBtn.textContent = '🗑️';
+    delBtn.title = 'Delete modifier';
+    delBtn.className = 'danger';
+    delBtn.onclick = () => {
+      mods.splice(i, 1);
+      edge.data('modifiers', mods);
+      updateEdgeModifierLabel(edge);
+      convergeAll({ cy });
+      computeVisuals();
+      modal.remove();
+      openEditModifiersModal(edge); // reopen with updated list
+    };
+    row.appendChild(delBtn);
+
+    frag.appendChild(row);
+  });
+  modal.appendChild(frag);
+
+  // Add new modifier
+  const addBtn = document.createElement('button');
+  addBtn.textContent = '+ Add Modifier';
+  addBtn.onclick = () => {
+    mods.push({ label: '', likert: 0, weight: 0 });
+    edge.data('modifiers', mods);
+    updateEdgeModifierLabel(edge);
+    modal.remove();
+    openEditModifiersModal(edge);
+  };
+  modal.appendChild(addBtn);
+
+  // Close button
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = 'Close';
+  closeBtn.style.marginLeft = '8px';
+  closeBtn.onclick = () => {
+    modal.remove();
+    document.removeEventListener('keydown', escListener);
+  };
+  modal.appendChild(closeBtn);
+
+  // Escape key closes
+  function escListener(e) {
+    if (e.key === 'Escape') {
+      modal.remove();
+      document.removeEventListener('keydown', escListener);
+    }
+  }
+  document.addEventListener('keydown', escListener);
+
+  document.body.appendChild(modal);
+  modal.focus();
+}
+
+/**
+ * Returns a multiplier to nudge `currentWeight` toward the specified bound (default 0.99)
+ * using a Likert modifier in the range [-5, 5].
+ * - For L > 0: nudges toward ±bound (preserving sign)
+ * - For L < 0: nudges toward zero
+ * - For L = 0 or currentWeight = 0: returns 1 (no-op)
+ * Examples:
+ *   nudgeToBoundMultiplier(0.2, 5)   // Multiplier to bring 0.2 → 0.99
+ *   nudgeToBoundMultiplier(-0.3, 5)  // Multiplier to bring -0.3 → -0.99
+ *   nudgeToBoundMultiplier(0.7, -5)  // Multiplier to bring 0.7 → 0
+ */
+function nudgeToBoundMultiplier(currentWeight, likert, bound = 0.99) {
+  // Clamp Likert to [-5, 5]
+  const L = Math.max(-5, Math.min(5, likert));
+  const absWeight = Math.abs(currentWeight);
+  if (absWeight === 0 || L === 0) return 1; // No-op if zero or neutral
+
+  const frac = Math.abs(L) / 5;
+
+  let desired;
+  if (L > 0) {
+    // Nudge toward ±bound, preserving sign
+    desired = (1 - frac) * absWeight + frac * bound;
+  } else {
+    // Nudge toward zero
+    desired = (1 - frac) * absWeight;
+  }
+
+  // Avoid division by zero, floating-point weirdness
+  let multiplier = desired / absWeight;
+  if (!isFinite(multiplier)) multiplier = 1;
+
+  // Optionally round to avoid floating-point creep
+  return Math.round(multiplier * 1000) / 1000;
+}
+
+function propagateFromParents({
+  baseProb,
+  parents,
+  getProb,
+  getWeight,
+  epsilon = 0.01,
+  saturationK = 1
+}) {
+  if (!parents || parents.length === 0) return baseProb;
+
+  const clampedBase = Math.min(Math.max(baseProb, epsilon), 1 - epsilon);
+  const priorOdds = Math.log(clampedBase / (1 - clampedBase));
+
+  // Precompute parent odds/weights
+  const infos = parents.map(parent => {
+    const prob = Math.min(Math.max(getProb(parent), epsilon), 1 - epsilon);
+    return {
+      parent,
+      odds: Math.log(prob / (1 - prob)),
+      weight: getWeight(parent)
+    };
+  });
+
+  // Precompute total AEI
+  const totalAbsW = infos.reduce((sum, x) => sum + Math.abs(x.weight), 0);
+
+  // Compute effective weights for each edge (excluding itself)
+  let oddsDelta = 0;
+  for (let i = 0; i < infos.length; ++i) {
+    const { odds, weight } = infos[i];
+    const AEI_minus_i = totalAbsW - Math.abs(weight);
+    const dilution = Math.exp(-saturationK * AEI_minus_i); // f(x) = exp(-kx)
+    const effWeight = weight * dilution;
+    oddsDelta += effWeight * (odds - priorOdds);
+  }
+
+  const updatedOdds = priorOdds + oddsDelta;
+  return 1 / (1 + Math.exp(-updatedOdds));
+}
+
+// Saturation function with sharpness parameter (k)
+function saturation(aei, k = 1) {
+  return 1 - Math.exp(-k * aei);
+}
+
+/**
+ * Applies all Likert modifiers to the edge’s base weight, sequentially nudging toward the bound.
+ * Final value is clamped to a minimum magnitude of WEIGHT_MIN.
+ *
+ * @param {EdgeSingular} edge – Cytoscape edge
+ * @returns {number} The modified edge weight after all modifiers
+ */
+function getModifiedEdgeWeight(edge) {
+  let currentWeight = edge.data('weight');
+  const mods = edge.data('modifiers') ?? [];
+
+  mods.forEach(mod => {
+    const mult = nudgeToBoundMultiplier(currentWeight, mod.likert, 0.99);
+    currentWeight = currentWeight * mult;
+  });
+
+  // Clamp at the end
+  if (Math.abs(currentWeight) < WEIGHT_MIN) currentWeight = WEIGHT_MIN * (currentWeight < 0 ? -1 : 1);
+
+  return currentWeight;
+}
+
+window.getModifiedEdgeWeight = getModifiedEdgeWeight;
+
+function addModifier(edgeId) {
+  const prevModal = document.getElementById('modifier-modal');
+if (prevModal) prevModal.remove();
+  const edge = cy.getElementById(edgeId);
+  if (edge.empty()) return; // Proper existence check
+
+  // Prevent multiple modals by checking if one exists
+  if (document.getElementById('modifier-modal')) return;
+
+  // Create modal container
+  const modal = document.createElement('div');
+modal.id = 'modifier-modal';
+modal.className = 'modifier-modal';  // Add this class
+
+
+
+  // Close modal helper
+  function closeModal() {
+    document.body.removeChild(modal);
+    document.removeEventListener('keydown', keydownHandler);
+    document.removeEventListener('click', outsideClickHandler, true);
+  }
+
+  // Label input
+  const labelLabel = document.createElement('div');
+  labelLabel.textContent = 'Modifier label:';
+  labelLabel.style.marginBottom = '6px';
+  modal.appendChild(labelLabel);
+
+  const labelInput = document.createElement('input');
+  labelInput.type = 'text';
+  labelInput.style.width = '200px';
+  labelInput.style.marginBottom = '12px';
+  labelInput.style.fontSize = '14px';
+  modal.appendChild(labelInput);
+
+  // Likert dropdown
+  const likertLabel = document.createElement('div');
+  likertLabel.textContent = 'Effect on influence (Scale of -5 to +5):';
+  likertLabel.style.marginBottom = '6px';
+  modal.appendChild(likertLabel);
+
+  const likertSelect = document.createElement('select');
+  likertSelect.style.fontSize = '14px';
+  likertSelect.style.marginBottom = '12px';
+
+  const likertOptions = [
+    { value: -5, text: '−5 (Nearly eliminates)' },
+    { value: -4, text: '−4 (Strongly decreases)' },
+    { value: -3, text: '−3 (Significantly decreases)' },
+    { value: -2, text: '−2 (Somewhat decreases)' },
+    { value: -1, text: '−1 (Minimally descreases)' },
+    { value: 1, text: '1 (Minimally increases)' },
+    { value: 2, text: '2 (Somewhat increases)' },
+    { value: 3, text: '3 (Moderately increases)' },
+    { value: 4, text: '4 (Stronly increases influence)' },
+    { value: 5, text: '5 (Nearly maximizes)' },
+  ];
+
+  likertOptions.forEach(opt => {
+    const o = document.createElement('option');
+    o.value = opt.value;
+    o.textContent = opt.text;
+    likertSelect.appendChild(o);
+  });
+
+  // Default preselection to 0 (no influence)
+  likertSelect.value = '0';
+
+  modal.appendChild(likertSelect);
+
+  // Buttons container
+  const btnContainer = document.createElement('div');
+  btnContainer.style.display = 'flex';
+  btnContainer.style.justifyContent = 'center';
+  btnContainer.style.gap = '10px';
+
+  // OK button
+  const okBtn = document.createElement('button');
+  okBtn.textContent = 'OK';
+  okBtn.style.padding = '6px 12px';
+  okBtn.onclick = () => {
+    const label = labelInput.value.trim();
+    if (!label) {
+      alert('Please enter a modifier label.');
+      labelInput.focus();
+      return;
+    }
+    const likertVal = parseInt(likertSelect.value, 10);
+    if (isNaN(likertVal) || likertVal < -5 || likertVal > 5) {
+      alert('Please select a valid effect strength.');
+      likertSelect.focus();
+      return;
+    }
+
+    const mods = edge.data('modifiers') ?? [];
+    mods.push({
+      label,
+      likert: likertVal,
+      weight: likertToWeight(likertVal)
+    });
+    edge.data('modifiers', mods);
+
+    setTimeout(() => {
+      convergeAll({ cy });
+      computeVisuals();
+    }, 0);
+
+    closeModal();
+  };
+  btnContainer.appendChild(okBtn);
+
+  // Cancel button
+  const cancelBtn = document.createElement('button');
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.style.padding = '6px 12px';
+  cancelBtn.onclick = closeModal;
+  btnContainer.appendChild(cancelBtn);
+
+  modal.appendChild(btnContainer);
+
+  document.body.appendChild(modal);
+
+  labelInput.focus();
+
+  // Close modal on Escape key
+  function keydownHandler(e) {
+    if (e.key === 'Escape') {
+      closeModal();
+    }
+  }
+  document.addEventListener('keydown', keydownHandler);
+
+  // Close modal on outside click
+  function outsideClickHandler(e) {
+    if (!modal.contains(e.target)) {
+      closeModal();
+    }
+  }
+  document.addEventListener('click', outsideClickHandler, true);
+}
+
+// ----------------------
+// Menu DOM references and hideMenu utility
+// ----------------------
+const menu = document.getElementById('menu');
+const list = document.getElementById('menu-list');
+function hideMenu() {
+  menu.style.display = 'none';
+}
+
+
+// ===============================
+// 🧱 SECTION 2: DOM Bindings
+// ===============================
+
+menu.addEventListener('click', e => e.stopPropagation());
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') hideMenu();
+});
+
+
+// ===============================
+// 🌐 SECTION 3: Graph Initialization
+// ===============================
+
+const cy = cytoscape({
+  container: document.getElementById('cy'),
+elements: [
+  { data: { id: 'N1', origLabel: 'StrongPrior', prob: 0.85, initialProb: 0.85 } },
+  { data: { id: 'N2', origLabel: 'Skeptic', prob: 0.15, initialProb: 0.15 } },
+ 
+],
+
+  style: [
+    { selector: 'node', style: {
+        shape: 'roundrectangle',
+        'background-color': '#eceff1',
+        'text-valign': 'center',
+        'text-halign': 'center',
+        'font-size': '10px',
+        'text-wrap': 'wrap',
+        'text-max-width': '120px',
+        padding: '12px',
+        width: 'label',
+        height: 'label',
+        'min-width': 80,
+        'min-height': 40,
+        'border-style': 'solid',
+        'border-color': '#2e7d32',
+        color: '#263238'
+    }},
+    { selector: 'node[label]',        style: { label: 'data(label)' } },
+    { selector: 'node[borderWidth]',  style: { 'border-width': 'data(borderWidth)' } },
+    { selector: 'node[shape]',        style: { shape: 'data(shape)' } },
+    { selector: 'edge', style: {
+        width: 3,
+        'curve-style': 'bezier',
+        'mid-target-arrow-shape': 'triangle',
+        'font-size': '11px',
+        'text-rotation': 'autorotate',
+        'text-margin-y': '-16px',
+        'text-margin-x': '4px',
+        'text-background-opacity': 0,
+        'text-border-width': 0
+    }},
+    { selector: 'edge[absWeight]', style: {
+        'line-color': 'mapData(absWeight, 0, 2, #bbdefb, #1565c0)',
+        'mid-target-arrow-color': 'mapData(absWeight, 0, 2, #bbdefb, #1565c0)'
+    }},
+    { selector: 'edge[weightLabel]', style: { label: 'data(weightLabel)' } }
+  ],
+  layout: { name: 'grid', rows: 1 }
+});
+
+// ===============================
+// 🎨 SECTION 4: Visual Styling & Modifier Box
+// ===============================
+
+// Draws a floating modifier box per edge
+function drawModifierBoxes() {
+  // Remove any previous boxes
+  document.querySelectorAll('.modifier-box').forEach(el => el.remove());
+  cy.edges().forEach(edge => {
+    const mods = edge.data('modifiers') ?? [];
+    if (!mods.length) return;
+    const mid = edge.midpoint();
+    const pan = cy.pan();
+    const zoom = cy.zoom();
+    const container = cy.container();
+    const x = mid.x * zoom + pan.x;
+    const y = mid.y * zoom + pan.y;
+
+    const box = document.createElement('div');
+    box.className = 'modifier-box';
+    box.style.position = 'absolute';
+    box.style.left = `${x}px`;
+    box.style.top = `${y}px`;
+    box.style.background = 'rgba(220,235,250,0.97)';
+    box.style.border = '1.5px solid #1565c0';
+    box.style.borderRadius = '8px';
+    box.style.padding = '5px 8px';
+    box.style.fontSize = '11px';
+    box.style.minWidth = '80px';
+    box.style.maxWidth = '220px';
+    box.style.zIndex = 10;
+    box.style.boxShadow = '0 1.5px 7px #1565c066';
+
+    mods.forEach(mod => {
+      const item = document.createElement('div');
+      item.style.margin = '2px 0';
+      item.style.display = 'flex';
+      item.style.alignItems = 'center';
+      let color = '#616161';
+      if (mod.likert > 0) color = '#2e7d32';
+      if (mod.likert < 0) color = '#c62828';
+      const val = mod.likert > 0 ? '+'+mod.likert : ''+mod.likert;
+      item.innerHTML = `<span style="color:${color};font-weight:600;min-width:24px;display:inline-block;">${val}</span> <span style="margin-left:5px;">${mod.label}</span>`;
+      box.appendChild(item);
+    });
+    container.parentElement.appendChild(box);
+  });
+}
+// --- Paste these after cytoscape initialization ---
+cy.on('mouseover', 'edge', evt => {
+  const edge = evt.target;
+  showModifierBox(edge);
+});
+cy.on('mouseout', 'edge', evt => {
+  removeModifierBox();
+});
+
+function showModifierBox(edge) {
+  removeModifierBox();
+  const mods = edge.data('modifiers') ?? [];
+  if (!mods.length) return;
+  const mid = edge.midpoint();
+  const pan = cy.pan();
+  const zoom = cy.zoom();
+  const container = cy.container();
+  const x = mid.x * zoom + pan.x;
+  const y = mid.y * zoom + pan.y;
+  const box = document.createElement('div');
+  box.className = 'modifier-box';
+  box.style.position = 'absolute';
+  box.style.left = `${x}px`;
+  box.style.top = `${y}px`;
+  box.style.background = 'rgba(220,235,250,0.97)';
+  box.style.border = '1.5px solid #1565c0';
+  box.style.borderRadius = '8px';
+  box.style.padding = '5px 8px';
+  box.style.fontSize = '11px';
+  box.style.minWidth = '80px';
+  box.style.maxWidth = '220px';
+  box.style.zIndex = 10;
+  box.style.boxShadow = '0 1.5px 7px #1565c066';
+  mods.forEach(mod => {
+    const item = document.createElement('div');
+    item.style.margin = '2px 0';
+    item.style.display = 'flex';
+    item.style.alignItems = 'center';
+    let color = '#616161';
+    if (mod.likert > 0) color = '#2e7d32';
+    if (mod.likert < 0) color = '#c62828';
+    const val = mod.likert > 0 ? '+'+mod.likert : ''+mod.likert;
+    item.innerHTML = `<span style="color:${color};font-weight:600;min-width:24px;display:inline-block;">${val}</span> <span style="margin-left:5px;">${mod.label}</span>`;
+    box.appendChild(item);
+  });
+  container.parentElement.appendChild(box);
+}
+function removeModifierBox() {
+  document.querySelectorAll('.modifier-box').forEach(el => el.remove());
+}
+
+// ===============================
+// 🎨 SECTION 4b: Node/Edge Visuals
+// ===============================
+function robustnessToLabel(robust) {
+  if (robust < 0.15) return "Minimal";
+  if (robust < 0.35) return "Low";
+  if (robust < 0.60) return "Moderate";
+  if (robust < 0.85) return "High";
+  return "Very High";
+}
+
+function computeVisuals() {
+  cy.nodes().forEach(node => {
+    const p    = node.data('prob');
+    const pPct = Math.round(p * 100);
+    const aei  = node.incomers('edge').reduce((sum, e) => sum + Math.abs(getModifiedEdgeWeight(e)), 0);
+    const robust = saturation(aei);
+
+    const bw   = robust > 0 ? Math.max(2, Math.round(robust * 10)) : 0;
+
+    let label = `${node.data('origLabel')}`;
+if (node.data('isFact') === true) {
+  label += `\nFact`;
+} else {
+  label += `\nProb. ${pPct}%`;
+
+  if (node.incomers('edge').length > 0) {
+    const robustLabel = robustnessToLabel(robust);
+    label += `\nRobust: ${robustLabel}`;
+  }
+}
+    node.data({
+      label,
+      borderWidth: bw,
+      shape: node.data('isFact') === true ? 'rectangle' : 'roundrectangle'
+    });
+    if (DEBUG) logMath(node.id(), `Visual: ${label.replace(/\n/g, ' | ')}`);
+  });
+
+ cy.edges().forEach(edge => {
+  const effectiveWeight = getModifiedEdgeWeight(edge);
+  const absW = Math.min(2, Math.abs(effectiveWeight));
+const likertValue = weightToLikert(effectiveWeight);   // You must define this function if not already
+const label = likertDescriptor(likertValue);
+edge.data({
+  absWeight: absW,
+  weightLabel: label
+  });
+});
+
+  cy.style().update();
+
+}
+
+cy.ready(computeVisuals);
+cy.on('dragfree zoom pan', computeVisuals);
+
+// ===============================
+// 🔁 SECTION 5: Propagation Logic
+// ===============================
+
+/** Probability to use for “fact” nodes (never exactly 1.0 to avoid logit infinities) */
+const FACT_PROB = 1 - config.epsilon;
+
+/*
+  Edge convergence:
+  - Initializes computedWeight to weight on all edges.
+  - Uses Jacobi (two-pass): computes all new weights, then applies them.
+  - Wraps in cy.batch() to avoid unnecessary repaints.
+  - Returns convergence info ({converged, iterations, finalDelta}).
+  - Logs a warning if maxIters is hit before convergence, with context.
+  - After convergence, computedWeight is canonical for all downstream math/visuals.
+*/
+function convergeEdges({ cy, epsilon, maxIters }) {
+  cy.batch(() => {
+    cy.edges().forEach(edge => edge.data('computedWeight', edge.data('weight')));
+  });
+
+  let converged = false;
+  let finalDelta = 0;
+  let iterations = 0;
+
+  for (let iter = 0; iter < maxIters; iter++) {
+    iterations = iter + 1;
+    let deltas = [];
+    let maxDelta = 0; // Track max delta as we go
+
+    // 1. Collect new weights (Jacobi pass)
+    cy.edges().forEach(edge => {
+      const prev = edge.data('computedWeight');
+      const nw   = getModifiedEdgeWeight(edge);
+      deltas.push({ edge, prev, nw });
+      const delta = Math.abs(nw - prev);
+      if (delta > maxDelta) maxDelta = delta;
+    });
+
+    // 2. Apply new weights in batch
+    cy.batch(() => {
+      deltas.forEach(({ edge, nw }) => edge.data('computedWeight', nw));
+    });
+
+    // 3. Early-out if converged
+    finalDelta = maxDelta;
+    if (finalDelta < epsilon) {
+      converged = true;
+      break;
+    }
+  }
+
+  if (!converged) {
+    console.warn(`convergeEdges: hit maxIters (${maxIters}) without converging (final delta=${finalDelta.toExponential(3)})`);
+  }
+
+  return { converged, iterations, finalDelta };
+}
+
+/*
+  Node convergence:
+  - Iteratively updates node probabilities using converged edge weights.
+  - Uses Jacobi (two-pass): computes all new probabilities, then applies them.
+  - Only batches UI updates when needed.
+  - Returns convergence info ({converged, iterations, finalDelta}).
+  - Logs a warning if maxIters is hit before convergence.
+  - Uses passed-in epsilon throughout.
+  - After convergence, node.data('prob') is canonical for all downstream logic/visuals.
+*/
+function convergeNodes({ cy, epsilon, maxIters }) {
+
+  if (DEBUG) {
+    console.log("[DEBUG] convergeNodes start");
+    cy.nodes().forEach(node => {
+      console.log(`[DEBUG] ${node.id()} prob at convergeNodes start:`, node.data('prob'));
+    });
+  }
+
+  let converged = false;
+  let finalDelta = 0;
+  let iterations = 0;
+  let deltas = [];
+
+  for (let iter = 0; iter < maxIters; iter++) {
+    iterations = iter + 1;
+    deltas.length = 0;
+    let maxDelta = 0;
+
+    // 1. Collect new probabilities (Jacobi pass)
+    cy.nodes().forEach(node => {
+      if (node.data('isFact')) return;
+      const prev = node.data('prob');
+      const inc  = node.incomers('edge');
+      let newProb;
+      if (!inc.length) {
+        // No incoming edges: revert to node’s initialProb (never drifts)
+        newProb = node.data('initialProb');
+      } else {
+        newProb = propagateFromParents({
+          baseProb: node.data('initialProb'), // always use initialProb as base!
+          parents: inc,
+          getProb: e =>
+            e.source().data('isFact')
+              ? FACT_PROB // see const above—prevents logit singularity
+              : e.source().data('prob'),
+          getWeight: e => e.data('computedWeight'),
+          saturationK: 1,
+          epsilon
+        });
+      }
+      deltas.push({ node, prev, newProb });
+      const delta = Math.abs(newProb - prev);
+      if (delta > maxDelta) maxDelta = delta;
+    });
+
+    if (DEBUG) {
+      console.log("[DEBUG] convergeNodes: updating node probabilities");
+      deltas.forEach(({ node, newProb }) => {
+        console.log(`[DEBUG] Node ${node.id()} updating to:`, newProb);
+      });
+    }
+
+    // 2. Apply new probabilities in a single batch
+    if (deltas.length) {
+      cy.batch(() => {
+        deltas.forEach(({ node, newProb }) => node.data('prob', newProb));
+      });
+    }
+
+    // 3. Early-out if converged
+    finalDelta = maxDelta;
+    if (finalDelta < epsilon) {
+      converged = true;
+      break;
+    }
+  }
+
+  if (!converged) {
+    console.warn(`convergeNodes: hit maxIters (${maxIters}) without converging (final delta=${finalDelta.toExponential(3)})`);
+  }
+
+  return { converged, iterations, finalDelta };
+}
+
+/*
+  Full graph convergence:
+  - Runs edge convergence, then node convergence, with error handling.
+  - Uses config.epsilon and a default maxIters if not provided.
+  - Logs stage-level failures in addition to per-stage warnings.
+  - Returns convergence stats for both stages.
+*/
+function convergeAll({ cy, epsilon = config.epsilon, maxIters = 30 } = {}) {
+  if (DEBUG) console.log('convergeAll triggered');
+  let edgeResult, nodeResult;
+
+  try {
+    edgeResult = convergeEdges({ cy, epsilon, maxIters });
+    if (!edgeResult.converged) console.warn('convergeAll: Edge stage failed to converge');
+  } catch (err) {
+    console.error('convergeAll: Error during edge convergence:', err);
+    edgeResult = { converged: false, error: err };
+  }
+
+  try {
+    nodeResult = convergeNodes({ cy, epsilon, maxIters });
+    if (!nodeResult.converged) console.warn('convergeAll: Node stage failed to converge');
+  } catch (err) {
+    console.error('convergeAll: Error during node convergence:', err);
+    nodeResult = { converged: false, error: err };
+  }
+
+  return { edgeResult, nodeResult };
+}
+
+// ===============================
+// 🖱️ SECTION 6: Right-Click Menus — Unified Handler
+// ===============================
+
+cy.on('cxttap', evt => {
+  evt.originalEvent.preventDefault();
+  if (menu.offsetParent !== null) return;
+  list.innerHTML = '';
+  const pos = evt.renderedPosition;
+  const rect = cy.container().getBoundingClientRect();
+  const x = rect.left + pos.x;
+  const y = rect.top + pos.y;
+
+  if (evt.target === cy) {
+    [
+      { label: 'Add New Node Here', action: () => {
+          cy.add({
+            group: 'nodes',
+            data: { id: 'node' + Date.now(), origLabel: 'New Belief', prob: 0.5, initialProb: 0.5 },
+            position: evt.position
+          });
+          setTimeout(() => {
+            convergeAll({ cy });
+            computeVisuals();
+          }, 0);
+        }},
+      { label: 'Center Graph', action: () => cy.fit() }
+    ].forEach(({ label, action }) => {
+      const li = document.createElement('li');
+      li.textContent = label;
+      li.onclick = () => { action(); hideMenu(); };
+      list.appendChild(li);
+    });
+  } else if (evt.target.isNode()) {
+    const node = evt.target;
+    const del = document.createElement('li');
+    del.textContent = 'Delete This Node';
+    del.onclick = () => { node.remove(); setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0); hideMenu(); };
+    list.appendChild(del);
+
+    const toggleFact = document.createElement('li');
+    toggleFact.textContent = node.data('isFact') === true ? 'Unmark as Fact' : 'Mark as Fact';
+    toggleFact.onclick = () => {
+      const nowFact = node.data('isFact') === true;
+      const newFact = !nowFact;
+      node.data('isFact', newFact);
+      if (newFact) node.data('prob', 1 - config.epsilon);
+      setTimeout(() => {
+        convergeAll({ cy });
+        computeVisuals();
+      }, 0);
+      hideMenu();
+    };
+    list.appendChild(toggleFact);
+
+    const editLabel = document.createElement('li');
+    editLabel.textContent = 'Edit Label';
+    editLabel.onclick = () => {
+      const current = node.data('origLabel') || '';
+      const newLabel = prompt('Edit label:', current);
+      if (newLabel && newLabel.trim()) {
+        node.data('origLabel', newLabel.trim());
+        setTimeout(() => { computeVisuals(); }, 0);
+      }
+      hideMenu();
+    };
+    list.appendChild(editLabel);
+
+    const startEdge = document.createElement('li');
+    startEdge.textContent = 'Connect to...';
+    startEdge.onclick = () => { pendingEdgeSource = node; hideMenu(); };
+    list.appendChild(startEdge);
+  }
+
+  menu.style.left = `${x}px`;
+  menu.style.top = `${y}px`;
+  menu.style.display = 'block';
+  requestAnimationFrame(() => {
+    document.addEventListener('click', () => hideMenu(), { once: true });
+  });
+});
+
+cy.on('cxttap', 'edge', evt => {
+  evt.originalEvent.preventDefault();
+  list.innerHTML = '';
+  const edge = evt.target;
+
+  const del = document.createElement('li');
+  del.textContent = 'Delete This Edge';
+  del.onclick = () => { edge.remove(); setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0); hideMenu(); };
+  list.appendChild(del);
+
+  const addMod = document.createElement('li');
+  addMod.textContent = 'Add Modifier (Label & Likert)';
+  addMod.onclick = () => { addModifier(edge.id()); hideMenu(); };
+  list.appendChild(addMod);
+const editMods = document.createElement('li');
+editMods.textContent = 'Edit Modifiers';
+editMods.onclick = () => { openEditModifiersModal(edge); hideMenu(); };
+list.appendChild(editMods);
+
+  const pos = evt.renderedPosition;
+  const rect = cy.container().getBoundingClientRect();
+  menu.style.left = `${rect.left + pos.x}px`;
+  menu.style.top = `${rect.top + pos.y}px`;
+  menu.style.display = 'block';
+  requestAnimationFrame(() => {
+    document.addEventListener('click', () => hideMenu(), { once: true });
+  });
+});
+
+// ===============================
+// ✏️ SECTION 7: Interaction (Double-Tap + Edge Creation)
+// ===============================
+
+cy.on('tap', 'edge', evt => {
+  const now = Date.now();
+  const edge = evt.target;
+  const id = edge.id();
+  if (id === lastTappedEdge && now - lastClickTime < 300) {
+    const prevModal = document.getElementById('modifier-modal');
+    if (prevModal) prevModal.remove();
+    const current = edge.data('weight');
+
+    // Create modal with Likert dropdown
+  const modal = document.createElement('div');
+modal.className = 'modifier-modal';  // Add class, no inline styles
+
+
+    const label = document.createElement('div');
+    label.textContent = 'Set baseline influence:';
+    label.style.marginBottom = '10px';
+    modal.appendChild(label);
+
+    const select = document.createElement('select');
+    const options = [
+{ label: "5: Absolute influence", value: 1 },
+{ label: "4: Strong influence", value: 0.85 },
+{ label: "3: Moderate influence", value: 0.60 },
+{ label: "2: Small influence", value: 0.35 },
+{ label: "1: Minimal influence", value: 0.15 },
+{ label: "-1: Minimal negation", value: -0.15 },
+{ label: "-2: Small negation", value: -0.35 },
+{ label: "-3: Moderate negation", value: -0.60 },
+{ label: "-4: Strong negation", value: -0.85 },
+{ label: "-5: Absolute negation", value: -1 },
+
+    ];
+    options.forEach(opt => {
+      const o = document.createElement('option');
+      o.value = opt.value;
+      o.textContent = opt.label;
+      if (Math.abs(current - opt.value) < 0.01) o.selected = true;
+      select.appendChild(o);
+    });
+    modal.appendChild(select);
+
+    const btn = document.createElement('button');
+    btn.textContent = 'OK';
+    btn.style.margin = '10px 5px 0 0';
+    btn.onclick = function () {
+      const val = parseFloat(select.value);
+      edge.data('weight', val);
+      document.body.removeChild(modal);
+      setTimeout(() => {
+        convergeAll({ cy });
+        computeVisuals();
+      }, 0);
+    };
+    modal.appendChild(btn);
+
+    const cancel = document.createElement('button');
+    cancel.textContent = 'Cancel';
+    cancel.onclick = function () {
+      document.body.removeChild(modal);
+    };
+    modal.appendChild(cancel);
+
+    document.body.appendChild(modal);
+    select.focus();
+
+    lastTappedEdge = null;
+    lastClickTime = 0;
+  } else {
+    lastTappedEdge = id;
+    lastClickTime = now;
+  }
+});
+
+cy.on('tap', evt => {
+  if (!pendingEdgeSource) return;
+  const target = evt.target;
+  if (!target.isNode() || target.id() === pendingEdgeSource.id()) {
+    pendingEdgeSource = null;
+    return;
+  }
+  cy.add({
+    group: 'edges',
+    data: {
+      source: pendingEdgeSource.id(),
+      target: target.id(),
+      weight: 0.5
+    }
+  });
+  pendingEdgeSource = null;
+  setTimeout(() => {
+    convergeAll({ cy });
+    computeVisuals();
+  }, 0);
+});
+
+// Likert mapping function
+function nodeLikertToProb(val) {
+  // 1–7 only; index 0 is unused.
+  const probs = [null, 0.01, 0.15, 0.33, 0.50, 0.67, 0.85, 0.99];
+  if (typeof val !== 'number' || val < 1 || val > 7) return 0.5;
+  return probs[val];
+}
+window.nodeLikertToProb = nodeLikertToProb;
+
+// Drop-in double-tap handler for node priors
+cy.on('tap', 'node', evt => {
+  const now = Date.now();
+  const node = evt.target;
+  const id = node.id();
+  if (id === lastTappedNode && now - lastClickTime < 300) {
+    // Modal setup
+    const prevModal = document.getElementById('modifier-modal');
+if (prevModal) prevModal.remove();
+    const modal = document.createElement('div');
+    modal.style.position = 'fixed';
+    modal.style.left = '50%';
+    modal.style.top = '50%';
+    modal.style.transform = 'translate(-50%, -50%)';
+    modal.style.background = '#222';
+    modal.style.padding = '24px 18px';
+    modal.style.borderRadius = '10px';
+    modal.style.boxShadow = '0 2px 10px #0008';
+    modal.style.color = 'white';
+    modal.style.zIndex = 10001;
+    modal.style.textAlign = 'center';
+
+    const label = document.createElement('div');
+    label.textContent = 'Set baseline belief:';
+    label.style.marginBottom = '10px';
+    modal.appendChild(label);
+
+    // Dropdown Likert options
+    const select = document.createElement('select');
+    select.style.fontSize = '16px';
+    select.style.marginBottom = '10px';
+    const likertOptions = [
+      { value: 1, text: 'Certain No (1%)' },
+      { value: 2, text: 'Very Unlikely (15%)' },
+      { value: 3, text: 'Unlikely (33%)' },
+      { value: 4, text: 'Neutral (50%)' },
+      { value: 5, text: 'Likely (67%)' },
+      { value: 6, text: 'Very Likely (85%)' },
+      { value: 7, text: 'Certain Yes (99%)' },
+    ];
+    // Preselect current value if possible
+    const current = node.data('initialProb') ?? node.data('prob') ?? 0.5;
+    let preselectIdx = 4; // Default to 50%
+    for (let i = 1; i <= 7; ++i) {
+      if (Math.abs(current - nodeLikertToProb(i)) < 0.01) {
+        preselectIdx = i;
+        break;
+      }
+    }
+    likertOptions.forEach(opt => {
+      const option = document.createElement('option');
+      option.value = opt.value;
+      option.textContent = opt.text;
+      if (opt.value === preselectIdx) option.selected = true;
+      select.appendChild(option);
+    });
+    modal.appendChild(select);
+
+    // OK button
+    const btn = document.createElement('button');
+    btn.textContent = 'OK';
+    btn.style.margin = '10px 5px 0 0';
+    btn.onclick = function () {
+      const likertVal = parseInt(select.value);
+      const prob = nodeLikertToProb(likertVal);
+      node.data('initialProb', prob);
+      node.data('prob', prob);
+      console.log(`[DEBUG] Set node ${node.id()} prob and initialProb to`, prob);
+      document.body.removeChild(modal);
+      setTimeout(() => {
+        convergeAll({ cy });
+        computeVisuals();
+      }, 0);
+    };
+    modal.appendChild(btn);
+
+    // Cancel button
+    const cancel = document.createElement('button');
+    cancel.textContent = 'Cancel';
+    cancel.onclick = function () {
+      document.body.removeChild(modal);
+    };
+    modal.appendChild(cancel);
+
+    document.body.appendChild(modal);
+    select.focus();
+
+    lastTappedNode = null;
+    lastClickTime = 0;
+  } else {
+    lastTappedNode = id;
+    lastClickTime = now;
+  }
+});
+
+// ===============================
+// 🧰 SECTION 8: Not currently used
+// ===============================
+
+// ===============================
+// ⚙️ SECTION 9: Control Functions
+// ===============================
+
+function resetLayout() {
+  if (cy.nodes().length > 1) {
+    cy.fit(undefined, 50); // 50px padding
+  } else {
+    cy.zoom(1);
+    cy.center();
+  }
+}
+
+function clearGraph() {
+  // Prompt before clearing
+  if (!confirm('Are you sure you want to clear the graph?')) return;
+  cy.elements().remove();
+  setTimeout(() => { computeVisuals(); }, 0);
+  console.log('Graph cleared');
+}
+
+function exportToExcelFromModel() {
+  // Export nodes and edges to Excel using SheetJS
+  if (typeof XLSX === 'undefined' || typeof cy === 'undefined') {
+    alert('Cannot export: Excel library or graph missing.');
+    return;
+  }
+  const wb = XLSX.utils.book_new();
+  const nodes = cy.nodes().map(n => ({
+    id: n.id(),
+    label: n.data('origLabel'),
+    prob: n.data('prob')
+  }));
+  const edges = cy.edges().map(e => ({
+    source: e.data('source'),
+    target: e.data('target'),
+    weight: e.data('weight')
+  }));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(nodes), 'Nodes');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(edges), 'Edges');
+  XLSX.writeFile(wb, 'graph.xlsx');
+  console.log('Exported graph to Excel');
+}
+
+function saveGraph() {
+  // Download current graph as JSON file
+    if (typeof cy === 'undefined') {
+    alert('Graph not loaded.');
+    return;
+    }
+  try {
+    const elements = cy.elements().jsons();
+    const dataStr = JSON.stringify(elements, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'graph.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    console.log('Graph downloaded as graph.json');
+  } catch (err) {
+    console.error('Save to file failed:', err);
+  }
+}
+
+function loadGraph() {
+  // Open file picker and load graph JSON
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = evt => {
+      try {
+        const elements = JSON.parse(evt.target.result);
+        cy.elements().remove();
+        cy.add(elements);
+        cy.nodes().forEach(n => {
+  if (!n.data('isFact')) {
+    n.data('prob', n.data('initialProb'));
+  }
+});
+        convergeAll({ cy });
+        computeVisuals();
+        resetLayout();
+        console.log(`Graph loaded from file: ${file.name}`);
+      } catch (err) {
+        console.error('Failed to load graph:', err);
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function activateBayesTime() {
+  // Trigger propagation
+  setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0);
+  console.log('Bayes Time triggered');
+}
+
+// ===============================
+// 🔄 SECTION 9b: Autosave & Restore
+// ===============================
+
+// Save the graph to localStorage every 5 minutes
+function autosave() {
+  try {
+    const elements = cy.elements().jsons();
+    localStorage.setItem('beliefGraphAutosave', JSON.stringify(elements));
+    console.log('Autosaved graph to localStorage');
+  } catch (err) {
+    console.error('Autosave failed:', err);
+  }
+}
+
+// Restore from autosave (manual, with confirmation)
+function restoreAutosave() {
+  console.log('restoreAutosave called');
+  const data = localStorage.getItem('beliefGraphAutosave');
+  if (!data) {
+    alert('No autosaved graph found.');
+    console.log('restoreAutosave: No autosave data in localStorage');
+    return;
+  }
+  if (!confirm('This will overwrite your current graph with the last autosaved version. Continue?')) {
+    console.log('restoreAutosave: User cancelled restore');
+    return;
+  }
+  try {
+    cy.elements().remove();
+    cy.add(JSON.parse(data));
+    cy.nodes().forEach(n => {
+    if (!n.data('isFact')) {
+      n.data('prob', n.data('initialProb'));
+    }
+  });
+    convergeAll({ cy });
+    computeVisuals();
+    resetLayout();
+    console.log('restoreAutosave: Success, graph restored');
+  } catch (err) {
+    alert('Failed to restore autosave.');
+    console.error('restoreAutosave: Failed to restore autosave:', err);
+  }
+}
+
+// Start autosave timer (every 5 minutes)
+setInterval(autosave, 5 * 60 * 1000);
+
+// ===============================
+// 🖱️ SECTION 10: Button Event Hookup
+// ===============================
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('btnRestoreAutosave').addEventListener('click', restoreAutosave);
+  document.getElementById('btnResetLayout')  .addEventListener('click', resetLayout);
+  document.getElementById('btnClearGraph')   .addEventListener('click', clearGraph);
+  document.getElementById('btnExportExcel')  .addEventListener('click', exportToExcelFromModel);
+  document.getElementById('btnSaveGraph')    .addEventListener('click', saveGraph);
+  document.getElementById('btnLoadGraph')    .addEventListener('click', loadGraph);
+  document.getElementById('btnBayesTime')    .addEventListener('click', activateBayesTime);
+});
+// ===============================
+// 🔇 QUIET MODE — filter out known plugin/deprecation errors
+// ===============================
+;(function(){
+  const origError = console.error;
+  const origWarn  = console.warn;
+
+  console.error = function(...args) {
+    const msg = args[0] + '';
+    // ignore the plugin ghost errors
+    if (msg.includes('layoutBase') || msg.includes('memoize')) {
+      return;
+    }
+    origError.apply(console, args);
+  };
+
+  console.warn = function(...args) {
+    const msg = args[0] + '';
+    // ignore the deprecated label width/height warnings
+    if (msg.includes('The style value of `label` is deprecated')) {
+      return;
+    }
+    origWarn.apply(console, args);
+  };
+})();
