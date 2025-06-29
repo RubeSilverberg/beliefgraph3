@@ -79,7 +79,27 @@ function updateEdgeModifierLabel(edge) {
     edge.data('weightLabel', `${baseLabel} [${mods.length}]`);
   }
 }
-  function openEditModifiersModal(edge) {
+
+// Returns true if adding an edge from sourceId → targetId would create a cycle
+function wouldCreateCycle(cy, sourceId, targetId) {
+  // Quick: adding self-loop? Always a cycle
+  if (sourceId === targetId) return true;
+  // DFS to see if a path exists from target back to source
+  const visited = new Set();
+  function dfs(nodeId) {
+    if (nodeId === sourceId) return true; // found a cycle
+    if (visited.has(nodeId)) return false;
+    visited.add(nodeId);
+    // For each outgoing edge from nodeId
+    return cy.getElementById(nodeId)
+      .outgoers('edge')
+      .map(e => e.target().id())
+      .some(nextId => dfs(nextId));
+  }
+  return dfs(targetId);
+}
+
+function openEditModifiersModal(edge) {
   // Remove existing modal if present
   const prevModal = document.getElementById('modifier-modal');
   if (prevModal) prevModal.remove();
@@ -488,21 +508,32 @@ elements: [
     { selector: 'node[borderWidth]',  style: { 'border-width': 'data(borderWidth)' } },
     { selector: 'node[shape]',        style: { shape: 'data(shape)' } },
     { selector: 'edge', style: {
-        width: 3,
-        'curve-style': 'bezier',
-        'mid-target-arrow-shape': 'triangle',
-        'font-size': '11px',
-        'text-rotation': 'autorotate',
-        'text-margin-y': '-16px',
-        'text-margin-x': '4px',
-        'text-background-opacity': 0,
-        'text-border-width': 0
-    }},
-    { selector: 'edge[absWeight]', style: {
-        'line-color': 'mapData(absWeight, 0, 2, #bbdefb, #1565c0)',
-        'mid-target-arrow-color': 'mapData(absWeight, 0, 2, #bbdefb, #1565c0)'
-    }},
-    { selector: 'edge[weightLabel]', style: { label: 'data(weightLabel)' } }
+    width: 3,
+    'curve-style': 'bezier',
+    'mid-target-arrow-shape': 'triangle',
+    'font-size': '14px',
+    'text-rotation': 'autorotate',
+    'text-margin-y': '-24px',
+    'text-margin-x': '4px',
+    'text-background-opacity': 1,
+    'text-background-color': '#fff',
+    'text-background-padding': '6px',
+    'text-wrap': 'wrap',
+    'text-max-width': 80,
+    'text-border-width': 0
+}},
+{ selector: 'edge[absWeight]', style: {
+    'line-color': 'mapData(absWeight, 0, 2, #bbdefb, #1565c0)',
+    'mid-target-arrow-color': 'mapData(absWeight, 0, 2, #bbdefb, #1565c0)'
+}},
+{ selector: 'edge[weightLabel]', style: { 
+    label: 'data(weightLabel)',
+    'text-wrap': 'wrap',
+    'text-max-width': 100,
+    'text-background-opacity': 1,
+    'text-background-color': '#fff',
+    'text-background-padding': '6px'
+}}
   ],
   layout: { name: 'grid', rows: 1 }
 });
@@ -1033,11 +1064,21 @@ cy.on('tap', evt => {
     pendingEdgeSource = null;
     return;
   }
+
+  // 🟢 CYCLE PREVENTION LOGIC
+  const sourceId = pendingEdgeSource.id();
+  const targetId = target.id();
+  if (wouldCreateCycle(cy, sourceId, targetId)) {
+    alert('Adding this edge would create a cycle (closed loop), which is not allowed.');
+    pendingEdgeSource = null;
+    return;
+  }
+
   cy.add({
     group: 'edges',
     data: {
-      source: pendingEdgeSource.id(),
-      target: target.id(),
+      source: sourceId,
+      target: targetId,
       weight: 0.5
     }
   });
