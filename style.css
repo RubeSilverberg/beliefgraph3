@@ -110,3 +110,6 @@ html, body {
   cursor: pointer;
   font-size: 1.1em;
 }
+.node-hover-box, .modifier-box {
+  pointer-events: none;
+}

@@ -24,36 +24,38 @@ function logMath(nodeId, msg) {
 }
 
 function likertToWeight(val) {
-  // Maps Likert -5..+5 to [-1, -0.85, ..., 0, ..., +1]
-  const weights = [-1, -0.85, -0.60, -0.35, -0.15, 0, 0.15, 0.35, 0.60, 0.85, 1];
-  // -5 maps to index 0, 0 maps to 5, +5 maps to 10
-  const idx = val + 5;
-  return weights[idx] ?? 0;
+  // Only accepts -5 to -1 and +1 to +5
+  // [-1, -0.85, -0.60, -0.35, -0.15, 0.15, 0.35, 0.60, 0.85, 1]
+  const weights = [-1, -0.85, -0.60, -0.35, -0.15, 0.15, 0.35, 0.60, 0.85, 1];
+  // -5 maps to 0, -1 maps to 4, +1 maps to 5, +5 maps to 9
+  if (val < 0) return weights[val + 5];      // -5 → 0, -1 → 4
+  if (val > 0) return weights[val + 4];      // +1 → 5, +5 → 9
+  return 0.15; // fallback, but you should prevent val=0 in UI
 }
 window.likertToWeight = likertToWeight;
 
 function weightToLikert(w) {
-  // Maps a weight in [-1, 1] back to the closest Likert -5..+5
-  if (typeof w !== 'number' || isNaN(w)) return 0;
-  // Array from likertToWeight (should match exactly!)
-  const weights = [-1, -0.85, -0.60, -0.35, -0.15, 0, 0.15, 0.35, 0.60, 0.85, 1];
-  let closest = 0;
+  // Map a weight in [-1, -0.15] ∪ [0.15, 1] to -5..-1, 1..5 (never 0)
+  const weights = [-1, -0.85, -0.60, -0.35, -0.15, 0.15, 0.35, 0.60, 0.85, 1];
+  let closestIdx = 0;
   let minDiff = Infinity;
   for (let i = 0; i < weights.length; ++i) {
     const diff = Math.abs(w - weights[i]);
     if (diff < minDiff) {
       minDiff = diff;
-      closest = i - 5; // Index 0 is -5, so subtract 5
+      closestIdx = i;
     }
   }
-  return closest;
+  // 0–4: -5..-1, 5–9: 1..5
+  if (closestIdx < 5) return closestIdx - 5;     // -5 to -1
+  else return closestIdx - 4;                    // +1 to +5
 }
 window.weightToLikert = weightToLikert;
 
 
 function likertDescriptor(val) {
   switch (val) {
-    case -5: return "Abs Neg(−5)";
+    case -5: return "Total Neg(−5)";
     case -4: return "Strong Neg(−4)";
     case -3: return "Med Neg(−3)";
     case -2: return "Small Neg(−2)";
@@ -62,7 +64,7 @@ function likertDescriptor(val) {
     case  2: return "Small(+2)";
     case  3: return "Med(+3)";
     case  4: return "Strong(+4)";
-    case  5: return "Abs(+5)";
+    case  5: return "Total(+5)";
     default: return `Custom (${val})`;
   }
 }
@@ -586,6 +588,52 @@ function drawModifierBoxes() {
     container.parentElement.appendChild(box);
   });
 }
+
+// --- Node hover: show baseline and current probability ---
+cy.on('mouseover', 'node', evt => {
+  showNodeHoverBox(evt.target);
+});
+cy.on('mouseout', 'node', evt => {
+  removeNodeHoverBox();
+});
+
+function showNodeHoverBox(node) {
+  removeNodeHoverBox(); // clean up any old
+const pos = node.renderedPosition();
+const container = cy.container();
+const x = pos.x + 20; // Offset to the right
+const y = pos.y - 30; // Offset upward
+
+
+  // Build hover box
+  const box = document.createElement('div');
+  box.className = 'node-hover-box';
+  box.style.position = 'absolute';
+  box.style.left = `${x + 20}px`;
+  box.style.top = `${y - 30}px`;
+  box.style.background = '#f3f3fc';
+  box.style.border = '1.5px solid #2e7d32';
+  box.style.borderRadius = '8px';
+  box.style.padding = '7px 14px';
+  box.style.fontSize = '12px';
+  box.style.zIndex = 20;
+  box.style.boxShadow = '0 2px 8px #1565c066';
+
+  const label = node.data('origLabel');
+  const curProb = Math.round(100 * (node.data('prob') ?? 0));
+  const baseProb = Math.round(100 * (node.data('initialProb') ?? 0));
+  box.innerHTML = `<b>${label}</b><br>
+    <span>Current: <b>${curProb}%</b></span><br>
+    <span>Baseline: <b>${baseProb}%</b></span>`;
+
+  container.parentElement.appendChild(box);
+}
+
+function removeNodeHoverBox() {
+  document.querySelectorAll('.node-hover-box').forEach(el => el.remove());
+}
+document.addEventListener('mousedown', removeNodeHoverBox);
+document.addEventListener('mousedown', removeModifierBox);
 // --- Paste these after cytoscape initialization ---
 cy.on('mouseover', 'edge', evt => {
   const edge = evt.target;
@@ -598,13 +646,16 @@ cy.on('mouseout', 'edge', evt => {
 function showModifierBox(edge) {
   removeModifierBox();
   const mods = edge.data('modifiers') ?? [];
-  if (!mods.length) return;
+  const baseLikert = weightToLikert(edge.data('weight')); // existing function
+  const baseLabel = likertDescriptor(baseLikert);
+
   const mid = edge.midpoint();
   const pan = cy.pan();
   const zoom = cy.zoom();
   const container = cy.container();
   const x = mid.x * zoom + pan.x;
   const y = mid.y * zoom + pan.y;
+
   const box = document.createElement('div');
   box.className = 'modifier-box';
   box.style.position = 'absolute';
@@ -613,26 +664,30 @@ function showModifierBox(edge) {
   box.style.background = 'rgba(220,235,250,0.97)';
   box.style.border = '1.5px solid #1565c0';
   box.style.borderRadius = '8px';
-  box.style.padding = '5px 8px';
-  box.style.fontSize = '11px';
-  box.style.minWidth = '80px';
-  box.style.maxWidth = '220px';
-  box.style.zIndex = 10;
-  box.style.boxShadow = '0 1.5px 7px #1565c066';
-  mods.forEach(mod => {
-    const item = document.createElement('div');
-    item.style.margin = '2px 0';
-    item.style.display = 'flex';
-    item.style.alignItems = 'center';
-    let color = '#616161';
-    if (mod.likert > 0) color = '#2e7d32';
-    if (mod.likert < 0) color = '#c62828';
-    const val = mod.likert > 0 ? '+'+mod.likert : ''+mod.likert;
-    item.innerHTML = `<span style="color:${color};font-weight:600;min-width:24px;display:inline-block;">${val}</span> <span style="margin-left:5px;">${mod.label}</span>`;
-    box.appendChild(item);
-  });
+  box.style.padding = '6px 14px';
+  box.style.fontSize = '12px';
+  box.style.zIndex = 20;
+  box.style.boxShadow = '0 2px 8px #1565c066';
+
+  // Base Likert info
+  box.innerHTML = `<div><b>Base influence:</b> ${baseLabel}</div>`;
+
+  if (mods.length) {
+    box.innerHTML += `<hr style="margin:6px 0 3px 0">`;
+    mods.forEach(mod => {
+      let color = '#616161';
+      if (mod.likert > 0) color = '#2e7d32';
+      if (mod.likert < 0) color = '#c62828';
+      const val = mod.likert > 0 ? '+'+mod.likert : ''+mod.likert;
+      box.innerHTML += `<div style="color:${color};margin:2px 0;">
+        ${val}: ${mod.label}
+      </div>`;
+    });
+  }
+
   container.parentElement.appendChild(box);
 }
+
 function removeModifierBox() {
   document.querySelectorAll('.modifier-box').forEach(el => el.remove());
 }
@@ -658,16 +713,26 @@ function computeVisuals() {
     const bw   = robust > 0 ? Math.max(2, Math.round(robust * 10)) : 0;
 
     let label = `${node.data('origLabel')}`;
-if (node.data('isFact') === true) {
+
+const untouched = (
+  node.data('origLabel') === 'New Belief' &&
+  p === 0.5 &&
+  node.incomers('edge').length === 0 &&
+  !node.data('touched')
+);
+
+if (untouched) {
+  // Show only the base label—nothing else
+} else if (node.data('isFact') === true) {
   label += `\nFact`;
 } else {
   label += `\nProb. ${pPct}%`;
-
   if (node.incomers('edge').length > 0) {
     const robustLabel = robustnessToLabel(robust);
     label += `\nRobust: ${robustLabel}`;
   }
 }
+
     node.data({
       label,
       borderWidth: bw,
@@ -676,16 +741,31 @@ if (node.data('isFact') === true) {
     if (DEBUG) logMath(node.id(), `Visual: ${label.replace(/\n/g, ' | ')}`);
   });
 
- cy.edges().forEach(edge => {
+cy.edges().forEach(edge => {
   const effectiveWeight = getModifiedEdgeWeight(edge);
-  const absW = Math.min(2, Math.abs(effectiveWeight));
-const likertValue = weightToLikert(effectiveWeight);   // You must define this function if not already
-const label = likertDescriptor(likertValue);
+
+  // Clamp tiny weights to ±1 for Likert conversion
+  let displayWeight = effectiveWeight;
+  if (Math.abs(effectiveWeight) > 0 && Math.abs(effectiveWeight) < 0.011) {
+    displayWeight = effectiveWeight > 0 ? 0.01 : -0.01; // avoids zero, preserves sign
+  }
+ const absW = Math.abs(effectiveWeight);
+const likertValue = weightToLikert(displayWeight);
+const hasModifiers = (edge.data('modifiers') ?? []).length > 0;
+
+// Only show label if user touched it: weight ≠ 0.01 OR there are modifiers
+let label = '';
+if (Math.abs(displayWeight) > WEIGHT_MIN || hasModifiers) {
+  label = likertDescriptor(likertValue);
+}
+
 edge.data({
   absWeight: absW,
   weightLabel: label
-  });
 });
+
+});
+
 
   cy.style().update();
 
@@ -883,17 +963,24 @@ cy.on('cxttap', evt => {
 
   if (evt.target === cy) {
     [
-      { label: 'Add New Node Here', action: () => {
-          cy.add({
-            group: 'nodes',
-            data: { id: 'node' + Date.now(), origLabel: 'New Belief', prob: 0.5, initialProb: 0.5 },
-            position: evt.position
-          });
-          setTimeout(() => {
-            convergeAll({ cy });
-            computeVisuals();
-          }, 0);
-        }},
+{ label: 'Add New Node Here', action: () => {
+cy.add({
+  group: 'nodes',
+  data: {
+    id: 'node' + Date.now(),
+    origLabel: 'New Belief',
+    initialProb: 0.5,
+    prob: 0.5
+  },
+  position: evt.position
+});
+
+    setTimeout(() => {
+      convergeAll({ cy });
+      computeVisuals();
+    }, 0);
+  }},
+
       { label: 'Center Graph', action: () => cy.fit() }
     ].forEach(({ label, action }) => {
       const li = document.createElement('li');
@@ -903,10 +990,11 @@ cy.on('cxttap', evt => {
     });
   } else if (evt.target.isNode()) {
     const node = evt.target;
-    const del = document.createElement('li');
-    del.textContent = 'Delete This Node';
-    del.onclick = () => { node.remove(); setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0); hideMenu(); };
-    list.appendChild(del);
+    
+    const startEdge = document.createElement('li');
+    startEdge.textContent = 'Connect to...';
+    startEdge.onclick = () => { pendingEdgeSource = node; hideMenu(); };
+    list.appendChild(startEdge);
 
     const toggleFact = document.createElement('li');
     toggleFact.textContent = node.data('isFact') === true ? 'Unmark as Fact' : 'Mark as Fact';
@@ -934,12 +1022,13 @@ cy.on('cxttap', evt => {
       }
       hideMenu();
     };
-    list.appendChild(editLabel);
 
-    const startEdge = document.createElement('li');
-    startEdge.textContent = 'Connect to...';
-    startEdge.onclick = () => { pendingEdgeSource = node; hideMenu(); };
-    list.appendChild(startEdge);
+    list.appendChild(editLabel);
+    const del = document.createElement('li');
+    del.textContent = 'Delete This Node';
+    del.onclick = () => { node.remove(); setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0); hideMenu(); };
+    list.appendChild(del);
+
   }
 
   menu.style.left = `${x}px`;
@@ -1079,7 +1168,7 @@ cy.on('tap', evt => {
     data: {
       source: sourceId,
       target: targetId,
-      weight: 0.5
+      weight: WEIGHT_MIN
     }
   });
   pendingEdgeSource = null;
@@ -1105,20 +1194,10 @@ cy.on('tap', 'node', evt => {
   const id = node.id();
   if (id === lastTappedNode && now - lastClickTime < 300) {
     // Modal setup
-    const prevModal = document.getElementById('modifier-modal');
+const prevModal = document.getElementById('modifier-modal');
 if (prevModal) prevModal.remove();
-    const modal = document.createElement('div');
-    modal.style.position = 'fixed';
-    modal.style.left = '50%';
-    modal.style.top = '50%';
-    modal.style.transform = 'translate(-50%, -50%)';
-    modal.style.background = '#222';
-    modal.style.padding = '24px 18px';
-    modal.style.borderRadius = '10px';
-    modal.style.boxShadow = '0 2px 10px #0008';
-    modal.style.color = 'white';
-    modal.style.zIndex = 10001;
-    modal.style.textAlign = 'center';
+const modal = document.createElement('div');
+modal.className = 'modifier-modal';
 
     const label = document.createElement('div');
     label.textContent = 'Set baseline belief:';
@@ -1165,6 +1244,7 @@ if (prevModal) prevModal.remove();
       const prob = nodeLikertToProb(likertVal);
       node.data('initialProb', prob);
       node.data('prob', prob);
+      node.data('touched', true);
       console.log(`[DEBUG] Set node ${node.id()} prob and initialProb to`, prob);
       document.body.removeChild(modal);
       setTimeout(() => {
