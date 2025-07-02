@@ -113,3 +113,10 @@ html, body {
 .node-hover-box, .modifier-box {
   pointer-events: none;
 }
+.rationale-modal {
+  z-index: 10001 !important;
+}
+.rationale-modal textarea {
+  resize: vertical;
+  font-family: inherit;
+}

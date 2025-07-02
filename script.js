@@ -208,6 +208,79 @@ function openEditModifiersModal(edge) {
   modal.focus();
 }
 
+function openRationaleModal(element, type = "node") {
+  // Remove existing rationale modal if present
+  document.querySelectorAll('.rationale-modal').forEach(el => el.remove());
+  
+  const modal = document.createElement('div');
+  modal.className = 'rationale-modal modifier-modal'; // Inherit base styling
+
+  // Title
+  const title = document.createElement('div');
+  title.className = 'modifier-modal-title';
+  title.textContent = `View/Edit Rationale (${type === "node" ? "Node" : "Edge"})`;
+  modal.appendChild(title);
+
+  // Textarea
+  const textarea = document.createElement('textarea');
+  textarea.style.width = "420px";
+  textarea.style.height = "110px";
+  textarea.style.margin = "10px 0 16px 0";
+  textarea.style.fontSize = "14px";
+  textarea.value = element.data('rationale') || "";
+  modal.appendChild(textarea);
+
+  // Buttons
+  const btnContainer = document.createElement('div');
+  btnContainer.style.display = 'flex';
+  btnContainer.style.justifyContent = 'flex-end';
+  btnContainer.style.gap = '10px';
+
+  // Save button
+  const saveBtn = document.createElement('button');
+  saveBtn.textContent = 'Save';
+  saveBtn.onclick = () => {
+    element.data('rationale', textarea.value);
+    modal.remove();
+    document.removeEventListener('keydown', escListener);
+    document.removeEventListener('mousedown', clickAway);
+  };
+  btnContainer.appendChild(saveBtn);
+
+  // Cancel button
+  const cancelBtn = document.createElement('button');
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.onclick = () => {
+    modal.remove();
+    document.removeEventListener('keydown', escListener);
+    document.removeEventListener('mousedown', clickAway);
+  };
+  btnContainer.appendChild(cancelBtn);
+
+  modal.appendChild(btnContainer);
+  document.body.appendChild(modal);
+  textarea.focus();
+
+  // Escape key closes
+  function escListener(e) {
+    if (e.key === 'Escape') {
+      modal.remove();
+      document.removeEventListener('keydown', escListener);
+      document.removeEventListener('mousedown', clickAway);
+    }
+  }
+  // Click outside closes
+  function clickAway(e) {
+    if (!modal.contains(e.target)) {
+      modal.remove();
+      document.removeEventListener('keydown', escListener);
+      document.removeEventListener('mousedown', clickAway);
+    }
+  }
+  document.addEventListener('keydown', escListener);
+  document.addEventListener('mousedown', clickAway);
+}
+
 /**
  * Returns a multiplier to nudge `currentWeight` toward the specified bound (default 0.99)
  * using a Likert modifier in the range [-5, 5].
@@ -970,7 +1043,8 @@ cy.add({
     id: 'node' + Date.now(),
     origLabel: 'New Belief',
     initialProb: 0.5,
-    prob: 0.5
+    prob: 0.5,
+    rationale: ""
   },
   position: evt.position
 });
@@ -1024,6 +1098,15 @@ cy.add({
     };
 
     list.appendChild(editLabel);
+
+    const rationaleItem = document.createElement('li');
+  rationaleItem.textContent = 'View/Edit Rationale...';
+  rationaleItem.onclick = () => {
+    openRationaleModal(node, "node");
+    hideMenu();
+  };
+  list.appendChild(rationaleItem);
+
     const del = document.createElement('li');
     del.textContent = 'Delete This Node';
     del.onclick = () => { node.remove(); setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0); hideMenu(); };
@@ -1043,6 +1126,15 @@ cy.on('cxttap', 'edge', evt => {
   evt.originalEvent.preventDefault();
   list.innerHTML = '';
   const edge = evt.target;
+
+const rationaleItem = document.createElement('li');
+rationaleItem.textContent = 'View/Edit Rationale...';
+rationaleItem.onclick = () => {
+  openRationaleModal(edge, "edge");
+  hideMenu();
+};
+list.appendChild(rationaleItem);
+
 
   const del = document.createElement('li');
   del.textContent = 'Delete This Edge';
@@ -1164,13 +1256,14 @@ cy.on('tap', evt => {
   }
 
   cy.add({
-    group: 'edges',
-    data: {
-      source: sourceId,
-      target: targetId,
-      weight: WEIGHT_MIN
-    }
-  });
+  group: 'edges',
+  data: {
+    source: sourceId,
+    target: targetId,
+    weight: WEIGHT_MIN,
+    rationale: ""
+  }
+});
   pendingEdgeSource = null;
   setTimeout(() => {
     convergeAll({ cy });
