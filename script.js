@@ -6,6 +6,28 @@ and no cycles between layers.
 // ===============================
 // 🔧 SECTION 1: Config & Utilities
 // ===============================
+let bayesHeavyMode = false;  // false = Bayes Lite; true = Bayes Heavy
+window.bayesHeavyMode = bayesHeavyMode;
+function updateModeBadge() {
+  let badge = document.getElementById('mode-badge');
+  if (!badge) {
+    badge = document.createElement('div');
+    badge.id = 'mode-badge';
+    badge.style.position = 'fixed';
+    badge.style.top = '10px';
+    badge.style.right = '10px';
+    badge.style.backgroundColor = '#ff7043';
+    badge.style.color = '#fff';
+    badge.style.padding = '6px 12px';
+    badge.style.borderRadius = '4px';
+    badge.style.fontWeight = 'bold';
+    badge.style.zIndex = 9999;
+    document.body.appendChild(badge);
+  }
+  badge.textContent = bayesHeavyMode ? 'Bayes Heavy Mode' : 'Bayes Lite Mode';
+}
+
+updateModeBadge();
 
 document.addEventListener('contextmenu', e => e.preventDefault());
 
@@ -33,6 +55,31 @@ function likertToWeight(val) {
   return 0.15; // fallback, but you should prevent val=0 in UI
 }
 window.likertToWeight = likertToWeight;
+
+function getTopologicallySortedNodesWithParents() {
+  // 1. Get all nodes with at least one parent (incoming edge)
+  const nodesWithParents = cy.nodes().filter(n => n.incomers('edge').length > 0);
+
+  // 2. Topological sort (Kahn's algorithm)
+  const sorted = [];
+  const tempMarks = new Set();
+  const permMarks = new Set();
+
+  function visit(n) {
+    if (permMarks.has(n.id())) return;
+    if (tempMarks.has(n.id())) throw new Error('Cycle detected');
+    tempMarks.add(n.id());
+    n.incomers('edge').forEach(e => {
+      const parent = e.source();
+      visit(parent);
+    });
+    permMarks.add(n.id());
+    sorted.push(n);
+  }
+
+  nodesWithParents.forEach(n => visit(n));
+  return sorted; // Array of Cytoscape node objects, topologically sorted
+}
 
 function weightToLikert(w) {
   // Map a weight in [-1, -0.15] ∪ [0.15, 1] to -5..-1, 1..5 (never 0)
@@ -102,6 +149,7 @@ function wouldCreateCycle(cy, sourceId, targetId) {
 }
 
 function openEditModifiersModal(edge) {
+    if (window.bayesHeavyMode) return;
   // Remove existing modal if present
   const prevModal = document.getElementById('modifier-modal');
   if (prevModal) prevModal.remove();
@@ -387,6 +435,7 @@ function getModifiedEdgeWeight(edge) {
 window.getModifiedEdgeWeight = getModifiedEdgeWeight;
 
 function addModifier(edgeId) {
+    if (window.bayesHeavyMode) return;
   const prevModal = document.getElementById('modifier-modal');
 if (prevModal) prevModal.remove();
   const edge = cy.getElementById(edgeId);
@@ -1025,6 +1074,10 @@ function convergeAll({ cy, epsilon = config.epsilon, maxIters = 30 } = {}) {
 // 🖱️ SECTION 6: Right-Click Menus — Unified Handler
 // ===============================
 
+// ===============================
+// 🖱️ SECTION 6: Right-Click Menus — Unified Handler
+// ===============================
+
 cy.on('cxttap', evt => {
   evt.originalEvent.preventDefault();
   if (menu.offsetParent !== null) return;
@@ -1034,27 +1087,57 @@ cy.on('cxttap', evt => {
   const x = rect.left + pos.x;
   const y = rect.top + pos.y;
 
+  // --- BAYES HEAVY MODE: Only show rationale viewing ---
+  if (window.bayesHeavyMode) {
+    if (evt.target.isNode && evt.target.isNode()) {
+      const node = evt.target;
+      const rationaleItem = document.createElement('li');
+      rationaleItem.textContent = 'View/Edit Rationale...';
+      rationaleItem.onclick = () => {
+        openRationaleModal(node, "node");
+        hideMenu();
+      };
+      list.appendChild(rationaleItem);
+    }
+    if (evt.target.isEdge && evt.target.isEdge()) {
+      const edge = evt.target;
+      const rationaleItem = document.createElement('li');
+      rationaleItem.textContent = 'View/Edit Rationale...';
+      rationaleItem.onclick = () => {
+        openRationaleModal(edge, "edge");
+        hideMenu();
+      };
+      list.appendChild(rationaleItem);
+    }
+    if (list.childNodes.length) {
+      menu.style.left = `${x}px`;
+      menu.style.top = `${y}px`;
+      menu.style.display = 'block';
+      requestAnimationFrame(() => {
+        document.addEventListener('click', () => hideMenu(), { once: true });
+      });
+    }
+    return; // Don’t show anything else in heavy mode
+  }
+
+  // ---------- REGULAR MENU BELOW THIS LINE ----------
   if (evt.target === cy) {
     [
-{ label: 'Add New Node Here', action: () => {
-cy.add({
-  group: 'nodes',
-  data: {
-    id: 'node' + Date.now(),
-    origLabel: 'New Belief',
-    initialProb: 0.5,
-    prob: 0.5,
-    rationale: ""
-  },
-  position: evt.position
-});
-
-    setTimeout(() => {
-      convergeAll({ cy });
-      computeVisuals();
-    }, 0);
-  }},
-
+      { label: 'Add New Node Here', action: () => {
+          cy.add({
+            group: 'nodes',
+            data: {
+              id: 'node' + Date.now(),
+              origLabel: 'New Belief',
+              initialProb: 0.5,
+              prob: 0.5,
+              rationale: ""
+            },
+            position: evt.position
+          });
+          setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0);
+        }
+      },
       { label: 'Center Graph', action: () => cy.fit() }
     ].forEach(({ label, action }) => {
       const li = document.createElement('li');
@@ -1062,9 +1145,9 @@ cy.add({
       li.onclick = () => { action(); hideMenu(); };
       list.appendChild(li);
     });
-  } else if (evt.target.isNode()) {
+  } else if (evt.target.isNode && evt.target.isNode()) {
     const node = evt.target;
-    
+
     const startEdge = document.createElement('li');
     startEdge.textContent = 'Connect to...';
     startEdge.onclick = () => { pendingEdgeSource = node; hideMenu(); };
@@ -1077,10 +1160,7 @@ cy.add({
       const newFact = !nowFact;
       node.data('isFact', newFact);
       if (newFact) node.data('prob', 1 - config.epsilon);
-      setTimeout(() => {
-        convergeAll({ cy });
-        computeVisuals();
-      }, 0);
+      setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0);
       hideMenu();
     };
     list.appendChild(toggleFact);
@@ -1088,6 +1168,7 @@ cy.add({
     const editLabel = document.createElement('li');
     editLabel.textContent = 'Edit Label';
     editLabel.onclick = () => {
+      if (window.bayesHeavyMode) return;
       const current = node.data('origLabel') || '';
       const newLabel = prompt('Edit label:', current);
       if (newLabel && newLabel.trim()) {
@@ -1096,75 +1177,69 @@ cy.add({
       }
       hideMenu();
     };
-
     list.appendChild(editLabel);
 
     const rationaleItem = document.createElement('li');
-  rationaleItem.textContent = 'View/Edit Rationale...';
-  rationaleItem.onclick = () => {
-    openRationaleModal(node, "node");
-    hideMenu();
-  };
-  list.appendChild(rationaleItem);
+    rationaleItem.textContent = 'View/Edit Rationale...';
+    rationaleItem.onclick = () => {
+      openRationaleModal(node, "node");
+      hideMenu();
+    };
+    list.appendChild(rationaleItem);
 
     const del = document.createElement('li');
     del.textContent = 'Delete This Node';
     del.onclick = () => { node.remove(); setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0); hideMenu(); };
     list.appendChild(del);
 
+  } else if (evt.target.isEdge && evt.target.isEdge()) {
+    const edge = evt.target;
+
+    const rationaleItem = document.createElement('li');
+    rationaleItem.textContent = 'View/Edit Rationale...';
+    rationaleItem.onclick = () => {
+      openRationaleModal(edge, "edge");
+      hideMenu();
+    };
+    list.appendChild(rationaleItem);
+
+    const del = document.createElement('li');
+    del.textContent = 'Delete This Edge';
+    del.onclick = () => { edge.remove(); setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0); hideMenu(); };
+    list.appendChild(del);
+
+    const addMod = document.createElement('li');
+    addMod.textContent = 'Add Modifier (Label & Likert)';
+    addMod.onclick = () => { addModifier(edge.id()); hideMenu(); };
+    list.appendChild(addMod);
+
+    const editMods = document.createElement('li');
+    editMods.textContent = 'Edit Modifiers';
+    editMods.onclick = () => {
+      if (window.bayesHeavyMode) return;
+      openEditModifiersModal(edge); 
+      hideMenu();
+    };
+    list.appendChild(editMods);
   }
 
-  menu.style.left = `${x}px`;
-  menu.style.top = `${y}px`;
-  menu.style.display = 'block';
-  requestAnimationFrame(() => {
-    document.addEventListener('click', () => hideMenu(), { once: true });
-  });
+  if (list.childNodes.length) {
+    menu.style.left = `${x}px`;
+    menu.style.top = `${y}px`;
+    menu.style.display = 'block';
+    requestAnimationFrame(() => {
+      document.addEventListener('click', () => hideMenu(), { once: true });
+    });
+  }
 });
 
-cy.on('cxttap', 'edge', evt => {
-  evt.originalEvent.preventDefault();
-  list.innerHTML = '';
-  const edge = evt.target;
-
-const rationaleItem = document.createElement('li');
-rationaleItem.textContent = 'View/Edit Rationale...';
-rationaleItem.onclick = () => {
-  openRationaleModal(edge, "edge");
-  hideMenu();
-};
-list.appendChild(rationaleItem);
-
-
-  const del = document.createElement('li');
-  del.textContent = 'Delete This Edge';
-  del.onclick = () => { edge.remove(); setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0); hideMenu(); };
-  list.appendChild(del);
-
-  const addMod = document.createElement('li');
-  addMod.textContent = 'Add Modifier (Label & Likert)';
-  addMod.onclick = () => { addModifier(edge.id()); hideMenu(); };
-  list.appendChild(addMod);
-const editMods = document.createElement('li');
-editMods.textContent = 'Edit Modifiers';
-editMods.onclick = () => { openEditModifiersModal(edge); hideMenu(); };
-list.appendChild(editMods);
-
-  const pos = evt.renderedPosition;
-  const rect = cy.container().getBoundingClientRect();
-  menu.style.left = `${rect.left + pos.x}px`;
-  menu.style.top = `${rect.top + pos.y}px`;
-  menu.style.display = 'block';
-  requestAnimationFrame(() => {
-    document.addEventListener('click', () => hideMenu(), { once: true });
-  });
-});
 
 // ===============================
 // ✏️ SECTION 7: Interaction (Double-Tap + Edge Creation)
 // ===============================
 
 cy.on('tap', 'edge', evt => {
+  if (window.bayesHeavyMode) return;
   const now = Date.now();
   const edge = evt.target;
   const id = edge.id();
@@ -1239,6 +1314,7 @@ modal.className = 'modifier-modal';  // Add class, no inline styles
 });
 
 cy.on('tap', evt => {
+  if (window.bayesHeavyMode) return;
   if (!pendingEdgeSource) return;
   const target = evt.target;
   if (!target.isNode() || target.id() === pendingEdgeSource.id()) {
@@ -1282,6 +1358,7 @@ window.nodeLikertToProb = nodeLikertToProb;
 
 // Drop-in double-tap handler for node priors
 cy.on('tap', 'node', evt => {
+    if (window.bayesHeavyMode) return;
   const now = Date.now();
   const node = evt.target;
   const id = node.id();
@@ -1536,7 +1613,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnExportExcel')  .addEventListener('click', exportToExcelFromModel);
   document.getElementById('btnSaveGraph')    .addEventListener('click', saveGraph);
   document.getElementById('btnLoadGraph')    .addEventListener('click', loadGraph);
-  document.getElementById('btnBayesTime')    .addEventListener('click', activateBayesTime);
+  document.getElementById('btnBayesTime').addEventListener('click', startBayesTimeSequence);
 });
 // ===============================
 // 🔇 QUIET MODE — filter out known plugin/deprecation errors
@@ -1563,3 +1640,185 @@ document.addEventListener('DOMContentLoaded', () => {
     origWarn.apply(console, args);
   };
 })();
+
+// ===============================
+// 🧩 SECTION 11: Bayes Time Modal Controller
+// ===============================
+
+/*
+  Controls the step-by-step CPT entry modal sequence for Bayes Heavy mode.
+  - Topologically walks through nodes with parents.
+  - For each node, walks through all parent state combinations.
+  - Handles navigation and storing entries in node.data('cpt').
+*/
+
+function finalizeBayesTimeCPT(userCPT) {
+  // Store all entered CPTs into each node’s data, or perform further actions
+  bayesHeavyMode = false;
+window.bayesHeavyMode = false;
+updateModeBadge();
+
+  Object.entries(userCPT).forEach(([nodeId, cpt]) => {
+    const node = cy.getElementById(nodeId);
+    node.data('cpt', cpt);
+  });
+  // Exit Bayes Heavy, etc.
+  bayesHeavyMode = false;
+  updateModeBadge();
+  // TODO: propagate beliefs, re-enable editing, etc.
+  alert('Bayes Time CPT entry complete.');
+}
+// Enumerate all possible parent state combinations (assume binary for now: 0=No, 1=Yes)
+function getParentStateCombos(parents) {
+  if (parents.length === 0) return [[]];
+  const combos = [];
+  const total = 1 << parents.length; // 2^n
+  for (let i = 0; i < total; ++i) {
+    const combo = [];
+    for (let j = 0; j < parents.length; ++j) {
+      combo.push((i >> j) & 1); // 0 or 1 for each parent
+    }
+    combos.push(combo);
+  }
+  return combos;
+}
+
+// Modal UI for CPT entry—one parent combo at a time
+function openCPTModal({ node, parentNodes, parentState, onSave, onPrev }) {
+  // Remove any existing modal
+  document.querySelectorAll('.cpt-modal').forEach(m => m.remove());
+
+  const modal = document.createElement('div');
+  modal.className = 'cpt-modal modifier-modal';
+  modal.style.zIndex = 20000;
+
+  // Node label
+  const title = document.createElement('div');
+  title.className = 'modifier-modal-title';
+  title.textContent = `Set P(${node.data('origLabel')} | `;
+  // Show current parent conditioning
+  title.textContent += parentNodes.map((p, idx) => {
+    const stateStr = parentState[idx] === 1 ? 'Yes' : 'No';
+    return `${p.data('origLabel')}=${stateStr}`;
+  }).join(', ');
+  title.textContent += ')';
+  modal.appendChild(title);
+
+  // Input
+  const input = document.createElement('input');
+  input.type = 'number';
+  input.min = 0;
+  input.max = 1;
+  input.step = 0.01;
+  input.placeholder = 'e.g., 0.80';
+  input.style.width = '120px';
+  modal.appendChild(input);
+
+  // Buttons
+  const btnRow = document.createElement('div');
+  btnRow.style.marginTop = '14px';
+
+  const saveBtn = document.createElement('button');
+  saveBtn.textContent = 'Save & Next';
+  saveBtn.onclick = () => {
+    const val = parseFloat(input.value);
+    if (isNaN(val) || val < 0 || val > 1) {
+      alert('Enter a probability between 0 and 1');
+      input.focus();
+      return;
+    }
+    modal.remove();
+    onSave(val);
+  };
+  btnRow.appendChild(saveBtn);
+
+  if (onPrev) {
+    const prevBtn = document.createElement('button');
+    prevBtn.textContent = 'Previous';
+    prevBtn.style.marginLeft = '10px';
+    prevBtn.onclick = () => {
+      modal.remove();
+      onPrev();
+    };
+    btnRow.appendChild(prevBtn);
+  }
+
+  modal.appendChild(btnRow);
+  document.body.appendChild(modal);
+  input.focus();
+}
+
+// Now plug UI into the modal sequence controller:
+
+function startBayesTimeSequence() {
+  bayesHeavyMode = true;
+  window.bayesHeavyMode = true;
+  updateModeBadge();
+  const nodes = getTopologicallySortedNodesWithParents();
+  let nodeIdx = 0;
+  let parentComboIdx = 0;
+  const userCPT = {};
+
+  function advance() {
+    // Move to next parent combo, or next node
+    const node = nodes[nodeIdx];
+    const parentNodes = node.incomers('edge').map(e => e.source());
+    const combos = getParentStateCombos(parentNodes);
+    parentComboIdx++;
+    if (parentComboIdx >= combos.length) {
+      nodeIdx++;
+      parentComboIdx = 0;
+    }
+    showNextModal();
+  }
+
+  function retreat() {
+    // Go to previous parent combo/node
+    const node = nodes[nodeIdx];
+    const parentNodes = node.incomers('edge').map(e => e.source());
+    const combos = getParentStateCombos(parentNodes);
+    parentComboIdx--;
+    if (parentComboIdx < 0) {
+      nodeIdx--;
+      if (nodeIdx < 0) {
+        nodeIdx = 0; parentComboIdx = 0;
+      } else {
+        const prevNode = nodes[nodeIdx];
+        const prevParents = prevNode.incomers('edge').map(e => e.source());
+        const prevCombos = getParentStateCombos(prevParents);
+        parentComboIdx = prevCombos.length - 1;
+      }
+    }
+    showNextModal();
+  }
+
+  function showNextModal() {
+    if (nodeIdx >= nodes.length) {
+      finalizeBayesTimeCPT(userCPT);
+      return;
+    }
+    const node = nodes[nodeIdx];
+    const parentNodes = node.incomers('edge').map(e => e.source());
+    const combos = getParentStateCombos(parentNodes);
+
+    // Init CPT data
+    if (!userCPT[node.id()]) userCPT[node.id()] = {};
+
+    const combo = combos[parentComboIdx];
+    // Combo key as a string: e.g., "1,0,1"
+    const comboKey = combo.join(',');
+
+    openCPTModal({
+      node,
+      parentNodes,
+      parentState: combo,
+      onSave: (val) => {
+        userCPT[node.id()][comboKey] = val;
+        advance();
+      },
+      onPrev: (nodeIdx > 0 || parentComboIdx > 0) ? retreat : null
+    });
+  }
+
+  showNextModal();
+}
