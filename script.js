@@ -166,6 +166,7 @@ function openEditModifiersModal(edge) {
   title.textContent = 'Edit Modifiers';
   title.className = 'modifier-modal-title';
   modal.appendChild(title);
+  makeDraggable(modal, ".modifier-modal-title");
 
   // Build modifier rows via fragment
   const frag = document.createDocumentFragment();
@@ -256,6 +257,92 @@ function openEditModifiersModal(edge) {
   modal.focus();
 }
 
+function openCPTModalTwoPerParent({ node, parentId, existing, onSave, onPrev }) {
+  // Remove any existing modals
+
+  document.querySelectorAll('.cpt-modal').forEach(m => m.remove());
+
+  const modal = document.createElement('div');
+  modal.className = 'cpt-modal modifier-modal bayes-time-modal';
+  modal.style.zIndex = 20000;
+  modal.style.position = 'fixed';
+  modal.style.left = '40px';
+  modal.style.bottom = '40px';
+
+  const parentNode = cy.getElementById(parentId);
+  const parentLabel = parentNode.data('origLabel') || parentId;
+
+  let askingFor = 'p1'; // Start with parent=true
+  function updatePrompt() {
+    if (askingFor === 'p1') {
+promptText = `Probability that "${node.data('origLabel')}" is true if "${parentLabel}" is (or had been) TRUE?`;
+    } else {
+      promptText = `Probability that "${node.data('origLabel')}" is true if "${parentLabel}" is (or had been) FALSE?`;
+    }
+    title.textContent = promptText;
+  }
+
+  const title = document.createElement('div');
+  title.className = 'modifier-modal-title';
+  modal.appendChild(title);
+
+  const input = document.createElement('input');
+  input.type = 'number';
+  input.min = 0;
+  input.max = 1;
+  input.step = 0.01;
+  input.style.width = '120px';
+  modal.appendChild(input);
+
+  // Prepopulate if exists
+  input.value = (existing && existing.p1 !== null) ? existing.p1 : '';
+
+  updatePrompt();
+
+  const btnRow = document.createElement('div');
+  btnRow.style.marginTop = '14px';
+
+  const saveBtn = document.createElement('button');
+  saveBtn.textContent = 'Save';
+  saveBtn.onclick = () => {
+    const val = parseFloat(input.value);
+    if (isNaN(val) || val < 0 || val > 1) {
+      alert('Enter a probability between 0 and 1');
+      input.focus();
+      return;
+    }
+    if (askingFor === 'p1') {
+      existing.p1 = val;
+      askingFor = 'p0';
+      input.value = (existing.p0 !== null) ? existing.p0 : '';
+      updatePrompt();
+      input.focus();
+      return;
+    }
+    existing.p0 = val;
+    modal.remove();
+    onSave(existing);
+    convergeAll({ cy });
+computeVisuals();
+  };
+  btnRow.appendChild(saveBtn);
+
+  if (onPrev) {
+    const prevBtn = document.createElement('button');
+    prevBtn.textContent = 'Previous';
+    prevBtn.style.marginLeft = '10px';
+    prevBtn.onclick = () => {
+      modal.remove();
+      onPrev();
+    };
+    btnRow.appendChild(prevBtn);
+  }
+
+  modal.appendChild(btnRow);
+  document.body.appendChild(modal);
+  input.focus();
+}
+
 function openRationaleModal(element, type = "node") {
   // Remove existing rationale modal if present
   document.querySelectorAll('.rationale-modal').forEach(el => el.remove());
@@ -268,6 +355,7 @@ function openRationaleModal(element, type = "node") {
   title.className = 'modifier-modal-title';
   title.textContent = `View/Edit Rationale (${type === "node" ? "Node" : "Edge"})`;
   modal.appendChild(title);
+makeDraggable(modal, ".modifier-modal-title");
 
   // Textarea
   const textarea = document.createElement('textarea');
@@ -445,11 +533,16 @@ if (prevModal) prevModal.remove();
   if (document.getElementById('modifier-modal')) return;
 
   // Create modal container
-  const modal = document.createElement('div');
+const modal = document.createElement('div');
 modal.id = 'modifier-modal';
-modal.className = 'modifier-modal';  // Add this class
+modal.className = 'modifier-modal';
 
-
+// Title bar for drag handle
+const title = document.createElement('div');
+title.textContent = 'Add Modifier';
+title.className = 'modifier-modal-title';
+modal.appendChild(title);
+makeDraggable(modal, ".modifier-modal-title");
 
   // Close modal helper
   function closeModal() {
@@ -523,6 +616,7 @@ modal.className = 'modifier-modal';  // Add this class
       labelInput.focus();
       return;
     }
+
     const likertVal = parseInt(likertSelect.value, 10);
     if (isNaN(likertVal) || likertVal < -5 || likertVal > 5) {
       alert('Please select a valid effect strength.');
@@ -575,6 +669,79 @@ modal.className = 'modifier-modal';  // Add this class
     }
   }
   document.addEventListener('click', outsideClickHandler, true);
+}
+
+function makeDraggable(modal, handleSelector = null) {
+  // Use handle if provided, else whole modal
+  const handle = handleSelector ? modal.querySelector(handleSelector) : modal;
+  if (!handle) return;
+
+  let offsetX, offsetY, isDragging = false;
+
+  handle.style.cursor = 'move';
+
+  handle.onmousedown = function (e) {
+    isDragging = true;
+    // Calculate offset of cursor inside the modal
+    const rect = modal.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    document.body.style.userSelect = "none";
+
+    document.onmousemove = function (e2) {
+      if (!isDragging) return;
+      // Clamp within window (optional)
+      let left = e2.clientX - offsetX;
+      let top = e2.clientY - offsetY;
+      // Prevent dragging outside viewport
+      left = Math.max(0, Math.min(left, window.innerWidth - rect.width));
+      top = Math.max(0, Math.min(top, window.innerHeight - rect.height));
+      modal.style.left = left + "px";
+      modal.style.top = top + "px";
+      modal.style.position = 'fixed';
+    };
+
+    document.onmouseup = function () {
+      isDragging = false;
+      document.onmousemove = null;
+      document.onmouseup = null;
+      document.body.style.userSelect = "";
+    };
+  };
+}
+
+function highlightBayesNodeFocus(targetNode) {
+  // Remove highlight from all nodes
+  cy.nodes().removeData('highlighted');
+  // Set highlight ONLY for target node
+  targetNode.data('highlighted', true);
+
+  // Center the view on the target node
+  cy.center(targetNode);
+  // Optionally animate fit for a smoother effect (optional)
+  // cy.animate({ center: { eles: targetNode } }, { duration: 300 });
+}
+
+function clearBayesHighlights() {
+  cy.nodes().forEach(n => n.data('highlighted', false));
+}
+// Drop this in near your other utility functions.
+function syncNaiveBayesParents(node) {
+  // Get the current parent IDs for this node (using Cytoscape API)
+  const currentParentIds = node.incomers('edge').map(e => e.source().id());
+  let nb = node.data('naiveBayes') || {};
+
+  // Remove any entries for no-longer-parents
+  Object.keys(nb).forEach(pid => {
+    if (!currentParentIds.includes(pid)) delete nb[pid];
+  });
+
+  // Add CPT slots for any new parents (if missing)
+  currentParentIds.forEach(pid => {
+    if (!nb[pid]) nb[pid] = { p0: null, p1: null };
+  });
+
+  node.data('naiveBayes', nb);
 }
 
 // ----------------------
@@ -657,10 +824,21 @@ elements: [
     'text-background-opacity': 1,
     'text-background-color': '#fff',
     'text-background-padding': '6px'
-}}
+}},
+{
+  selector: 'node[highlighted]',
+  style: {
+    'background-color': '#fffbe5',     // pale yellow highlight
+    'box-shadow': '0 0 18px 6px #ffe082', // soft yellow glow
+    'z-index': 999
+  }
+},
+
   ],
   layout: { name: 'grid', rows: 1 }
+  
 });
+
 
 // ===============================
 // 🎨 SECTION 4: Visual Styling & Modifier Box
@@ -827,6 +1005,7 @@ function robustnessToLabel(robust) {
 
 function computeVisuals() {
   cy.nodes().forEach(node => {
+     console.log(`[UI] ${node.id()} new prob:`, node.data('prob'));
     const p    = node.data('prob');
     const pPct = Math.round(p * 100);
     const aei  = node.incomers('edge').reduce((sum, e) => sum + Math.abs(getModifiedEdgeWeight(e)), 0);
@@ -852,6 +1031,9 @@ if (untouched) {
   if (node.incomers('edge').length > 0) {
     const robustLabel = robustnessToLabel(robust);
     label += `\nRobust: ${robustLabel}`;
+if (bayesHeavyMode && node.data('cpt')) {
+  label += `\n[Naive Bayes]`;
+}
   }
 }
 
@@ -924,12 +1106,12 @@ function convergeEdges({ cy, epsilon, maxIters }) {
   for (let iter = 0; iter < maxIters; iter++) {
     iterations = iter + 1;
     let deltas = [];
-    let maxDelta = 0; // Track max delta as we go
+    let maxDelta = 0;
 
     // 1. Collect new weights (Jacobi pass)
     cy.edges().forEach(edge => {
       const prev = edge.data('computedWeight');
-      const nw   = getModifiedEdgeWeight(edge);
+      const nw = getModifiedEdgeWeight(edge);
       deltas.push({ edge, prev, nw });
       const delta = Math.abs(nw - prev);
       if (delta > maxDelta) maxDelta = delta;
@@ -940,7 +1122,7 @@ function convergeEdges({ cy, epsilon, maxIters }) {
       deltas.forEach(({ edge, nw }) => edge.data('computedWeight', nw));
     });
 
-    // 3. Early-out if converged
+    // 3. Early exit if converged
     finalDelta = maxDelta;
     if (finalDelta < epsilon) {
       converged = true;
@@ -966,7 +1148,6 @@ function convergeEdges({ cy, epsilon, maxIters }) {
   - After convergence, node.data('prob') is canonical for all downstream logic/visuals.
 */
 function convergeNodes({ cy, epsilon, maxIters }) {
-
   if (DEBUG) {
     console.log("[DEBUG] convergeNodes start");
     cy.nodes().forEach(node => {
@@ -977,30 +1158,76 @@ function convergeNodes({ cy, epsilon, maxIters }) {
   let converged = false;
   let finalDelta = 0;
   let iterations = 0;
-  let deltas = [];
 
   for (let iter = 0; iter < maxIters; iter++) {
     iterations = iter + 1;
-    deltas.length = 0;
+    let deltas = [];
     let maxDelta = 0;
 
-    // 1. Collect new probabilities (Jacobi pass)
     cy.nodes().forEach(node => {
       if (node.data('isFact')) return;
+
+      if (bayesHeavyMode && node.data('naiveBayes')) {
+  const parents = node.incomers('edge').map(e => e.source());
+  const parentStates = parents.map(p => (p.data('prob') >= 0.5 ? 1 : 0));
+  const baseProb = node.data('initialProb');
+
+  // Check for incomplete CPTs (any p0 or p1 missing/null)
+  const nb = node.data('naiveBayes');
+  let incomplete = parents.some(parent => {
+    const entry = nb[parent.id()];
+    return !entry || entry.p0 === null || entry.p1 === null;
+  });
+  if (incomplete) return; // Skip update if incomplete
+
+  // Apply naive Bayes math: combine all parents' influences
+  let numerator = baseProb;
+  let denominator = 1 - baseProb;
+
+  parents.forEach((parent, i) => {
+    const entry = nb[parent.id()];
+    const condProb = parentStates[i] === 1 ? entry.p1 : entry.p0;
+    numerator *= condProb / baseProb;
+    denominator *= (1 - condProb) / (1 - baseProb);
+  });
+
+  const newProb = numerator / (numerator + denominator);
+
+  deltas.push({ node, prev: node.data('prob'), newProb });
+  const delta = Math.abs(newProb - node.data('prob'));
+  if (delta > maxDelta) maxDelta = delta;
+  return;
+}
+
+      if (node.data('cpt')) {
+        const inc = node.incomers('edge');
+        const parentNodes = inc.map(e => e.source());
+        const parentState = parentNodes.map(p => (p.data('prob') >= 0.5 ? 1 : 0));
+        const key = parentState.join(',');
+        const cpt = node.data('cpt');
+        let newProb;
+        if (cpt.hasOwnProperty(key)) {
+          newProb = cpt[key];
+        } else {
+          newProb = node.data('initialProb');
+          if (DEBUG) console.warn(`[CPT] No CPT entry for ${node.id()} key: ${key} — using initialProb`);
+        }
+        deltas.push({ node, prev: node.data('prob'), newProb });
+        const delta = Math.abs(newProb - node.data('prob'));
+        if (delta > maxDelta) maxDelta = delta;
+        return;
+      }
+
       const prev = node.data('prob');
-      const inc  = node.incomers('edge');
+      const inc = node.incomers('edge');
       let newProb;
       if (!inc.length) {
-        // No incoming edges: revert to node’s initialProb (never drifts)
         newProb = node.data('initialProb');
       } else {
         newProb = propagateFromParents({
-          baseProb: node.data('initialProb'), // always use initialProb as base!
+          baseProb: node.data('initialProb'),
           parents: inc,
-          getProb: e =>
-            e.source().data('isFact')
-              ? FACT_PROB // see const above—prevents logit singularity
-              : e.source().data('prob'),
+          getProb: e => e.source().data('isFact') ? FACT_PROB : e.source().data('prob'),
           getWeight: e => e.data('computedWeight'),
           saturationK: 1,
           epsilon
@@ -1011,21 +1238,11 @@ function convergeNodes({ cy, epsilon, maxIters }) {
       if (delta > maxDelta) maxDelta = delta;
     });
 
-    if (DEBUG) {
-      console.log("[DEBUG] convergeNodes: updating node probabilities");
-      deltas.forEach(({ node, newProb }) => {
-        console.log(`[DEBUG] Node ${node.id()} updating to:`, newProb);
-      });
-    }
+    // Apply all new probabilities in one batch
+    cy.batch(() => {
+      deltas.forEach(({ node, newProb }) => node.data('prob', newProb));
+    });
 
-    // 2. Apply new probabilities in a single batch
-    if (deltas.length) {
-      cy.batch(() => {
-        deltas.forEach(({ node, newProb }) => node.data('prob', newProb));
-      });
-    }
-
-    // 3. Early-out if converged
     finalDelta = maxDelta;
     if (finalDelta < epsilon) {
       converged = true;
@@ -1039,7 +1256,6 @@ function convergeNodes({ cy, epsilon, maxIters }) {
 
   return { converged, iterations, finalDelta };
 }
-
 /*
   Full graph convergence:
   - Runs edge convergence, then node convergence, with error handling.
@@ -1257,6 +1473,8 @@ modal.className = 'modifier-modal';  // Add class, no inline styles
     label.textContent = 'Set baseline influence:';
     label.style.marginBottom = '10px';
     modal.appendChild(label);
+label.className = "modifier-modal-title";
+makeDraggable(modal, ".modifier-modal-title");
 
     const select = document.createElement('select');
     const options = [
@@ -1373,6 +1591,8 @@ modal.className = 'modifier-modal';
     label.textContent = 'Set baseline belief:';
     label.style.marginBottom = '10px';
     modal.appendChild(label);
+label.className = "modifier-modal-title";
+makeDraggable(modal, ".modifier-modal-title");
 
     // Dropdown Likert options
     const select = document.createElement('select');
@@ -1654,9 +1874,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function finalizeBayesTimeCPT(userCPT) {
   // Store all entered CPTs into each node’s data, or perform further actions
-  bayesHeavyMode = false;
-window.bayesHeavyMode = false;
-updateModeBadge();
 
   Object.entries(userCPT).forEach(([nodeId, cpt]) => {
     const node = cy.getElementById(nodeId);
@@ -1665,7 +1882,8 @@ updateModeBadge();
   // Exit Bayes Heavy, etc.
   bayesHeavyMode = false;
   updateModeBadge();
-  // TODO: propagate beliefs, re-enable editing, etc.
+  convergeAll({ cy });
+  computeVisuals();
   alert('Bayes Time CPT entry complete.');
 }
 // Enumerate all possible parent state combinations (assume binary for now: 0=No, 1=Yes)
@@ -1683,110 +1901,45 @@ function getParentStateCombos(parents) {
   return combos;
 }
 
-// Modal UI for CPT entry—one parent combo at a time
-function openCPTModal({ node, parentNodes, parentState, onSave, onPrev }) {
-  // Remove any existing modal
-  document.querySelectorAll('.cpt-modal').forEach(m => m.remove());
 
-  const modal = document.createElement('div');
-  modal.className = 'cpt-modal modifier-modal';
-  modal.style.zIndex = 20000;
 
-  // Node label
-  const title = document.createElement('div');
-  title.className = 'modifier-modal-title';
-  title.textContent = `Set P(${node.data('origLabel')} | `;
-  // Show current parent conditioning
-  title.textContent += parentNodes.map((p, idx) => {
-    const stateStr = parentState[idx] === 1 ? 'Yes' : 'No';
-    return `${p.data('origLabel')}=${stateStr}`;
-  }).join(', ');
-  title.textContent += ')';
-  modal.appendChild(title);
-
-  // Input
-  const input = document.createElement('input');
-  input.type = 'number';
-  input.min = 0;
-  input.max = 1;
-  input.step = 0.01;
-  input.placeholder = 'e.g., 0.80';
-  input.style.width = '120px';
-  modal.appendChild(input);
-
-  // Buttons
-  const btnRow = document.createElement('div');
-  btnRow.style.marginTop = '14px';
-
-  const saveBtn = document.createElement('button');
-  saveBtn.textContent = 'Save & Next';
-  saveBtn.onclick = () => {
-    const val = parseFloat(input.value);
-    if (isNaN(val) || val < 0 || val > 1) {
-      alert('Enter a probability between 0 and 1');
-      input.focus();
-      return;
-    }
-    modal.remove();
-    onSave(val);
-  };
-  btnRow.appendChild(saveBtn);
-
-  if (onPrev) {
-    const prevBtn = document.createElement('button');
-    prevBtn.textContent = 'Previous';
-    prevBtn.style.marginLeft = '10px';
-    prevBtn.onclick = () => {
-      modal.remove();
-      onPrev();
-    };
-    btnRow.appendChild(prevBtn);
-  }
-
-  modal.appendChild(btnRow);
-  document.body.appendChild(modal);
-  input.focus();
-}
 
 // Now plug UI into the modal sequence controller:
 
 function startBayesTimeSequence() {
+  cy.nodes().forEach(node => syncNaiveBayesParents(node));
   bayesHeavyMode = true;
   window.bayesHeavyMode = true;
   updateModeBadge();
+
   const nodes = getTopologicallySortedNodesWithParents();
   let nodeIdx = 0;
-  let parentComboIdx = 0;
-  const userCPT = {};
+  let parentIdx = 0;
+  const userNaiveBayes = {}; // Store per-parent probabilities here
 
   function advance() {
-    // Move to next parent combo, or next node
+    parentIdx++;
     const node = nodes[nodeIdx];
-    const parentNodes = node.incomers('edge').map(e => e.source());
-    const combos = getParentStateCombos(parentNodes);
-    parentComboIdx++;
-    if (parentComboIdx >= combos.length) {
+    const parents = node.incomers('edge').map(e => e.source());
+
+    if (parentIdx >= parents.length) {
       nodeIdx++;
-      parentComboIdx = 0;
+      parentIdx = 0;
     }
     showNextModal();
   }
 
   function retreat() {
-    // Go to previous parent combo/node
-    const node = nodes[nodeIdx];
-    const parentNodes = node.incomers('edge').map(e => e.source());
-    const combos = getParentStateCombos(parentNodes);
-    parentComboIdx--;
-    if (parentComboIdx < 0) {
+    parentIdx--;
+    if (parentIdx < 0) {
       nodeIdx--;
       if (nodeIdx < 0) {
-        nodeIdx = 0; parentComboIdx = 0;
+        nodeIdx = 0;
+        parentIdx = 0;
       } else {
-        const prevNode = nodes[nodeIdx];
-        const prevParents = prevNode.incomers('edge').map(e => e.source());
-        const prevCombos = getParentStateCombos(prevParents);
-        parentComboIdx = prevCombos.length - 1;
+        const node = nodes[nodeIdx];
+        const parents = node.incomers('edge').map(e => e.source());
+        parentIdx = parents.length - 1;
       }
     }
     showNextModal();
@@ -1794,31 +1947,53 @@ function startBayesTimeSequence() {
 
   function showNextModal() {
     if (nodeIdx >= nodes.length) {
-      finalizeBayesTimeCPT(userCPT);
+      // Save all .naiveBayes data to nodes
+      nodes.forEach(node => {
+        if (userNaiveBayes[node.id()]) {
+          node.data('naiveBayes', userNaiveBayes[node.id()]);
+          // Clear old CPT data if any
+          node.removeData('cpt');
+        }
+      });
+      convergeAll({ cy });
+      computeVisuals();
+      alert('Naive Bayes entry complete.');
       return;
     }
+
     const node = nodes[nodeIdx];
-    const parentNodes = node.incomers('edge').map(e => e.source());
-    const combos = getParentStateCombos(parentNodes);
+    const parents = node.incomers('edge').map(e => e.source());
 
-    // Init CPT data
-    if (!userCPT[node.id()]) userCPT[node.id()] = {};
+    // No parents? Skip
+    if (parents.length === 0) {
+      nodeIdx++;
+      parentIdx = 0;
+      showNextModal();
+      return;
+    }
 
-    const combo = combos[parentComboIdx];
-    // Combo key as a string: e.g., "1,0,1"
-    const comboKey = combo.join(',');
+    if (!userNaiveBayes[node.id()]) userNaiveBayes[node.id()] = {};
 
-    openCPTModal({
-      node,
-      parentNodes,
-      parentState: combo,
-      onSave: (val) => {
-        userCPT[node.id()][comboKey] = val;
-        advance();
-      },
-      onPrev: (nodeIdx > 0 || parentComboIdx > 0) ? retreat : null
-    });
-  }
+    clearBayesHighlights();
+highlightBayesNodeFocus(node);
 
-  showNextModal();
+openCPTModalTwoPerParent({
+  node,
+  parentId: parents[parentIdx].id(),
+  existing: userNaiveBayes[node.id()][parents[parentIdx].id()] || { p0: null, p1: null },
+onSave: (result) => {
+  userNaiveBayes[node.id()][parents[parentIdx].id()] = result;
+  // Immediately update the node so propagation/visuals are current
+  node.data('naiveBayes', userNaiveBayes[node.id()]);
+  convergeAll({ cy });
+  computeVisuals();
+  advance();
+},
+  onPrev: (nodeIdx > 0 || parentIdx > 0) ? retreat : null
+});
+
+
+  } // <--- closes showNextModal
+
+  showNextModal(); // <-- call inside startBayesTimeSequence
 }

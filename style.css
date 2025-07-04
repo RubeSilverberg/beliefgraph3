@@ -120,3 +120,10 @@ html, body {
   resize: vertical;
   font-family: inherit;
 }
+.bayes-time-modal {
+  left: 40px !important;
+  bottom: 40px !important;
+  top: auto !important;
+  right: auto !important;
+  transform: none !important;
+}
