@@ -1007,7 +1007,9 @@ function computeVisuals() {
   cy.nodes().forEach(node => {
      console.log(`[UI] ${node.id()} new prob:`, node.data('prob'));
     const p    = node.data('prob');
-    const pPct = Math.round(p * 100);
+let pPct = Math.round(p * 100);
+if (pPct > 0 && pPct < 1) pPct = 1;
+if (pPct > 99) pPct = 99;
     const aei  = node.incomers('edge').reduce((sum, e) => sum + Math.abs(getModifiedEdgeWeight(e)), 0);
     const robust = saturation(aei);
 
@@ -1025,7 +1027,7 @@ const untouched = (
 if (untouched) {
   // Show only the base label—nothing else
 } else if (node.data('isFact') === true) {
-  label += `\nFact`;
+  label = `Fact: ${node.data('origLabel')}`;
 } else {
   label += `\nProb. ${pPct}%`;
   if (node.incomers('edge').length > 0) {
@@ -1069,7 +1071,6 @@ edge.data({
 });
 
 });
-
 
   cy.style().update();
 
