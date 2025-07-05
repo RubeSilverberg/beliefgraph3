@@ -744,6 +744,15 @@ function syncNaiveBayesParents(node) {
   node.data('naiveBayes', nb);
 }
 
+function setNodeProb(node, prob) {
+  node.data('prob', prob);
+  node.data('isVirgin', false);
+}
+function setEdgeWeight(edge, weight) {
+  edge.data('weight', weight);
+  edge.data('isVirgin', false);
+}
+
 // ----------------------
 // Menu DOM references and hideMenu utility
 // ----------------------
@@ -752,7 +761,6 @@ const list = document.getElementById('menu-list');
 function hideMenu() {
   menu.style.display = 'none';
 }
-
 
 // ===============================
 // 🧱 SECTION 2: DOM Bindings
@@ -763,7 +771,6 @@ menu.addEventListener('click', e => e.stopPropagation());
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') hideMenu();
 });
-
 
 // ===============================
 // 🌐 SECTION 3: Graph Initialization
@@ -777,64 +784,72 @@ elements: [
  
 ],
 
-  style: [
-    { selector: 'node', style: {
-        shape: 'roundrectangle',
-        'background-color': '#eceff1',
-        'text-valign': 'center',
-        'text-halign': 'center',
-        'font-size': '10px',
-        'text-wrap': 'wrap',
-        'text-max-width': '120px',
-        padding: '12px',
-        width: 'label',
-        height: 'label',
-        'min-width': 80,
-        'min-height': 40,
-        'border-style': 'solid',
-        'border-color': '#2e7d32',
-        color: '#263238'
-    }},
-    { selector: 'node[label]',        style: { label: 'data(label)' } },
-    { selector: 'node[borderWidth]',  style: { 'border-width': 'data(borderWidth)' } },
-    { selector: 'node[shape]',        style: { shape: 'data(shape)' } },
-    { selector: 'edge', style: {
-    width: 3,
-    'curve-style': 'bezier',
-    'mid-target-arrow-shape': 'triangle',
-    'font-size': '14px',
-    'text-rotation': 'autorotate',
-    'text-margin-y': '-24px',
-    'text-margin-x': '4px',
-    'text-background-opacity': 1,
-    'text-background-color': '#fff',
-    'text-background-padding': '6px',
-    'text-wrap': 'wrap',
-    'text-max-width': 80,
-    'text-border-width': 0
-}},
-{ selector: 'edge[absWeight]', style: {
-    'line-color': 'mapData(absWeight, 0, 2, #bbdefb, #1565c0)',
-    'mid-target-arrow-color': 'mapData(absWeight, 0, 2, #bbdefb, #1565c0)'
-}},
-{ selector: 'edge[weightLabel]', style: { 
-    label: 'data(weightLabel)',
-    'text-wrap': 'wrap',
-    'text-max-width': 100,
-    'text-background-opacity': 1,
-    'text-background-color': '#fff',
-    'text-background-padding': '6px'
-}},
-{
-  selector: 'node[highlighted]',
-  style: {
-    'background-color': '#fffbe5',     // pale yellow highlight
-    'box-shadow': '0 0 18px 6px #ffe082', // soft yellow glow
-    'z-index': 999
-  }
-},
+style: [
+  { selector: 'node', style: {
+      shape: 'roundrectangle',
+      'background-color': '#eceff1',
+      'text-valign': 'center',
+      'text-halign': 'center',
+      'font-size': '10px',
+      'text-wrap': 'wrap',
+      'text-max-width': '120px',
+      padding: '12px',
+      width: 'label',
+      height: 'label',
+      'min-width': 80,
+      'min-height': 40,
+      'border-style': 'solid',
+      'border-color': '#2e7d32',
+      color: '#263238'
+  }},
+  { selector: 'node[label]',        style: { label: 'data(label)' } },
+  { selector: 'node[borderWidth]',  style: { 'border-width': 'data(borderWidth)' } },
+  { selector: 'node[shape]',        style: { shape: 'data(shape)' } },
+  { selector: 'edge', style: {
+      width: 3,
+      'curve-style': 'bezier',
+      'mid-target-arrow-shape': 'triangle',
+      'font-size': '14px',
+      'text-rotation': 'autorotate',
+      'text-margin-y': '-24px',
+      'text-margin-x': '4px',
+      'text-background-opacity': 1,
+      'text-background-color': '#fff',
+      'text-background-padding': '6px',
+      'text-wrap': 'wrap',
+      'text-max-width': 80,
+      'text-border-width': 0
+  }},
+  { selector: 'edge[absWeight]', style: {
+      'line-color': 'mapData(absWeight, 0, 2, #bbdefb, #1565c0)',
+      'mid-target-arrow-color': 'mapData(absWeight, 0, 2, #bbdefb, #1565c0)'
+  }},
+  { selector: 'edge[weightLabel]', style: { 
+      label: 'data(weightLabel)',
+      'text-wrap': 'wrap',
+      'text-max-width': 100,
+      'text-background-opacity': 1,
+      'text-background-color': '#fff',
+      'text-background-padding': '6px'
+  }},
+  // --- Special highlight for new nodes ---
+{ selector: 'node[isVirgin]', style: {
+  'background-color': '#fffbe5',
+  }},
+  // --- Special highlight for new edges ---
+  { selector: 'edge[isVirgin]', style: {
+      'line-color': '#ffb300',
+      'mid-target-arrow-color': '#ffb300',
+      'width': 4,
+      'opacity': 1
+  }},
+  { selector: 'node[highlighted]', style: {
+      'background-color': '#fffbe5',
+      'box-shadow': '0 0 18px 6px #ffe082',
+      'z-index': 999
+  }}
+],
 
-  ],
   layout: { name: 'grid', rows: 1 }
   
 });
@@ -919,12 +934,16 @@ const y = pos.y - 30; // Offset upward
   box.style.zIndex = 20;
   box.style.boxShadow = '0 2px 8px #1565c066';
 
-  const label = node.data('origLabel');
+const label = node.data('origLabel');
+if (node.data('isVirgin')) {
+  box.innerHTML = `<b>${label}</b><br><i>Probability not set. Using 50% for math.</i>`;
+} else {
   const curProb = Math.round(100 * (node.data('prob') ?? 0));
   const baseProb = Math.round(100 * (node.data('initialProb') ?? 0));
   box.innerHTML = `<b>${label}</b><br>
     <span>Current: <b>${curProb}%</b></span><br>
     <span>Baseline: <b>${baseProb}%</b></span>`;
+}
 
   container.parentElement.appendChild(box);
 }
@@ -969,6 +988,11 @@ function showModifierBox(edge) {
   box.style.zIndex = 20;
   box.style.boxShadow = '0 2px 8px #1565c066';
 
+  if (edge.data('isVirgin')) {
+  box.innerHTML = `<i>Weight not set. Using 0 for math.</i>`;
+  container.parentElement.appendChild(box);
+  return;
+}
   // Base Likert info
   box.innerHTML = `<div><b>Base influence:</b> ${baseLabel}</div>`;
 
@@ -1004,6 +1028,12 @@ function robustnessToLabel(robust) {
 }
 
 function computeVisuals() {
+  cy.nodes('[isVirgin]').forEach(node => {
+  if (node.data('prob') !== 0.5) node.data('isVirgin', false);
+});
+cy.edges('[isVirgin]').forEach(edge => {
+  if (edge.data('weight') !== 0) edge.data('isVirgin', false);
+});
   cy.nodes().forEach(node => {
      console.log(`[UI] ${node.id()} new prob:`, node.data('prob'));
     const p    = node.data('prob');
@@ -1017,14 +1047,8 @@ if (pPct > 99) pPct = 99;
 
     let label = `${node.data('origLabel')}`;
 
-const untouched = (
-  node.data('origLabel') === 'New Belief' &&
-  p === 0.5 &&
-  node.incomers('edge').length === 0 &&
-  !node.data('touched')
-);
 
-if (untouched) {
+if (node.data('isVirgin')) {
   // Show only the base label—nothing else
 } else if (node.data('isFact') === true) {
   label = `Fact: ${node.data('origLabel')}`;
@@ -1059,9 +1083,10 @@ cy.edges().forEach(edge => {
 const likertValue = weightToLikert(displayWeight);
 const hasModifiers = (edge.data('modifiers') ?? []).length > 0;
 
-// Only show label if user touched it: weight ≠ 0.01 OR there are modifiers
 let label = '';
-if (Math.abs(displayWeight) > WEIGHT_MIN || hasModifiers) {
+if (edge.data('isVirgin')) {
+  label = ''; // or a special message if desired, or nothing
+} else if (Math.abs(displayWeight) > WEIGHT_MIN || hasModifiers) {
   label = likertDescriptor(likertValue);
 }
 
@@ -1225,14 +1250,17 @@ function convergeNodes({ cy, epsilon, maxIters }) {
       if (!inc.length) {
         newProb = node.data('initialProb');
       } else {
-        newProb = propagateFromParents({
-          baseProb: node.data('initialProb'),
-          parents: inc,
-          getProb: e => e.source().data('isFact') ? FACT_PROB : e.source().data('prob'),
-          getWeight: e => e.data('computedWeight'),
-          saturationK: 1,
-          epsilon
-        });
+newProb = propagateFromParents({
+  baseProb: node.data('initialProb'),
+  parents: inc,
+  getProb: e => {
+    const parent = e.source();
+    return parent.data('isVirgin') ? 0.5 : (parent.data('isFact') ? FACT_PROB : parent.data('prob'));
+  },
+  getWeight: e => (e.data('isVirgin') ? 0 : e.data('computedWeight')),
+  saturationK: 1,
+  epsilon
+});
       }
       deltas.push({ node, prev, newProb });
       const delta = Math.abs(newProb - prev);
@@ -1347,6 +1375,7 @@ cy.on('cxttap', evt => {
               id: 'node' + Date.now(),
               origLabel: 'New Belief',
               initialProb: 0.5,
+              isVirgin: true,
               prob: 0.5,
               rationale: ""
             },
@@ -1468,13 +1497,11 @@ cy.on('tap', 'edge', evt => {
     // Create modal with Likert dropdown
   const modal = document.createElement('div');
 modal.className = 'modifier-modal';  // Add class, no inline styles
-
-
     const label = document.createElement('div');
     label.textContent = 'Set baseline influence:';
     label.style.marginBottom = '10px';
+    label.className = "modifier-modal-title";
     modal.appendChild(label);
-label.className = "modifier-modal-title";
 makeDraggable(modal, ".modifier-modal-title");
 
     const select = document.createElement('select');
@@ -1506,11 +1533,15 @@ makeDraggable(modal, ".modifier-modal-title");
     btn.onclick = function () {
       const val = parseFloat(select.value);
       edge.data('weight', val);
+      edge.data('isVirgin', false);
       document.body.removeChild(modal);
       setTimeout(() => {
         convergeAll({ cy });
         computeVisuals();
       }, 0);
+        setTimeout(() => {
+    computeVisuals();
+  }, 1); // schedule a tick later, guarantees correct sequence
     };
     modal.appendChild(btn);
 
@@ -1556,7 +1587,9 @@ cy.on('tap', evt => {
     source: sourceId,
     target: targetId,
     weight: WEIGHT_MIN,
+    isVirgin: true,
     rationale: ""
+    
   }
 });
   pendingEdgeSource = null;
@@ -1591,8 +1624,8 @@ modal.className = 'modifier-modal';
     const label = document.createElement('div');
     label.textContent = 'Set baseline belief:';
     label.style.marginBottom = '10px';
-    modal.appendChild(label);
 label.className = "modifier-modal-title";
+    modal.appendChild(label);
 makeDraggable(modal, ".modifier-modal-title");
 
     // Dropdown Likert options
@@ -1635,13 +1668,16 @@ makeDraggable(modal, ".modifier-modal-title");
       const prob = nodeLikertToProb(likertVal);
       node.data('initialProb', prob);
       node.data('prob', prob);
-      node.data('touched', true);
+      node.data('isVirgin', false);
       console.log(`[DEBUG] Set node ${node.id()} prob and initialProb to`, prob);
       document.body.removeChild(modal);
       setTimeout(() => {
         convergeAll({ cy });
         computeVisuals();
       }, 0);
+      setTimeout(() => {
+        computeVisuals();
+      }, 1); // schedule a tick later, guarantees correct sequence
     };
     modal.appendChild(btn);
 
@@ -1748,17 +1784,26 @@ function loadGraph() {
     reader.onload = evt => {
       try {
         const elements = JSON.parse(evt.target.result);
-        cy.elements().remove();
-        cy.add(elements);
-        cy.nodes().forEach(n => {
-  if (!n.data('isFact')) {
-    n.data('prob', n.data('initialProb'));
-  }
-});
-        convergeAll({ cy });
-        computeVisuals();
-        resetLayout();
-        console.log(`Graph loaded from file: ${file.name}`);
+cy.elements().remove();
+cy.add(elements);
+setTimeout(() => {
+  cy.style().update();
+  cy.resize();
+  cy.nodes().forEach(n => {
+    if (!n.data('isFact')) {
+      n.data('prob', n.data('initialProb'));
+    }
+  });
+  convergeAll({ cy });
+  computeVisuals();
+  resetLayout();
+  // Force one more resize/redraw to flush
+  setTimeout(() => {
+    cy.resize();
+    cy.fit(); // optional: only if you want the graph to auto-zoom
+  }, 0);
+  console.log(`Graph loaded from file: ${file.name}`);
+}, 0);
       } catch (err) {
         console.error('Failed to load graph:', err);
       }
