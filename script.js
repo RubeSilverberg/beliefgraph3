@@ -82,36 +82,31 @@ function getTopologicallySortedNodesWithParents() {
 }
 
 function weightToLikert(w) {
-  // Map a weight in [-1, -0.15] ∪ [0.15, 1] to -5..-1, 1..5 (never 0)
-  const weights = [-1, -0.85, -0.60, -0.35, -0.15, 0.15, 0.35, 0.60, 0.85, 1];
+  // Map absolute weight to 1–5, regardless of sign
+  const weights = [0.15, 0.35, 0.60, 0.85, 1];
+  const absW = Math.abs(w);
   let closestIdx = 0;
   let minDiff = Infinity;
   for (let i = 0; i < weights.length; ++i) {
-    const diff = Math.abs(w - weights[i]);
+    const diff = Math.abs(absW - weights[i]);
     if (diff < minDiff) {
       minDiff = diff;
       closestIdx = i;
     }
   }
-  // 0–4: -5..-1, 5–9: 1..5
-  if (closestIdx < 5) return closestIdx - 5;     // -5 to -1
-  else return closestIdx - 4;                    // +1 to +5
+  return closestIdx + 1; // Always 1–5, showing strength only
 }
-window.weightToLikert = weightToLikert;
 
+
+window.weightToLikert = weightToLikert;
 
 function likertDescriptor(val) {
   switch (val) {
-    case -5: return "Total Neg(−5)";
-    case -4: return "Strong Neg(−4)";
-    case -3: return "Med Neg(−3)";
-    case -2: return "Small Neg(−2)";
-    case -1: return "Minimal Neg (−1)";
-    case  1: return "Minimal(+1)";
-    case  2: return "Small(+2)";
-    case  3: return "Med(+3)";
-    case  4: return "Strong(+4)";
-    case  5: return "Total(+5)";
+    case  1: return "Minimal";
+    case  2: return "Small";
+    case  3: return "Medium";
+    case  4: return "Strong";
+    case  5: return "Maximal";
     default: return `Custom (${val})`;
   }
 }
@@ -273,15 +268,17 @@ function openCPTModalTwoPerParent({ node, parentId, existing, onSave, onPrev }) 
   const parentLabel = parentNode.data('origLabel') || parentId;
 
   let askingFor = 'p1'; // Start with parent=true
-  function updatePrompt() {
-    if (askingFor === 'p1') {
-promptText = `Probability that "${node.data('origLabel')}" is true if "${parentLabel}" is (or had been) TRUE?`;
-    } else {
-      promptText = `Probability that "${node.data('origLabel')}" is true if "${parentLabel}" is (or had been) FALSE?`;
-    }
-    title.textContent = promptText;
+function updatePrompt() {
+  const baseProb = node.data('initialProb');
+  const basePct = (baseProb !== undefined && baseProb !== null)
+    ? ` (Base probability: ${Math.round(baseProb * 100)}%)` : "";
+  if (askingFor === 'p1') {
+    promptText = `If "${parentLabel}" is (or had been) true, how likely would that make "${node.data('origLabel')}"?${basePct}`;
+  } else {
+    promptText = `If "${parentLabel}" is (or had been) false, how likely would that make "${node.data('origLabel')}"?${basePct}`;
   }
-
+  title.textContent = promptText;
+}
   const title = document.createElement('div');
   title.className = 'modifier-modal-title';
   modal.appendChild(title);
@@ -514,10 +511,14 @@ function getModifiedEdgeWeight(edge) {
     currentWeight = currentWeight * mult;
   });
 
-  // Clamp at the end
-  if (Math.abs(currentWeight) < WEIGHT_MIN) currentWeight = WEIGHT_MIN * (currentWeight < 0 ? -1 : 1);
+// Clamp at the end
+if (Math.abs(currentWeight) < WEIGHT_MIN) currentWeight = WEIGHT_MIN * (currentWeight < 0 ? -1 : 1);
 
-  return currentWeight;
+// NEW SIGN LOGIC for 'opposes'
+if (edge.data('opposes')) currentWeight = -Math.abs(currentWeight);
+else currentWeight = Math.abs(currentWeight);
+
+return currentWeight;
 }
 
 window.getModifiedEdgeWeight = getModifiedEdgeWeight;
@@ -746,11 +747,11 @@ function syncNaiveBayesParents(node) {
 
 function setNodeProb(node, prob) {
   node.data('prob', prob);
-  node.data('isVirgin', false);
+  node.removeData('isVirgin');
 }
 function setEdgeWeight(edge, weight) {
   edge.data('weight', weight);
-  edge.data('isVirgin', false);
+  edge.removeData('isVirgin');
 }
 
 // ----------------------
@@ -785,24 +786,35 @@ elements: [
 ],
 
 style: [
-  { selector: 'node', style: {
-      shape: 'roundrectangle',
+  {
+    selector: 'node',
+    style: {
+      'shape': 'roundrectangle',
       'background-color': '#eceff1',
       'text-valign': 'center',
       'text-halign': 'center',
       'font-size': '10px',
       'text-wrap': 'wrap',
       'text-max-width': '120px',
-      padding: '12px',
-      width: 'label',
-      height: 'label',
+      'padding': '12px',
+      'width': 'label',
+      'height': 'label',
       'min-width': 80,
       'min-height': 40,
       'border-style': 'solid',
-      'border-color': '#2e7d32',
-      color: '#263238'
-  }},
-  { selector: 'node[label]',        style: { label: 'data(label)' } },
+      'border-width': 1,
+      'border-color': '#bbb',
+      'color': '#263238'
+    }
+  },
+  {
+  selector: 'node[borderWidth][borderColor]',
+  style: {
+    'border-width': 'data(borderWidth)',
+    'border-color': 'data(borderColor)'
+  }
+},
+  { selector: 'node[label]', style: { label: 'data(label)' } },
   { selector: 'node[borderWidth]',  style: { 'border-width': 'data(borderWidth)' } },
   { selector: 'node[shape]',        style: { shape: 'data(shape)' } },
   { selector: 'edge', style: {
@@ -820,6 +832,16 @@ style: [
       'text-max-width': 80,
       'text-border-width': 0
   }},
+{
+  selector: 'edge[opposes]',
+  style: {
+    'line-color': '#7c4dff',            // Use your preferred color
+    'mid-target-arrow-shape': 'bar',    // Or 'tee', 'circle'
+    'mid-target-arrow-color': '#7c4dff',
+    'line-style': 'dotted'              // Or 'dashed'
+  }
+},
+
   { selector: 'edge[absWeight]', style: {
       'line-color': 'mapData(absWeight, 0, 2, #bbdefb, #1565c0)',
       'mid-target-arrow-color': 'mapData(absWeight, 0, 2, #bbdefb, #1565c0)'
@@ -936,7 +958,7 @@ const y = pos.y - 30; // Offset upward
 
 const label = node.data('origLabel');
 if (node.data('isVirgin')) {
-  box.innerHTML = `<b>${label}</b><br><i>Probability not set. Using 50% for math.</i>`;
+  box.innerHTML = `<b>${label}</b><br><i>Probability not set.</i>`;
 } else {
   const curProb = Math.round(100 * (node.data('prob') ?? 0));
   const baseProb = Math.round(100 * (node.data('initialProb') ?? 0));
@@ -989,7 +1011,7 @@ function showModifierBox(edge) {
   box.style.boxShadow = '0 2px 8px #1565c066';
 
   if (edge.data('isVirgin')) {
-  box.innerHTML = `<i>Weight not set. Using 0 for math.</i>`;
+  box.innerHTML = `<i>Weight not set.</i>`;
   container.parentElement.appendChild(box);
   return;
 }
@@ -1029,10 +1051,7 @@ function robustnessToLabel(robust) {
 
 function computeVisuals() {
   cy.nodes('[isVirgin]').forEach(node => {
-  if (node.data('prob') !== 0.5) node.data('isVirgin', false);
-});
-cy.edges('[isVirgin]').forEach(edge => {
-  if (edge.data('weight') !== 0) edge.data('isVirgin', false);
+  if (node.data('prob') !== 0.5) node.removeData('isVirgin');
 });
   cy.nodes().forEach(node => {
      console.log(`[UI] ${node.id()} new prob:`, node.data('prob'));
@@ -1043,7 +1062,7 @@ if (pPct > 99) pPct = 99;
     const aei  = node.incomers('edge').reduce((sum, e) => sum + Math.abs(getModifiedEdgeWeight(e)), 0);
     const robust = saturation(aei);
 
-    const bw   = robust > 0 ? Math.max(2, Math.round(robust * 10)) : 0;
+    const bw = robust > 0 ? Math.max(2, Math.round(robust * 10)) : 1;
 
     let label = `${node.data('origLabel')}`;
 
@@ -1069,6 +1088,7 @@ if (bayesHeavyMode && node.data('cpt')) {
       shape: node.data('isFact') === true ? 'rectangle' : 'roundrectangle'
     });
     if (DEBUG) logMath(node.id(), `Visual: ${label.replace(/\n/g, ' | ')}`);
+     console.log(`[computeVisuals] Node ${node.id()} borderWidth:`, node.data('borderWidth'));
   });
 
 cy.edges().forEach(edge => {
@@ -1492,37 +1512,46 @@ cy.on('tap', 'edge', evt => {
   if (id === lastTappedEdge && now - lastClickTime < 300) {
     const prevModal = document.getElementById('modifier-modal');
     if (prevModal) prevModal.remove();
-    const current = edge.data('weight');
 
-    // Create modal with Likert dropdown
-  const modal = document.createElement('div');
-modal.className = 'modifier-modal';  // Add class, no inline styles
+    const modal = document.createElement('div');
+    modal.className = 'modifier-modal';
+
     const label = document.createElement('div');
     label.textContent = 'Set baseline influence:';
-    label.style.marginBottom = '10px';
     label.className = "modifier-modal-title";
+    label.style.marginBottom = '10px';
     modal.appendChild(label);
-makeDraggable(modal, ".modifier-modal-title");
+    makeDraggable(modal, ".modifier-modal-title");
 
+    // Opposing checkbox
+    const opposesContainer = document.createElement('div');
+    opposesContainer.style.marginBottom = '8px';
+    const opposesCheckbox = document.createElement('input');
+    opposesCheckbox.type = 'checkbox';
+    opposesCheckbox.id = 'opposes-checkbox';
+    opposesCheckbox.checked = !!edge.data('opposes');
+    const opposesLabel = document.createElement('label');
+    opposesLabel.textContent = "Opposing ('not') influence";
+    opposesLabel.htmlFor = 'opposes-checkbox';
+    opposesContainer.appendChild(opposesCheckbox);
+    opposesContainer.appendChild(opposesLabel);
+    modal.appendChild(opposesContainer);
+
+    // Only positive options for influence strength
     const select = document.createElement('select');
     const options = [
-{ label: "5: Absolute influence", value: 1 },
-{ label: "4: Strong influence", value: 0.85 },
-{ label: "3: Moderate influence", value: 0.60 },
-{ label: "2: Small influence", value: 0.35 },
-{ label: "1: Minimal influence", value: 0.15 },
-{ label: "-1: Minimal negation", value: -0.15 },
-{ label: "-2: Small negation", value: -0.35 },
-{ label: "-3: Moderate negation", value: -0.60 },
-{ label: "-4: Strong negation", value: -0.85 },
-{ label: "-5: Absolute negation", value: -1 },
-
+      { label: "Absolute", value: 1 },
+      { label: "Strong", value: 0.85 },
+      { label: "Moderate", value: 0.60 },
+      { label: "Small", value: 0.35 },
+      { label: "Minimal", value: 0.15 }
     ];
+    const currentAbs = Math.abs(edge.data('weight') ?? 0.15);
     options.forEach(opt => {
       const o = document.createElement('option');
       o.value = opt.value;
       o.textContent = opt.label;
-      if (Math.abs(current - opt.value) < 0.01) o.selected = true;
+      if (Math.abs(currentAbs - opt.value) < 0.01) o.selected = true;
       select.appendChild(o);
     });
     modal.appendChild(select);
@@ -1532,16 +1561,19 @@ makeDraggable(modal, ".modifier-modal-title");
     btn.style.margin = '10px 5px 0 0';
     btn.onclick = function () {
       const val = parseFloat(select.value);
-      edge.data('weight', val);
-      edge.data('isVirgin', false);
+      const opposes = opposesCheckbox.checked;
+edge.data('weight', val);
+if (opposes) {
+  edge.data('opposes', true);
+} else {
+  edge.removeData('opposes');  // This line is crucial
+}
+edge.removeData('isVirgin');
       document.body.removeChild(modal);
       setTimeout(() => {
         convergeAll({ cy });
         computeVisuals();
       }, 0);
-        setTimeout(() => {
-    computeVisuals();
-  }, 1); // schedule a tick later, guarantees correct sequence
     };
     modal.appendChild(btn);
 
@@ -1668,8 +1700,10 @@ makeDraggable(modal, ".modifier-modal-title");
       const prob = nodeLikertToProb(likertVal);
       node.data('initialProb', prob);
       node.data('prob', prob);
-      node.data('isVirgin', false);
+      node.removeData('isVirgin');
+      console.log('[DEBUG] node data after isVirgin clear:', node.data());
       console.log(`[DEBUG] Set node ${node.id()} prob and initialProb to`, prob);
+      cy.style().update();
       document.body.removeChild(modal);
       setTimeout(() => {
         convergeAll({ cy });
