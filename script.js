@@ -239,6 +239,7 @@ function openNotesModal(node) {
   window.addEventListener('keydown', escListener);
 
   document.body.appendChild(modal);
+  makeDraggable(modal);
   textarea.focus();
 }
 function openEditNodeLabelModal(node) {
@@ -342,6 +343,7 @@ function openEditNodeLabelModal(node) {
   window.addEventListener('keydown', escListener);
 
   document.body.appendChild(modal);
+  makeDraggable(modal);
   displayInput.focus();
 }
 
@@ -411,6 +413,7 @@ function openRationaleModal(edge) {
   window.addEventListener('keydown', escListener);
 
   document.body.appendChild(modal);
+  makeDraggable(modal);
   textarea.focus();
 }
 
@@ -511,6 +514,36 @@ function addModifier(edgeId) {
 
 // --- GENERIC UTILS / BAYES & AUTOSAVE ---
 function makeDraggable(modal, handleSelector = null) { /* unchanged */ }
+function makeDraggable(modal, handleSelector = null) {
+  let isDragging = false, startX, startY, origX, origY;
+  const handle = handleSelector ? modal.querySelector(handleSelector) : modal;
+
+  handle.style.cursor = "move";
+  handle.onmousedown = function(e) {
+    isDragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    const rect = modal.getBoundingClientRect();
+    origX = rect.left;
+    origY = rect.top;
+    document.body.style.userSelect = "none";
+  };
+
+  document.onmousemove = function(e) {
+    if (!isDragging) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    modal.style.left = (origX + dx) + "px";
+    modal.style.top = (origY + dy) + "px";
+    modal.style.transform = ""; // Remove centering transform when dragging
+  };
+
+  document.onmouseup = function() {
+    isDragging = false;
+    document.body.style.userSelect = "";
+  };
+}
+
 function highlightBayesNodeFocus(targetNode) { /* unchanged */ }
 function clearBayesHighlights() { /* unchanged */ }
 function syncNaiveBayesParents(node) { /* unchanged – for Phase 2 / Bayes Heavy only */ }
@@ -1314,22 +1347,23 @@ list.appendChild(notesItem);
     del.onclick = () => { edge.remove(); setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0); hideMenu(); };
     list.appendChild(del);
 
-    // Modifiers only for assertion node edges
-    if (targetType === NODE_TYPE_ASSERTION) {
-      const addMod = document.createElement('li');
-      addMod.textContent = 'Add Modifier (Label & Likert)';
-      addMod.onclick = () => { addModifier(edge.id()); hideMenu(); };
-      list.appendChild(addMod);
+// Modifiers (disabled in Lite mode)
+// if (targetType === NODE_TYPE_ASSERTION) {
+//   const addMod = document.createElement('li');
+//   addMod.textContent = 'Add Modifier (Label & Likert)';
+//   addMod.onclick = () => { addModifier(edge.id()); hideMenu(); };
+//   list.appendChild(addMod);
 
-      const editMods = document.createElement('li');
-      editMods.textContent = 'Edit Modifiers';
-      editMods.onclick = () => {
-        if (window.bayesHeavyMode) return;
-        openEditModifiersModal(edge); 
-        hideMenu();
-      };
-      list.appendChild(editMods);
-    } // else: do not show for AND/OR/fact node edges
+//   const editMods = document.createElement('li');
+//   editMods.textContent = 'Edit Modifiers';
+//   editMods.onclick = () => {
+//     if (window.bayesHeavyMode) return;
+//     openEditModifiersModal(edge); 
+//     hideMenu();
+//   };
+//   list.appendChild(editMods);
+// }
+
   }
 
   if (list.childNodes.length) {
@@ -1462,6 +1496,7 @@ cy.on('tap', 'edge', evt => {
     modal.appendChild(cancel);
 
     document.body.appendChild(modal);
+    makeDraggable(modal);
     if (select) select.focus();
 
     lastTappedEdge = null;
