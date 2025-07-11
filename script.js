@@ -684,7 +684,7 @@ const cy = cytoscape({
 cy.ready(() => {
   // Only one node? Set sane zoom and center.
   if (cy.nodes().length === 1) {
-    cy.zoom(1);      // 1 is typically "normal" zoom; adjust if your default is different
+    cy.zoom(2);      // 1 is typically "normal" zoom; adjust if your default is different
     cy.center();
   } else {
     cy.fit();
@@ -777,10 +777,11 @@ function showNodeHoverBox(node) {
   const hoverLabel = node.data('hoverLabel');
   const nodeType = node.data('type');
 
-  if (nodeType === NODE_TYPE_FACT) {
-    // Fact node: always display fixed probability with one decimal
-    const prob = +(100 * (node.data('prob') ?? (1 - config.epsilon))).toFixed(1);
-    box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><span>Fact node<br>Probability: <b>${prob}%</b></span>`;
+if (nodeType === NODE_TYPE_FACT) {
+  // Fact node: suppress probability indicator entirely
+  box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><span>Fact node</span>`;
+  container.parentElement.appendChild(box);
+  return; // Do not show probability or any other details for fact nodes
   } else if (nodeType === NODE_TYPE_ASSERTION) {
     // Assertion node: show prob only if set, otherwise indicate latent
     if (typeof node.data('prob') !== "number") {
@@ -908,7 +909,7 @@ function computeVisuals() {
       // Fact node: always show as "Fact: Label"
       label = `Fact: ${displayLabel}`;
       shape = 'rectangle';
-      borderWidth = 4;
+      borderWidth = 2;
       borderColor = '#444';
       node.removeData('robustness');
       node.removeData('robustnessLabel');
@@ -1284,13 +1285,18 @@ if (evt.target === cy) {
     // Node type toggle menu
     if (nodeType === NODE_TYPE_ASSERTION || nodeType === NODE_TYPE_FACT) {
       const toggleFact = document.createElement('li');
-      toggleFact.textContent = nodeType === NODE_TYPE_FACT ? 'Convert to Assertion Node' : 'Convert to Fact Node';
-      toggleFact.onclick = () => {
-        const newType = nodeType === NODE_TYPE_FACT ? NODE_TYPE_ASSERTION : NODE_TYPE_FACT;
-        node.data({ type: newType });
-        setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0);
-        hideMenu();
-      };
+      toggleFact.textContent = nodeType === NODE_TYPE_FACT ? 'Swap to Assertion' : 'Swap to Fact';
+toggleFact.onclick = () => {
+  const newType = nodeType === NODE_TYPE_FACT ? NODE_TYPE_ASSERTION : NODE_TYPE_FACT;
+  node.data({ type: newType });
+  // If converting Fact → Assertion, clear the probability
+  if (nodeType === NODE_TYPE_FACT && newType === NODE_TYPE_ASSERTION) {
+    node.removeData('prob');
+  }
+  setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0);
+  hideMenu();
+};
+
       list.appendChild(toggleFact);
     }
     if (nodeType === NODE_TYPE_AND || nodeType === NODE_TYPE_OR) {
@@ -1324,7 +1330,7 @@ list.appendChild(notesItem);
 
     // Delete always available
     const del = document.createElement('li');
-    del.textContent = 'Delete This Node';
+    del.textContent = 'Delete Node';
     del.onclick = () => { node.remove(); setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0); hideMenu(); };
     list.appendChild(del);
 
@@ -1591,8 +1597,9 @@ function resetLayout() {
   if (cy.nodes().length > 1) {
     cy.fit(undefined, 50); // 50px padding
   } else {
-    cy.zoom(1);
+    cy.zoom(2);
     cy.center();
+    
   }
 }
 

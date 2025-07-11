@@ -127,3 +127,43 @@ html, body {
   right: auto !important;
   transform: none !important;
 }
+#edit-label-modal {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  color: #111;
+  padding: 24px 24px 18px 24px;
+  border: 2px solid #1976d2;
+  border-radius: 8px;
+  box-shadow: 0 6px 30px #1976d255;
+  min-width: 350px;
+  z-index: 10001;
+}
+
+#edit-label-modal input,
+#edit-label-modal textarea {
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  padding: 4px 8px;
+  box-sizing: border-box;
+  outline: none;
+  font-size: 14px;
+  font-family: inherit;
+  width: 100%;
+}
+
+#edit-label-modal button {
+  background: #f4f4f4;
+  color: #222;
+  border: 1px solid #888;
+  border-radius: 4px;
+  padding: 4px 16px;
+  margin: 0 5px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+#edit-label-modal button:hover {
+  background: #e0e0e0;
+}
