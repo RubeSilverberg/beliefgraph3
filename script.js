@@ -1169,16 +1169,12 @@ function convergeNodes({ cy, epsilon, maxIters }) {
           newProb = 1 - prod;
         }
       } else if (nodeType === NODE_TYPE_ASSERTION) {
-  // Assertion: If no (non-virgin) parents, remain latent (undefined)
-const inc = node.incomers('edge').filter(e => {
-  const parent = e.source();
-  return !(parent.data('type') === NODE_TYPE_ASSERTION && parent.data('isVirgin'));
-});
-
-  if (inc.length === 0) {
-    newProb = undefined;
-  } else {
-    newProb = propagateFromParents({
+        // Assertion: If no (non-virgin) parents, remain latent (undefined)
+        const inc = node.incomers('edge').filter(e => !e.data('isVirgin'));
+        if (inc.length === 0) {
+          newProb = undefined;
+        } else {
+          newProb = propagateFromParents({
             baseProb: 0.5, // always start naive
             parents: inc,
             getProb: e => {
@@ -2034,6 +2030,10 @@ onSave: (result) => {
   - If you later change or remove 'isVirgin', review:
       • Edge creation
       • Edge editing modals
+      • Node label edit modal
+      • Propagation filtering (convergeNodes)
+  - If removing, comment out all logic—do not just delete—since latent bugs may result if filtering is skipped.
+
       • Node label edit modal
       • Propagation filtering (convergeNodes)
   - If removing, comment out all logic—do not just delete—since latent bugs may result if filtering is skipped.
