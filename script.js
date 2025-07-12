@@ -620,15 +620,21 @@ style: [
       'background-color': '#eceff1',
       'text-valign': 'center',
       'text-halign': 'center',
-      'font-size': 'mapData(userSize, 20, 160, 8, 24)',
+      'font-weight': 600,
+      'font-family': 'Segoe UI, Roboto, Arial, sans-serif',
+      'font-size': 'mapData(userSize, 20, 160, 13, 24)', // min 13px
+      'line-height': 1.4,
+      'letter-spacing': '0.01em',
+      'text-outline-width': 0,
+      'text-shadow': '0 1px 2px #faf6ff80', // optional, subtle
       'text-wrap': 'wrap',
       'text-max-width': '120px',   // tune if needed
       'padding': '12px',
       'width': 'mapData(userSize, 20, 160, 40, 160)',
       'height': 'mapData(userSize, 20, 160, 24, 80)', // ~60%
       'border-style': 'solid',
-      'border-width': 1,
-      'border-color': '#bbb',
+      'border-width': 'data(borderWidth)',
+      'border-color': 'data(borderColor)',
       'color': '#263238',
       'min-width': 40,
       'min-height': 24,
@@ -640,8 +646,9 @@ style: [
     selector: 'node[type="fact"]',
     style: {
       'shape': 'rectangle',
-      'border-width': 2,
-      'border-color': '#444'
+      // fallback only, actual value set in computeVisuals
+      // 'border-width': 2,
+      // 'border-color': '#444'
     }
   },
   // AND logic: diamond, thicker border
@@ -649,8 +656,9 @@ style: [
     selector: 'node[type="and"]',
     style: {
       'shape': 'diamond',
-      'border-width': 3,
-      'border-color': '#bbb'
+      // fallback only, actual value set in computeVisuals
+      // 'border-width': 3,
+      // 'border-color': '#bbb'
     }
   },
   // OR logic: ellipse, thicker border
@@ -658,8 +666,9 @@ style: [
     selector: 'node[type="or"]',
     style: {
       'shape': 'ellipse',
-      'border-width': 3,
-      'border-color': '#bbb'
+      // fallback only, actual value set in computeVisuals
+      // 'border-width': 3,
+      // 'border-color': '#bbb'
     }
   },
   // Edge base
@@ -957,11 +966,11 @@ function computeVisuals() {
         let pPct = Math.round(p * 100);
         if (pPct > 0 && pPct < 1) pPct = 1;
         if (pPct > 99) pPct = 99;
+        // Only use plain text for label, no HTML
         label += `\n${pPct}%`;
         // Robustness logic here as before...
         const aei = node.incomers('edge').reduce((sum, e) => {
-          const parentNode = e.source();
-          if (parentNode.data('type') !== NODE_TYPE_ASSERTION && parentNode.data('type') !== NODE_TYPE_FACT) return sum;
+          if (e.source().data('type') !== NODE_TYPE_ASSERTION && e.source().data('type') !== NODE_TYPE_FACT) return sum;
           const w = getModifiedEdgeWeight(e);
           return sum + (typeof w === "number" ? Math.abs(w) : 0);
         }, 0);
@@ -973,14 +982,14 @@ function computeVisuals() {
           robust < 0.85 ? "High" : "Very High";
         node.data('robustness', robust);
         node.data('robustnessLabel', robustLabel);
-        borderWidth = robust > 0 ? Math.max(2, Math.round(robust * 10)) : 1;
+        borderWidth = Math.max(2, Math.round(robust * 10));
         const vivid = 0.2 + 0.8 * robust;
-        borderColor = `rgba(128,0,255,${vivid})`;
+        borderColor = `rgba(136,80,168,${vivid})`;
       } else {
         node.removeData('robustness');
         node.removeData('robustnessLabel');
         borderWidth = 1;
-        borderColor = `rgba(128,0,255,0.2)`;
+        borderColor = `rgba(136,80,168,0.1)`;
       }
     } else if (nodeType === NODE_TYPE_AND) {
       label = "AND";
@@ -1051,13 +1060,7 @@ function computeVisuals() {
   cy.style().update();
 }
 
-cy.ready(computeVisuals);
-cy.on('dragfree zoom pan', computeVisuals);
-
-// ===============================
-// 🔁 SECTION 5: Propagation Logic
-// ===============================
-
+// --- PROPAGATION LOGIC UTILITIES ---
 /** Probability to use for “fact” nodes (never exactly 1.0 to avoid logit infinities) */
 const FACT_PROB = 1 - config.epsilon;
 
@@ -1250,6 +1253,8 @@ function convergeAll({ cy, epsilon = config.epsilon, maxIters = 30 } = {}) {
     console.error('convergeAll: Error during node convergence:', err);
     nodeResult = { converged: false, error: err };
   }
+
+  computeVisuals(); // <-- ensure visuals update after convergence
 
   return { edgeResult, nodeResult };
 }
@@ -1951,6 +1956,7 @@ function startBayesTimeSequence() {
         if (userNaiveBayes[node.id()]) {
           node.data('naiveBayes', userNaiveBayes[node.id()]);
           // Clear old CPT data if any
+
           node.removeData('cpt');
         }
       });
