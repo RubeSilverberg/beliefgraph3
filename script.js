@@ -1480,7 +1480,7 @@ cy.on('tap', 'edge', evt => {
     if (targetType === NODE_TYPE_ASSERTION) {
       select = document.createElement('select');
       const options = [
-        { label: "Absolute", value: 1 },
+        { label: "Maximal", value: 1 },
         { label: "Strong", value: 0.85 },
         { label: "Moderate", value: 0.60 },
         { label: "Small", value: 0.35 },
