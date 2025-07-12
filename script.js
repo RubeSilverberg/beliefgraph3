@@ -183,9 +183,6 @@ function openNotesModal(node) {
   const modal = document.createElement('div');
   modal.id = 'notes-modal';
   modal.style.position = 'fixed';
-  modal.style.left = '50%';
-  modal.style.top = '50%';
-  modal.style.transform = 'translate(-50%, -50%)';
   modal.style.background = '#fff';
   modal.style.padding = '24px 20px 18px 20px';
   modal.style.border = '2px solid #1976d2';
@@ -197,14 +194,15 @@ function openNotesModal(node) {
   // Title
   const title = document.createElement('div');
   title.textContent = 'View/Edit Notes';
+  title.className = 'modal-title';
   title.style.fontWeight = 'bold';
   title.style.marginBottom = '12px';
   modal.appendChild(title);
-
+  makeDraggable(modal, ".modal-title");
   // Textarea
   const textarea = document.createElement('textarea');
   textarea.style.width = '100%';
-  textarea.style.minHeight = '120px';
+  textarea.style.minHeight = '80px';
   textarea.style.fontSize = '14px';
   textarea.style.border = '1px solid #bbb';
   textarea.style.borderRadius = '4px';
@@ -239,7 +237,9 @@ function openNotesModal(node) {
   window.addEventListener('keydown', escListener);
 
   document.body.appendChild(modal);
-  makeDraggable(modal);
+centerModal(modal);   // <-- add this right after appending modal
+
+
   textarea.focus();
 }
 function openEditNodeLabelModal(node) {
@@ -251,9 +251,6 @@ function openEditNodeLabelModal(node) {
   const modal = document.createElement('div');
   modal.id = 'edit-label-modal';
   modal.style.position = 'fixed';
-  modal.style.left = '50%';
-  modal.style.top = '50%';
-  modal.style.transform = 'translate(-50%, -50%)';
   modal.style.background = '#fff';
   modal.style.padding = '24px 24px 18px 24px';
   modal.style.border = '2px solid #1976d2';
@@ -265,9 +262,11 @@ function openEditNodeLabelModal(node) {
   // Title
   const title = document.createElement('div');
   title.textContent = 'Edit Node Label';
+  title.className = 'modal-title';
   title.style.fontWeight = 'bold';
   title.style.marginBottom = '14px';
   modal.appendChild(title);
+  makeDraggable(modal, ".modal-title");
 
   // Display label (short)
   const displayLabelLabel = document.createElement('label');
@@ -278,7 +277,7 @@ function openEditNodeLabelModal(node) {
 
   const displayInput = document.createElement('input');
   displayInput.type = 'text';
-  displayInput.maxLength = 25; // generous but keeps nodes readable
+  displayInput.maxLength = 30; // generous but keeps nodes readable
   displayInput.style.width = '100%';
   displayInput.style.marginBottom = '10px';
   displayInput.value = node.data('displayLabel') || node.data('origLabel') || '';
@@ -343,7 +342,9 @@ function openEditNodeLabelModal(node) {
   window.addEventListener('keydown', escListener);
 
   document.body.appendChild(modal);
-  makeDraggable(modal);
+centerModal(modal);   // <-- add this right after appending modal
+
+
   displayInput.focus();
 }
 
@@ -357,9 +358,6 @@ function openRationaleModal(edge) {
   const modal = document.createElement('div');
   modal.id = 'rationale-modal';
   modal.style.position = 'fixed';
-  modal.style.left = '50%';
-  modal.style.top = '50%';
-  modal.style.transform = 'translate(-50%, -50%)';
   modal.style.background = '#fff';
   modal.style.padding = '24px 20px 18px 20px';
   modal.style.border = '2px solid #2e7d32';
@@ -371,14 +369,16 @@ function openRationaleModal(edge) {
   // Title
   const title = document.createElement('div');
   title.textContent = 'View/Edit Rationale';
+  title.className = 'modal-title';
   title.style.fontWeight = 'bold';
   title.style.marginBottom = '12px';
   modal.appendChild(title);
+  makeDraggable(modal, ".modal-title");
 
   // Textarea
   const textarea = document.createElement('textarea');
   textarea.style.width = '100%';
-  textarea.style.minHeight = '120px';
+  textarea.style.minHeight = '80px';
   textarea.style.fontSize = '14px';
   textarea.style.border = '1px solid #bbb';
   textarea.style.borderRadius = '4px';
@@ -411,9 +411,9 @@ function openRationaleModal(edge) {
     }
   };
   window.addEventListener('keydown', escListener);
-
   document.body.appendChild(modal);
-  makeDraggable(modal);
+centerModal(modal);   // <-- add this right after appending modal
+
   textarea.focus();
 }
 
@@ -513,7 +513,20 @@ function addModifier(edgeId) {
 }
 
 // --- GENERIC UTILS / BAYES & AUTOSAVE ---
-function makeDraggable(modal, handleSelector = null) { /* unchanged */ }
+// Center modal in viewport (call immediately after appending modal to body)
+function centerModal(modal) {
+  // Ensure modal is in DOM and visible for size measurement
+  modal.style.left = "0px";
+  modal.style.top = "0px";
+  modal.style.display = "block"; // ensure not display:none
+
+  const { innerWidth, innerHeight } = window;
+  const rect = modal.getBoundingClientRect();
+  modal.style.left = Math.round((innerWidth - rect.width) / 2) + "px";
+  modal.style.top  = Math.round((innerHeight - rect.height) / 2) + "px";
+}
+
+// Make modal draggable by handle (title bar or full modal)
 function makeDraggable(modal, handleSelector = null) {
   let isDragging = false, startX, startY, origX, origY;
   const handle = handleSelector ? modal.querySelector(handleSelector) : modal;
@@ -523,10 +536,14 @@ function makeDraggable(modal, handleSelector = null) {
     isDragging = true;
     startX = e.clientX;
     startY = e.clientY;
+    // Lock current pixel position before moving
     const rect = modal.getBoundingClientRect();
+    modal.style.left = rect.left + "px";
+    modal.style.top  = rect.top + "px";
     origX = rect.left;
     origY = rect.top;
     document.body.style.userSelect = "none";
+    e.preventDefault();
   };
 
   document.onmousemove = function(e) {
@@ -534,8 +551,7 @@ function makeDraggable(modal, handleSelector = null) {
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
     modal.style.left = (origX + dx) + "px";
-    modal.style.top = (origY + dy) + "px";
-    modal.style.transform = ""; // Remove centering transform when dragging
+    modal.style.top  = (origY + dy) + "px";
   };
 
   document.onmouseup = function() {
@@ -543,6 +559,7 @@ function makeDraggable(modal, handleSelector = null) {
     document.body.style.userSelect = "";
   };
 }
+
 
 function highlightBayesNodeFocus(targetNode) { /* unchanged */ }
 function clearBayesHighlights() { /* unchanged */ }
@@ -582,114 +599,134 @@ document.addEventListener('keydown', e => {
 
 const cy = cytoscape({
   container: document.getElementById('cy'),
-  elements: [
-    // Only one node: "New Belief" assertion node
-    { data: { id: 'N1', origLabel: 'New Belief', type: NODE_TYPE_ASSERTION } }
-    // No explicit prob/initialProb—is latent/invisible until updated via propagation
-  ],
+elements: [
+{ 
+  data: { 
+    id: 'N1', 
+    origLabel: 'New Belief',
+    label: 'New Belief',
+    type: NODE_TYPE_ASSERTION,
+    userSize: 80
+  }
+}
+],
 
-  style: [
-    {
-      selector: 'node',
-      style: {
-        'shape': 'roundrectangle',
-        'background-color': '#eceff1',
-        'text-valign': 'center',
-        'text-halign': 'center',
-        'font-size': '10px',
-        'text-wrap': 'wrap',
-        'text-max-width': '120px',
-        'padding': '12px',
-        'width': 'label',
-        'height': 'label',
-        'min-width': 80,
-        'min-height': 40,
-        'border-style': 'solid',
-        'border-width': 1,
-        'border-color': '#bbb',
-        'color': '#263238'
-      }
-    },
-    {
-      selector: 'node[borderWidth][borderColor]',
-      style: {
-        'border-width': 'data(borderWidth)',
-        'border-color': 'data(borderColor)'
-      }
-    },
-    { selector: 'node[label]', style: { label: 'data(label)' } },
-    { selector: 'node[borderWidth]',  style: { 'border-width': 'data(borderWidth)' } },
-    { selector: 'node[shape]',        style: { shape: 'data(shape)' } },
-    // BASE EDGE STYLE — No label, dynamic width and color by type/strength
-{
-  selector: 'edge',
-  style: {
-    'curve-style': 'bezier',
-    'mid-target-arrow-shape': 'triangle',
-    'width': 'mapData(absWeight, 0, 1, 2, 8)',      // Adjust min/max width as desired
-    'line-color': '#bbb',                            // Fallback gray, will be overridden below
-    'mid-target-arrow-color': '#bbb',
-    'opacity': 1,
-    // Label REMOVED: only on hover/modal
+style: [
+  // Base node: ALL sizing, font, wrapping logic
+  {
+    selector: 'node',
+    style: {
+      'shape': 'roundrectangle', // overridden by type
+      'background-color': '#eceff1',
+      'text-valign': 'center',
+      'text-halign': 'center',
+      'font-size': 'mapData(userSize, 20, 160, 8, 24)',
+      'text-wrap': 'wrap',
+      'text-max-width': '120px',   // tune if needed
+      'padding': '12px',
+      'width': 'mapData(userSize, 20, 160, 40, 160)',
+      'height': 'mapData(userSize, 20, 160, 24, 80)', // ~60%
+      'border-style': 'solid',
+      'border-width': 1,
+      'border-color': '#bbb',
+      'color': '#263238',
+      'min-width': 40,
+      'min-height': 24,
+      'content': 'data(label)', 
+    }
+  },
+  // Fact nodes: rectangle, thicker/darker border
+  {
+    selector: 'node[type="fact"]',
+    style: {
+      'shape': 'rectangle',
+      'border-width': 2,
+      'border-color': '#444'
+    }
+  },
+  // AND logic: diamond, thicker border
+  {
+    selector: 'node[type="and"]',
+    style: {
+      'shape': 'diamond',
+      'border-width': 3,
+      'border-color': '#bbb'
+    }
+  },
+  // OR logic: ellipse, thicker border
+  {
+    selector: 'node[type="or"]',
+    style: {
+      'shape': 'ellipse',
+      'border-width': 3,
+      'border-color': '#bbb'
+    }
+  },
+  // Edge base
+  {
+    selector: 'edge',
+    style: {
+      'curve-style': 'bezier',
+      'mid-target-arrow-shape': 'triangle',
+      'width': 'mapData(absWeight, 0, 1, 2, 8)',
+      'line-color': '#bbb',
+      'mid-target-arrow-color': '#bbb',
+      'opacity': 1,
+    }
+  },
+  // Edge supports: blue
+  {
+    selector: 'edge[type="supports"]',
+    style: {
+      'line-color': 'mapData(absWeight, 0, 1, #bbdefb, #1565c0)',
+      'mid-target-arrow-color': 'mapData(absWeight, 0, 1, #bbdefb, #1565c0)'
+    }
+  },
+  // Edge opposes: red
+  {
+    selector: 'edge[type="opposes"], edge[opposes]',
+    style: {
+      'line-color': 'mapData(absWeight, 0, 1, #ffcdd2, #b71c1c)',
+      'mid-target-arrow-shape': 'bar',
+      'mid-target-arrow-color': 'mapData(absWeight, 0, 1, #ffcdd2, #b71c1c)'
+    }
+  },
+  // Virgin edges
+  {
+    selector: 'edge[isVirgin]',
+    style: {
+      'line-color': '#ffb300',
+      'mid-target-arrow-color': '#ffb300',
+      'width': 4,
+      'opacity': 1
+    }
+  },
+  // Highlighted nodes
+  {
+    selector: 'node[highlighted]',
+    style: {
+      'background-color': '#fffbe5',
+      'box-shadow': '0 0 18px 6px #ffe082',
+      'z-index': 999
+    }
   }
-},
-// SUPPORTS EDGES: Dynamic blue by strength
-{
-  selector: 'edge[type="supports"]',
-  style: {
-    'line-color': 'mapData(absWeight, 0, 1, #bbdefb, #1565c0)',
-    'mid-target-arrow-color': 'mapData(absWeight, 0, 1, #bbdefb, #1565c0)'
-  }
-},
-// OPPOSES EDGES: Dynamic red by strength
-{
-  selector: 'edge[type="opposes"], edge[opposes]',
-  style: {
-    'line-color': 'mapData(absWeight, 0, 1, #ffcdd2, #b71c1c)',
-    'mid-target-arrow-shape': 'bar',  // Optional, if you want a different arrow
-    'mid-target-arrow-color': 'mapData(absWeight, 0, 1, #ffcdd2, #b71c1c)',
-//    'line-style': 'dotted'             // Optional, for additional visual
-  }
-},
-// VIRGIN EDGES: Still visually distinct (optional)
-{
-  selector: 'edge[isVirgin]',
-  style: {
-    'line-color': '#ffb300',
-    'mid-target-arrow-color': '#ffb300',
-    'width': 4,
-    'opacity': 1
-  }
-},
-
-    // Special highlight for new nodes (visual only; phase 2 refactor will revise)
-    // { selector: 'node[isVirgin]', style: { 'background-color': '#fffbe5', }},
-    // Special highlight for new edges
-    { selector: 'edge[isVirgin]', style: {
-        'line-color': '#ffb300',
-        'mid-target-arrow-color': '#ffb300',
-        'width': 4,
-        'opacity': 1
-    }},
-    { selector: 'node[highlighted]', style: {
-        'background-color': '#fffbe5',
-        'box-shadow': '0 0 18px 6px #ffe082',
-        'z-index': 999
-    }}
-  ],
-
+],
   layout: { name: 'grid', rows: 1 }
 });
-
 cy.ready(() => {
   // Only one node? Set sane zoom and center.
   if (cy.nodes().length === 1) {
-    cy.zoom(2);      // 1 is typically "normal" zoom; adjust if your default is different
+    cy.zoom(2);
     cy.center();
   } else {
     cy.fit();
   }
 });
+// After "const cy = cytoscape({...})"
+cy.nodes().forEach(node => {
+  if (!node.data('userSize')) node.data('userSize', 80);
+});
+computeVisuals();
 
 // ===============================
 // 🎨 SECTION 4: Visual Styling & Modifier Box
@@ -902,11 +939,11 @@ function computeVisuals() {
     const displayLabel = node.data('displayLabel') || node.data('origLabel') || "";
     let label = displayLabel;
     let borderWidth = 1;
-    let borderColor = '#bbb'; // Always set!
+    let borderColor = '#bbb';
     let shape = 'roundrectangle';
 
     if (nodeType === NODE_TYPE_FACT) {
-      // Fact node: always show as "Fact: Label"
+      // Fact: always "Fact: ...", rectangle, robust border
       label = `Fact: ${displayLabel}`;
       shape = 'rectangle';
       borderWidth = 2;
@@ -914,24 +951,21 @@ function computeVisuals() {
       node.removeData('robustness');
       node.removeData('robustnessLabel');
     } else if (nodeType === NODE_TYPE_ASSERTION) {
-      // Assertion node: show prob if and only if set (not latent/undefined)
+      // Assertion: show prob if present, otherwise latent
       if (typeof node.data('prob') === "number") {
         const p = node.data('prob');
         let pPct = Math.round(p * 100);
         if (pPct > 0 && pPct < 1) pPct = 1;
         if (pPct > 99) pPct = 99;
         label += `\n${pPct}%`;
-        // Robustness as border only (not in label)
+        // Robustness logic here as before...
         const aei = node.incomers('edge').reduce((sum, e) => {
-  const parentNode = e.source();
-  // Allow both assertion and fact parents to count toward robustness
-  if (parentNode.data('type') !== NODE_TYPE_ASSERTION && parentNode.data('type') !== NODE_TYPE_FACT) return sum;
-  const w = getModifiedEdgeWeight(e);
-  return sum + (typeof w === "number" ? Math.abs(w) : 0);
-}, 0);
-
-        const robust = saturation(aei); // [0,1]
-        // Qualitative robustness label
+          const parentNode = e.source();
+          if (parentNode.data('type') !== NODE_TYPE_ASSERTION && parentNode.data('type') !== NODE_TYPE_FACT) return sum;
+          const w = getModifiedEdgeWeight(e);
+          return sum + (typeof w === "number" ? Math.abs(w) : 0);
+        }, 0);
+        const robust = saturation(aei);
         const robustLabel =
           robust < 0.15 ? "Minimal" :
           robust < 0.35 ? "Low" :
@@ -939,36 +973,36 @@ function computeVisuals() {
           robust < 0.85 ? "High" : "Very High";
         node.data('robustness', robust);
         node.data('robustnessLabel', robustLabel);
-
         borderWidth = robust > 0 ? Math.max(2, Math.round(robust * 10)) : 1;
-        // Vividness scales from 0.2 to 1.0 (purple border)
         const vivid = 0.2 + 0.8 * robust;
         borderColor = `rgba(128,0,255,${vivid})`;
-        // (Optional) CPT badge
-        if (bayesHeavyMode && node.data('cpt')) {
-          label += `\n[Naive Bayes]`;
-        }
       } else {
-        // No prob: still set minimal robustness border for UI consistency
         node.removeData('robustness');
         node.removeData('robustnessLabel');
         borderWidth = 1;
         borderColor = `rgba(128,0,255,0.2)`;
       }
     } else if (nodeType === NODE_TYPE_AND) {
-      label = `And: ${displayLabel}`;
-      shape = 'diamond';
+      label = "AND";
+      shape = "diamond";
       borderWidth = 3;
-      borderColor = '#bbb';
+      borderColor = "#bbb";
       node.removeData('robustness');
       node.removeData('robustnessLabel');
+      // Optionally: store full label in hoverLabel for display on hover
+      if (!node.data('hoverLabel') && displayLabel !== "AND") {
+        node.data('hoverLabel', displayLabel);
+      }
     } else if (nodeType === NODE_TYPE_OR) {
-      label = `Or: ${displayLabel}`;
-      shape = 'ellipse';
+      label = "OR";
+      shape = "ellipse";
       borderWidth = 3;
-      borderColor = '#bbb';
+      borderColor = "#bbb";
       node.removeData('robustness');
       node.removeData('robustnessLabel');
+      if (!node.data('hoverLabel') && displayLabel !== "OR") {
+        node.data('hoverLabel', displayLabel);
+      }
     } else {
       label = `[Unknown Type] ${displayLabel}`;
       borderColor = '#bbb';
@@ -1238,13 +1272,15 @@ cy.on('cxttap', evt => {
 if (evt.target === cy) {
   ([
     { label: 'Add Assertion or Fact Node Here', action: () => {
-        cy.add({
+cy.add({
   group: 'nodes',
   data: {
     id: 'node' + Date.now(),
     origLabel: 'New Belief',
+    label: 'New Belief',
     type: NODE_TYPE_ASSERTION,
-    isVirgin: true
+    isVirgin: true,
+    userSize: 80 // (or whatever default you set in the style)
   },
   position: evt.position
 });
@@ -1310,6 +1346,20 @@ toggleFact.onclick = () => {
       };
       list.appendChild(toggleLogic);
     }
+const setSizeItem = document.createElement('li');
+setSizeItem.textContent = 'Set Node Size';
+setSizeItem.onclick = () => {
+const input = prompt('Enter node size in pixels (20-160):', node.data('userSize') || 80);
+if (input !== null) {
+  let size = parseInt(input);
+  if (isNaN(size) || size < 20) size = 20;
+  if (size > 160) size = 160;
+  node.data('userSize', size);
+  setTimeout(() => computeVisuals(), 0);
+  }
+  hideMenu();
+  };
+  list.appendChild(setSizeItem);
 
 const notesItem = document.createElement('li');
 notesItem.textContent = 'View/Edit Notes...';
@@ -1501,8 +1551,10 @@ cy.on('tap', 'edge', evt => {
     };
     modal.appendChild(cancel);
 
-    document.body.appendChild(modal);
-    makeDraggable(modal);
+  document.body.appendChild(modal);
+centerModal(modal);   // <-- add this right after appending modal
+
+
     if (select) select.focus();
 
     lastTappedEdge = null;
@@ -1670,41 +1722,17 @@ function loadGraph() {
     reader.onload = evt => {
       try {
         const elements = JSON.parse(evt.target.result);
-        cy.elements().remove();
-        cy.add(elements);
-        setTimeout(() => {
-          cy.style().update();
-          cy.resize();
-          cy.nodes().forEach(n => {
-            // [PHASE1 REMOVED 2024-07: isFact logic replaced by type check per spec – see design doc]
-            // if (!n.data('isFact')) {
-            //   n.data('prob', n.data('initialProb'));
-            // }
-            if (n.data('type') !== 'fact') {
-              n.data('prob', n.data('initialProb'));
-            }
-          });
-          convergeAll({ cy });
-            // Sweep to clear isVirgin for assertion nodes with a defined prob and at least one parent
-  cy.nodes().forEach(node => {
-    if (
-      node.data('type') === NODE_TYPE_ASSERTION &&
-      node.data('isVirgin') &&
-      typeof node.data('prob') === 'number' &&
-      node.incomers('edge').length > 0
-    ) {
-      node.removeData('isVirgin');
-    }
-  });
-          computeVisuals();
-          resetLayout();
-          // Force one more resize/redraw to flush
-          setTimeout(() => {
-            cy.resize();
-            cy.fit(); // optional: only if you want the graph to auto-zoom
-          }, 0);
-          console.log(`Graph loaded from file: ${file.name}`);
-        }, 0);
+cy.elements().remove();
+cy.add(elements);
+
+// Force layout and rendering, then apply visuals
+cy.layout({ name: 'preset' }).run();
+computeVisuals();
+cy.fit();
+cy.resize();
+resetLayout();
+console.log(`Graph loaded from file: ${file.name}`);
+
       } catch (err) {
         console.error('Failed to load graph:', err);
       }

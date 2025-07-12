@@ -50,9 +50,9 @@ html, body {
 /* If you have other modals (e.g. .edge-modal), add their classes as needed */
 .modifier-modal {
   position: fixed;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  left: 0;
+  top: 0;
+  /* REMOVED: transform: translate(-50%, -50%); */
   background: #fff !important;
   color: #111 !important;
   padding: 22px 18px;
@@ -129,9 +129,9 @@ html, body {
 }
 #edit-label-modal {
   position: fixed;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  left: 0;
+  top: 0;
+  /* REMOVED: transform: translate(-50%, -50%); */
   background: #fff;
   color: #111;
   padding: 24px 24px 18px 24px;
