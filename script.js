@@ -1323,17 +1323,16 @@ cy.add({
     if (nodeType === NODE_TYPE_ASSERTION || nodeType === NODE_TYPE_FACT) {
       const toggleFact = document.createElement('li');
       toggleFact.textContent = nodeType === NODE_TYPE_FACT ? 'Swap to Assertion' : 'Swap to Fact';
-toggleFact.onclick = () => {
-  const newType = nodeType === NODE_TYPE_FACT ? NODE_TYPE_ASSERTION : NODE_TYPE_FACT;
-  node.data({ type: newType });
-  // If converting Fact → Assertion, clear the probability
-  if (nodeType === NODE_TYPE_FACT && newType === NODE_TYPE_ASSERTION) {
-    node.removeData('prob');
-  }
-  setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0);
-  hideMenu();
-};
-
+      toggleFact.onclick = () => {
+        const newType = nodeType === NODE_TYPE_FACT ? NODE_TYPE_ASSERTION : NODE_TYPE_FACT;
+        node.data({ type: newType });
+        // If converting Fact → Assertion, clear the probability
+        if (nodeType === NODE_TYPE_FACT && newType === NODE_TYPE_ASSERTION) {
+          node.removeData('prob');
+        }
+        setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0);
+        hideMenu();
+      };
       list.appendChild(toggleFact);
     }
     if (nodeType === NODE_TYPE_AND || nodeType === NODE_TYPE_OR) {
@@ -1347,30 +1346,41 @@ toggleFact.onclick = () => {
       };
       list.appendChild(toggleLogic);
     }
-const setSizeItem = document.createElement('li');
-setSizeItem.textContent = 'Set Node Size';
-setSizeItem.onclick = () => {
-const input = prompt('Enter node size in pixels (20-160):', node.data('userSize') || 80);
-if (input !== null) {
-  let size = parseInt(input);
-  if (isNaN(size) || size < 20) size = 20;
-  if (size > 160) size = 160;
-  node.data('userSize', size);
-  setTimeout(() => computeVisuals(), 0);
-  }
-  hideMenu();
-  };
-  list.appendChild(setSizeItem);
 
-const notesItem = document.createElement('li');
-notesItem.textContent = 'View/Edit Notes...';
-notesItem.onclick = () => {
-  openNotesModal(node);
-  hideMenu();
-};
-list.appendChild(notesItem);
+    // REMOVE THIS BLOCK:
+    // const setSizeItem = document.createElement('li');
+    // setSizeItem.textContent = 'Set Node Size';
+    // setSizeItem.onclick = () => {
+    //   const input = prompt('Enter node size in pixels (20-160):', node.data('userSize') || 80);
+    //   if (input !== null) {
+    //     let size = parseInt(input);
+    //     if (isNaN(size) || size < 20) size = 20;
+    //     if (size > 160) size = 160;
+    //     node.data('userSize', size);
+    //     setTimeout(() => computeVisuals(), 0);
+    //   }
+    //   hideMenu();
+    // };
+    // list.appendChild(setSizeItem);
 
-// [2024-07 REMOVED: Node rationales replaced by notes per new spec]
+    // Instead, keep only the Visual Signals modal:
+    const visualSignalsItem = document.createElement('li');
+    visualSignalsItem.textContent = 'Visual Signals...';
+    visualSignalsItem.onclick = () => {
+      openVisualSignalsModal(node);
+      hideMenu();
+    };
+    list.appendChild(visualSignalsItem);
+
+    const notesItem = document.createElement('li');
+    notesItem.textContent = 'View/Edit Notes...';
+    notesItem.onclick = () => {
+      openNotesModal(node);
+      hideMenu();
+    };
+    list.appendChild(notesItem);
+
+    // [2024-07 REMOVED: Node rationales replaced by notes per new spec]
 // const rationaleItem = document.createElement('li');
 // rationaleItem.textContent = 'View/Edit Rationale...';
 // rationaleItem.onclick = () => {
