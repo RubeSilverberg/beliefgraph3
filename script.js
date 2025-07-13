@@ -14,21 +14,38 @@ PHASE 1 (2024-07): Node/Edge constants and utility logic are refactored per Lite
 - All replaced code is commented, not deleted, with rationale marker
 */
 
-// --- NODE/EDGE TYPE CONSTANTS ---
-const NODE_TYPE_FACT = "fact";
-const NODE_TYPE_ASSERTION = "assertion";
-const NODE_TYPE_AND = "and";
-const NODE_TYPE_OR = "or";
-const EDGE_TYPE_SUPPORTS = "supports";
-const EDGE_TYPE_OPPOSES = "opposes";
+import {
+  registerVisualEventHandlers,
+  computeVisuals,
+  drawModifierBoxes,
+  showNodeHoverBox,
+  removeNodeHoverBox,
+  showModifierBox,
+  removeModifierBox,
+  robustnessToLabel
+} from './visuals.js';
 
-// For future reference, node types allowed:
-const ALLOWED_NODE_TYPES = [NODE_TYPE_FACT, NODE_TYPE_ASSERTION, NODE_TYPE_AND, NODE_TYPE_OR];
-const ALLOWED_EDGE_TYPES = [EDGE_TYPE_SUPPORTS, EDGE_TYPE_OPPOSES];
-
-// --- CONFIG ---
-let bayesHeavyMode = false;  // false = Bayes Lite; true = Bayes Heavy
-window.bayesHeavyMode = bayesHeavyMode;
+import {
+  NODE_TYPE_FACT,
+  NODE_TYPE_ASSERTION,
+  NODE_TYPE_AND,
+  NODE_TYPE_OR,
+  EDGE_TYPE_SUPPORTS,
+  EDGE_TYPE_OPPOSES,
+  ALLOWED_NODE_TYPES,
+  ALLOWED_EDGE_TYPES,
+  DEBUG,
+  logMath,
+  likertToWeight,
+  weightToLikert,
+  likertDescriptor,
+  saturation,
+  config,
+  WEIGHT_MIN,
+  getModifiedEdgeWeight,
+  updateEdgeModifierLabel,
+  nudgeToBoundMultiplier
+} from './config.js';
 
 function updateModeBadge() {
   let badge = document.getElementById('mode-badge');
@@ -46,13 +63,11 @@ function updateModeBadge() {
     badge.style.zIndex = 9999;
     document.body.appendChild(badge);
   }
-  badge.textContent = bayesHeavyMode ? 'Bayes Heavy Mode' : 'Bayes Lite Mode';
+  badge.textContent = config.bayesHeavyMode ? 'Bayes Heavy Mode' : 'Bayes Lite Mode';
 }
 updateModeBadge();
 
 document.addEventListener('contextmenu', e => e.preventDefault());
-
-const DEBUG = true;
 
 let pendingEdgeSource = null;
 let lastNodeTapTime = 0;
@@ -60,82 +75,13 @@ let lastTappedNode = null;
 let lastEdgeTapTime = 0;
 let lastTappedEdge = null;
 
-const config = { epsilon: .01 };
-const WEIGHT_MIN = 0.01;
-
-// --- LOGGING ---
-function logMath(nodeId, msg) {
-  if (DEBUG) console.log(`[${nodeId}] ${msg}`);
-}
-
-// --- EDGE WEIGHT/LIKERT UTILITIES (FOR ASSERTION NODES ONLY) ---
-function likertToWeight(val) {
-  // Only valid for assertion nodes
-  // [-1, -0.85, -0.60, -0.35, -0.15, 0.15, 0.35, 0.60, 0.85, 1]
-  const weights = [-1, -0.85, -0.60, -0.35, -0.15, 0.15, 0.35, 0.60, 0.85, 1];
-  if (val < 0) return weights[val + 5];      // -5 → 0, -1 → 4
-  if (val > 0) return weights[val + 4];      // +1 → 5, +5 → 9
-  return 0.15; // fallback, should not hit val=0 in UI
-}
-window.likertToWeight = likertToWeight;
-
-function weightToLikert(w) {
-  // Only for assertion edge weights
-  const weights = [0.15, 0.35, 0.60, 0.85, 1];
-  const absW = Math.abs(w);
-  let closestIdx = 0;
-  let minDiff = Infinity;
-  for (let i = 0; i < weights.length; ++i) {
-    const diff = Math.abs(absW - weights[i]);
-    if (diff < minDiff) {
-      minDiff = diff;
-      closestIdx = i;
-    }
-  }
-  return closestIdx + 1; // 1–5, strength only
-}
-window.weightToLikert = weightToLikert;
-
-function likertDescriptor(val) {
-  switch (val) {
-    case  1: return "Minimal";
-    case  2: return "Small";
-    case  3: return "Medium";
-    case  4: return "Strong";
-    case  5: return "Maximal";
-    default: return `Custom (${val})`;
-  }
-}
-
-// --- EDGE MODIFIERS (ASSERTION NODES ONLY) ---
-function updateEdgeModifierLabel(edge) {
-  // [PHASE1 REMOVED 2024-07: per new spec – see design doc]
-  // Only used for assertion nodes. For AND/OR, weight/modifiers are ignored.
-  const node = cy.getElementById(edge.target().id());
-  if (
-    node.data("type") === NODE_TYPE_AND ||
-    node.data("type") === NODE_TYPE_OR
-  ) {
-    edge.data('weightLabel', '—');
-    return;
-  }
-  // else: assertion node logic unchanged
-  const mods = edge.data('modifiers') ?? [];
-  let baseLabel = '–';
-  if (typeof edge.data('weight') === 'number' && !isNaN(edge.data('weight'))) {
-    baseLabel = edge.data('weight').toFixed(2);
-  }
-  if (!mods.length) {
-    edge.data('weightLabel', baseLabel);
-  } else {
-    edge.data('weightLabel', `${baseLabel} [${mods.length}]`);
-  }
-}
 
 // Returns true if adding an edge from sourceId → targetId would create a cycle
 function wouldCreateCycle(cy, sourceId, targetId) {
   if (sourceId === targetId) return true;
+
   const visited = new Set();
+
   function dfs(nodeId) {
     if (nodeId === sourceId) return true;
     if (visited.has(nodeId)) return false;
@@ -145,207 +91,8 @@ function wouldCreateCycle(cy, sourceId, targetId) {
       .map(e => e.target().id())
       .some(nextId => dfs(nextId));
   }
+
   return dfs(targetId);
-}
-
-// --- MODIFIER MODALS ---
-// The following modal logic applies ONLY for assertion node edges.
-// For AND/OR, menu/modal should be blocked or show "not available" per spec.
-function openEditModifiersModal(edge) {
-  // [PHASE1 REMOVED 2024-07: per new spec – see design doc]
-  const node = cy.getElementById(edge.target().id());
-  if (
-    node.data("type") === NODE_TYPE_AND ||
-    node.data("type") === NODE_TYPE_OR
-  ) {
-    // For AND/OR, modifiers are N/A
-    alert("Modifiers/weights are not available for AND/OR logic nodes.");
-    return;
-  }
-  // ...existing assertion edge modifier modal code...
-  // (unchanged)
-}
-
-// --- BAYES HEAVY / CPT UTILS ---
-// The following functions are for Bayes Heavy/Phase 2 only.
-function openCPTModalTwoPerParent({ node, parentId, existing, onSave, onPrev }) {
-  // [PHASE1 REMOVED 2024-07: per new spec – see design doc]
-  // Flagged for future: Only relevant in Bayes Heavy mode, not active for Lite
-}
-
-// --- NODE NOTES MODAL ---
-function openNotesModal(node) {
-  // Remove any existing modal
-  const prevModal = document.getElementById('notes-modal');
-  if (prevModal) prevModal.remove();
-
-  // Modal container
-  const modal = document.createElement('div');
-  modal.id = 'notes-modal';
-  modal.style.position = 'fixed';
-  modal.style.background = '#fff';
-  modal.style.padding = '24px 20px 18px 20px';
-  modal.style.border = '2px solid #1976d2';
-  modal.style.borderRadius = '8px';
-  modal.style.zIndex = 10001;
-  modal.style.boxShadow = '0 6px 30px #1976d255';
-  modal.style.minWidth = '360px';
-
-  // Title
-  const title = document.createElement('div');
-  title.textContent = 'View/Edit Notes';
-  title.className = 'modal-title';
-  title.style.fontWeight = 'bold';
-  title.style.marginBottom = '12px';
-  modal.appendChild(title);
-  makeDraggable(modal, ".modal-title");
-  // Textarea
-  const textarea = document.createElement('textarea');
-  textarea.style.width = '100%';
-  textarea.style.minHeight = '80px';
-  textarea.style.fontSize = '14px';
-  textarea.style.border = '1px solid #bbb';
-  textarea.style.borderRadius = '4px';
-  textarea.value = node.data('notes') || '';
-  modal.appendChild(textarea);
-
-  // Save button
-  const saveBtn = document.createElement('button');
-  saveBtn.textContent = 'Save';
-  saveBtn.style.margin = '14px 10px 0 0';
-  saveBtn.onclick = function() {
-    node.data('notes', textarea.value.trim());
-    document.body.removeChild(modal);
-  };
-  modal.appendChild(saveBtn);
-
-  // Cancel button
-  const cancelBtn = document.createElement('button');
-  cancelBtn.textContent = 'Cancel';
-  cancelBtn.onclick = function() {
-    document.body.removeChild(modal);
-  };
-  modal.appendChild(cancelBtn);
-
-  // ESC key closes modal
-  const escListener = (e) => {
-    if (e.key === "Escape") {
-      document.body.removeChild(modal);
-      window.removeEventListener('keydown', escListener);
-    }
-  };
-  window.addEventListener('keydown', escListener);
-
-  document.body.appendChild(modal);
-centerModal(modal);   // <-- add this right after appending modal
-
-
-  textarea.focus();
-}
-function openEditNodeLabelModal(node) {
-  // Remove any existing modal
-  const prevModal = document.getElementById('edit-label-modal');
-  if (prevModal) prevModal.remove();
-
-  // Modal container
-  const modal = document.createElement('div');
-  modal.id = 'edit-label-modal';
-  modal.style.position = 'fixed';
-  modal.style.background = '#fff';
-  modal.style.padding = '24px 24px 18px 24px';
-  modal.style.border = '2px solid #1976d2';
-  modal.style.borderRadius = '8px';
-  modal.style.zIndex = 10001;
-  modal.style.boxShadow = '0 6px 30px #1976d255';
-  modal.style.minWidth = '350px';
-
-  // Title
-  const title = document.createElement('div');
-  title.textContent = 'Edit Node Label';
-  title.className = 'modal-title';
-  title.style.fontWeight = 'bold';
-  title.style.marginBottom = '14px';
-  modal.appendChild(title);
-  makeDraggable(modal, ".modal-title");
-
-  // Display label (short)
-  const displayLabelLabel = document.createElement('label');
-  displayLabelLabel.textContent = 'Display title (short, 1–2 words):';
-  displayLabelLabel.style.display = 'block';
-  displayLabelLabel.style.marginBottom = '3px';
-  modal.appendChild(displayLabelLabel);
-
-  const displayInput = document.createElement('input');
-  displayInput.type = 'text';
-  displayInput.maxLength = 30; // generous but keeps nodes readable
-  displayInput.style.width = '100%';
-  displayInput.style.marginBottom = '10px';
-  displayInput.value = node.data('displayLabel') || node.data('origLabel') || '';
-  modal.appendChild(displayInput);
-
-  // Hover label (long)
-  const hoverLabelLabel = document.createElement('label');
-  hoverLabelLabel.textContent = 'Hover title (full sentence, optional):';
-  hoverLabelLabel.style.display = 'block';
-  hoverLabelLabel.style.marginBottom = '3px';
-  modal.appendChild(hoverLabelLabel);
-
-  const hoverInput = document.createElement('input');
-  hoverInput.type = 'text';
-  hoverInput.style.width = '100%';
-  hoverInput.style.marginBottom = '18px';
-  hoverInput.value = node.data('hoverLabel') || '';
-  modal.appendChild(hoverInput);
-
-  // Save and Cancel buttons
-  const saveBtn = document.createElement('button');
-  saveBtn.textContent = 'Save';
-  saveBtn.disabled = !displayInput.value.trim();
-  saveBtn.style.margin = '0 12px 0 0';
-
-  const cancelBtn = document.createElement('button');
-  cancelBtn.textContent = 'Cancel';
-
-  modal.appendChild(saveBtn);
-  modal.appendChild(cancelBtn);
-
-  // Validation: Enable/disable Save button based on display label
-  displayInput.addEventListener('input', () => {
-    saveBtn.disabled = !displayInput.value.trim();
-  });
-
-  // Save logic
- saveBtn.onclick = function() {
-  const displayVal = displayInput.value.trim().slice(0, 25);
-  const hoverVal = hoverInput.value.trim();
-  if (!displayVal) return;
-
-  node.data('displayLabel', displayVal);
-  node.data('hoverLabel', hoverVal);
-  node.removeData('isVirgin');  // <-- Clear isVirgin on label edit
-
-  document.body.removeChild(modal);
-  setTimeout(() => { computeVisuals(); }, 0);
-};
-
-  cancelBtn.onclick = function() {
-    document.body.removeChild(modal);
-  };
-
-  // ESC key closes modal
-  const escListener = (e) => {
-    if (e.key === "Escape") {
-      document.body.removeChild(modal);
-      window.removeEventListener('keydown', escListener);
-    }
-  };
-  window.addEventListener('keydown', escListener);
-
-  document.body.appendChild(modal);
-centerModal(modal);   // <-- add this right after appending modal
-
-
-  displayInput.focus();
 }
 
 // --- EDGE RATIONALE MODAL ---
@@ -417,23 +164,6 @@ centerModal(modal);   // <-- add this right after appending modal
   textarea.focus();
 }
 
-function nudgeToBoundMultiplier(currentWeight, likert, bound = 0.99) {
-  // Only for assertion nodes
-  const L = Math.max(-5, Math.min(5, likert));
-  const absWeight = Math.abs(currentWeight);
-  if (absWeight === 0 || L === 0) return 1;
-  const frac = Math.abs(L) / 5;
-  let desired;
-  if (L > 0) {
-    desired = (1 - frac) * absWeight + frac * bound;
-  } else {
-    desired = (1 - frac) * absWeight;
-  }
-  let multiplier = desired / absWeight;
-  if (!isFinite(multiplier)) multiplier = 1;
-  return Math.round(multiplier * 1000) / 1000;
-}
-
 // --- PROPAGATION LOGIC UTILITIES (USED ELSEWHERE) ---
 function propagateFromParents({
   baseProb,
@@ -469,33 +199,6 @@ oddsDelta *= saturation;
   return 1 / (1 + Math.exp(-updatedOdds));
 }
 
-function saturation(aei, k = 1) {
-  return 1 - Math.exp(-k * aei);
-}
-
-// Applies all Likert modifiers to the edge’s base weight—ASSERTION ONLY
-function getModifiedEdgeWeight(edge) {
-  // [PHASE1 REMOVED 2024-07: per new spec – see design doc]
-  const node = cy.getElementById(edge.target().id());
-  if (
-    node.data("type") === NODE_TYPE_AND ||
-    node.data("type") === NODE_TYPE_OR
-  ) {
-    // For AND/OR, weights/modifiers are ignored
-    return null;
-  }
-  let currentWeight = edge.data('weight');
-  const mods = edge.data('modifiers') ?? [];
-  mods.forEach(mod => {
-    const mult = nudgeToBoundMultiplier(currentWeight, mod.likert, 0.99);
-    currentWeight = currentWeight * mult;
-  });
-  if (Math.abs(currentWeight) < WEIGHT_MIN) currentWeight = WEIGHT_MIN * (currentWeight < 0 ? -1 : 1);
-  if (edge.data('opposes')) currentWeight = -Math.abs(currentWeight);
-  else currentWeight = Math.abs(currentWeight);
-  return currentWeight;
-}
-window.getModifiedEdgeWeight = getModifiedEdgeWeight;
 
 // --- MODIFIER CREATION (ASSERTION EDGES ONLY) ---
 function addModifier(edgeId) {
@@ -731,334 +434,13 @@ cy.ready(() => {
     cy.fit();
   }
 });
+registerVisualEventHandlers(cy);
 // After "const cy = cytoscape({...})"
 cy.nodes().forEach(node => {
   if (!node.data('userSize')) node.data('userSize', 80);
 });
-computeVisuals();
+computeVisuals(cy);
 
-// ===============================
-// 🎨 SECTION 4: Visual Styling & Modifier Box
-// ===============================
-
-// Draws floating modifier boxes only for assertion node edges
-function drawModifierBoxes() {
-  // Remove previous boxes
-  document.querySelectorAll('.modifier-box').forEach(el => el.remove());
-  cy.edges().forEach(edge => {
-    // Guard: Only show for edges targeting assertion nodes
-    const targetNode = edge.target();
-    if (targetNode.data('type') !== NODE_TYPE_ASSERTION) return;
-
-    const mods = edge.data('modifiers') ?? [];
-    if (!mods.length) return;
-
-    const mid = edge.midpoint();
-    const pan = cy.pan();
-    const zoom = cy.zoom();
-    const container = cy.container();
-    const x = mid.x * zoom + pan.x;
-    const y = mid.y * zoom + pan.y;
-
-    const box = document.createElement('div');
-    box.className = 'modifier-box';
-    box.style.position = 'absolute';
-    box.style.left = `${x}px`;
-    box.style.top = `${y}px`;
-    box.style.background = 'rgba(220,235,250,0.97)';
-    box.style.border = '1.5px solid #1565c0';
-    box.style.borderRadius = '8px';
-    box.style.padding = '5px 8px';
-    box.style.fontSize = '11px';
-    box.style.minWidth = '80px';
-    box.style.maxWidth = '220px';
-    box.style.zIndex = 10;
-    box.style.boxShadow = '0 1.5px 7px #1565c066';
-
-    mods.forEach(mod => {
-      const item = document.createElement('div');
-      item.style.margin = '2px 0';
-      item.style.display = 'flex';
-      item.style.alignItems = 'center';
-      let color = '#616161';
-      if (mod.likert > 0) color = '#2e7d32';
-      if (mod.likert < 0) color = '#c62828';
-      const val = mod.likert > 0 ? '+'+mod.likert : ''+mod.likert;
-      item.innerHTML = `<span style="color:${color};font-weight:600;min-width:24px;display:inline-block;">${val}</span> <span style="margin-left:5px;">${mod.label}</span>`;
-      box.appendChild(item);
-    });
-    container.parentElement.appendChild(box);
-  });
-}
-
-// --- Node hover: probability/logic display per node type ---
-cy.on('mouseover', 'node', evt => {
-  showNodeHoverBox(evt.target);
-});
-cy.on('mouseout', 'node', evt => {
-  removeNodeHoverBox();
-});
-
-function showNodeHoverBox(node) {
-  removeNodeHoverBox(); // Clean up any old
-  const pos = node.renderedPosition();
-  const container = cy.container();
-  const x = pos.x + 20; // Offset to the right
-  const y = pos.y - 30; // Offset upward
-
-  const box = document.createElement('div');
-  box.className = 'node-hover-box';
-  box.style.position = 'absolute';
-  box.style.left = `${x + 20}px`;
-  box.style.top = `${y - 30}px`;
-  box.style.background = '#f3f3fc';
-  box.style.border = '1.5px solid #2e7d32';
-  box.style.borderRadius = '8px';
-  box.style.padding = '7px 14px';
-  box.style.fontSize = '12px';
-  box.style.zIndex = 20;
-  box.style.boxShadow = '0 2px 8px #1565c066';
-
-  const displayLabel = node.data('displayLabel') || node.data('origLabel') || "";
-  const hoverLabel = node.data('hoverLabel');
-  const nodeType = node.data('type');
-
-if (nodeType === NODE_TYPE_FACT) {
-  // Fact node: suppress probability indicator entirely
-  box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><span>Fact node</span>`;
-  container.parentElement.appendChild(box);
-  return; // Do not show probability or any other details for fact nodes
-  } else if (nodeType === NODE_TYPE_ASSERTION) {
-    // Assertion node: show prob only if set, otherwise indicate latent
-    if (typeof node.data('prob') !== "number") {
-      box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><i>No incoming information.</i>`;
-    } else {
-      const curProb = Math.round(100 * node.data('prob'));
-      box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br>
-        <span>Current: <b>${curProb}%</b></span>`;
-    }
-    // Add qualitative robustness to hover box if available (always for assertion nodes)
-    const rlabel = node.data('robustnessLabel');
-    if (rlabel) {
-      box.innerHTML += `<br><span><b style="color:#8000ff">Robustness</b>: <b>${rlabel}</b></span>`;
-
-    }
-  } else if (nodeType === NODE_TYPE_AND) {
-    box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><i>AND logic node<br>(product of parent probs)</i>`;
-  } else if (nodeType === NODE_TYPE_OR) {
-    box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><i>OR logic node<br>(sum-minus-product of parent probs)</i>`;
-  } else {
-    box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><i>Unknown node type</i>`;
-  }
-
-  container.parentElement.appendChild(box);
-}
-
-function removeNodeHoverBox() {
-  document.querySelectorAll('.node-hover-box').forEach(el => el.remove());
-}
-document.addEventListener('mousedown', removeNodeHoverBox);
-document.addEventListener('mousedown', removeModifierBox);
-
-// --- Edge hover: only show for assertion node targets ---
-cy.on('mouseover', 'edge', evt => {
-  const edge = evt.target;
-  showModifierBox(edge);
-});
-cy.on('mouseout', 'edge', evt => {
-  removeModifierBox();
-});
-
-function showModifierBox(edge) {
-  removeModifierBox();
-  // Guard: Only show for edges targeting assertion nodes
-  const targetNode = edge.target();
-  if (targetNode.data('type') !== NODE_TYPE_ASSERTION) {
-    // Optionally, could show: "No modifiers for logic node"
-    return;
-  }
-  const mods = edge.data('modifiers') ?? [];
-  const baseLikert = weightToLikert(edge.data('weight')); // existing function
-  const baseLabel = likertDescriptor(baseLikert);
-
-  const mid = edge.midpoint();
-  const pan = cy.pan();
-  const zoom = cy.zoom();
-  const container = cy.container();
-  const x = mid.x * zoom + pan.x;
-  const y = mid.y * zoom + pan.y;
-
-  const box = document.createElement('div');
-  box.className = 'modifier-box';
-  box.style.position = 'absolute';
-  box.style.left = `${x}px`;
-  box.style.top = `${y}px`;
-  box.style.background = 'rgba(220,235,250,0.97)';
-  box.style.border = '1.5px solid #1565c0';
-  box.style.borderRadius = '8px';
-  box.style.padding = '6px 14px';
-  box.style.fontSize = '12px';
-  box.style.zIndex = 20;
-  box.style.boxShadow = '0 2px 8px #1565c066';
-
-  if (edge.data('isVirgin')) {
-    box.innerHTML = `<i>Weight not set.</i>`;
-    container.parentElement.appendChild(box);
-    return;
-  }
-  // Base Likert info
-  box.innerHTML = `<div><b>Base influence:</b> ${baseLabel}</div>`;
-
-  if (mods.length) {
-    box.innerHTML += `<hr style="margin:6px 0 3px 0">`;
-    mods.forEach(mod => {
-      let color = '#616161';
-      if (mod.likert > 0) color = '#2e7d32';
-      if (mod.likert < 0) color = '#c62828';
-      const val = mod.likert > 0 ? '+'+mod.likert : ''+mod.likert;
-      box.innerHTML += `<div style="color:${color};margin:2px 0;">
-        ${val}: ${mod.label}
-      </div>`;
-    });
-  }
-
-  container.parentElement.appendChild(box);
-}
-
-function removeModifierBox() {
-  document.querySelectorAll('.modifier-box').forEach(el => el.remove());
-}
-
-
-// ===============================
-// 🎨 SECTION 4b: Node/Edge Visuals
-// ===============================
-
-function robustnessToLabel(robust) {
-  if (robust < 0.15) return "Minimal";
-  if (robust < 0.35) return "Low";
-  if (robust < 0.60) return "Moderate";
-  if (robust < 0.85) return "High";
-  return "Very High";
-}
-
-function computeVisuals() {
-  cy.nodes().forEach(node => {
-    const nodeType = node.data('type');
-    const displayLabel = node.data('displayLabel') || node.data('origLabel') || "";
-    let label = displayLabel;
-    let borderWidth = 1;
-    let borderColor = '#bbb';
-    let shape = 'roundrectangle';
-
-    if (nodeType === NODE_TYPE_FACT) {
-      // Fact: always "Fact: ...", rectangle, robust border
-      label = `Fact: ${displayLabel}`;
-      shape = 'rectangle';
-      borderWidth = 2;
-      borderColor = '#444';
-      node.removeData('robustness');
-      node.removeData('robustnessLabel');
-    } else if (nodeType === NODE_TYPE_ASSERTION) {
-      // Assertion: show prob if present, otherwise latent
-      if (typeof node.data('prob') === "number") {
-        const p = node.data('prob');
-        let pPct = Math.round(p * 100);
-        if (pPct > 0 && pPct < 1) pPct = 1;
-        if (pPct > 99) pPct = 99;
-        // Only use plain text for label, no HTML
-        label += `\n${pPct}%`;
-        // Robustness logic here as before...
-        const aei = node.incomers('edge').reduce((sum, e) => {
-          if (e.source().data('type') !== NODE_TYPE_ASSERTION && e.source().data('type') !== NODE_TYPE_FACT) return sum;
-          const w = getModifiedEdgeWeight(e);
-          return sum + (typeof w === "number" ? Math.abs(w) : 0);
-        }, 0);
-        const robust = saturation(aei);
-        const robustLabel =
-          robust < 0.15 ? "Minimal" :
-          robust < 0.35 ? "Low" :
-          robust < 0.60 ? "Moderate" :
-          robust < 0.85 ? "High" : "Very High";
-        node.data('robustness', robust);
-        node.data('robustnessLabel', robustLabel);
-        borderWidth = Math.max(2, Math.round(robust * 10));
-        const vivid = 0.2 + 0.8 * robust;
-        borderColor = `rgba(136,80,168,${vivid})`;
-      } else {
-        node.removeData('robustness');
-        node.removeData('robustnessLabel');
-        borderWidth = 1;
-        borderColor = `rgba(136,80,168,0.1)`;
-      }
-    } else if (nodeType === NODE_TYPE_AND) {
-      label = "AND";
-      shape = "diamond";
-      borderWidth = 3;
-      borderColor = "#bbb";
-      node.removeData('robustness');
-      node.removeData('robustnessLabel');
-      // Optionally: store full label in hoverLabel for display on hover
-      if (!node.data('hoverLabel') && displayLabel !== "AND") {
-        node.data('hoverLabel', displayLabel);
-      }
-    } else if (nodeType === NODE_TYPE_OR) {
-      label = "OR";
-      shape = "ellipse";
-      borderWidth = 3;
-      borderColor = "#bbb";
-      node.removeData('robustness');
-      node.removeData('robustnessLabel');
-      if (!node.data('hoverLabel') && displayLabel !== "OR") {
-        node.data('hoverLabel', displayLabel);
-      }
-    } else {
-      label = `[Unknown Type] ${displayLabel}`;
-      borderColor = '#bbb';
-      node.removeData('robustness');
-      node.removeData('robustnessLabel');
-    }
-
-    node.data({
-      label,
-      borderWidth,
-      borderColor,
-      shape
-    });
-    if (DEBUG) logMath(node.id(), `Visual: ${label.replace(/\n/g, ' | ')}`);
-  });
-
-  cy.edges().forEach(edge => {
-    // Edge visuals: Only show weights/modifiers for assertion node edges
-    const targetNode = edge.target();
-    let absW = 0, label = '';
-    if (targetNode.data('type') === NODE_TYPE_ASSERTION) {
-      const effectiveWeight = getModifiedEdgeWeight(edge);
-      // Clamp tiny weights to ±1 for Likert conversion
-      let displayWeight = effectiveWeight;
-      if (Math.abs(effectiveWeight) > 0 && Math.abs(effectiveWeight) < 0.011) {
-        displayWeight = effectiveWeight > 0 ? 0.01 : -0.01;
-      }
-      absW = Math.abs(displayWeight);
-      const likertValue = weightToLikert(displayWeight);
-      const hasModifiers = (edge.data('modifiers') ?? []).length > 0;
-      if (Math.abs(displayWeight) > WEIGHT_MIN || hasModifiers) {
-        label = likertDescriptor(likertValue);
-      }
-    } else {
-      // AND/OR/fact: never show assertion weighting
-      label = '';
-      absW = 0;
-    }
-
-    edge.data({
-      absWeight: absW,
-      weightLabel: label
-    });
-  });
-
-  cy.style().update();
-}
 
 // --- PROPAGATION LOGIC UTILITIES ---
 /** Probability to use for “fact” nodes (never exactly 1.0 to avoid logit infinities) */
@@ -1087,8 +469,13 @@ function convergeEdges({ cy, epsilon, maxIters }) {
       // Only compute weights for assertion node targets
       const targetNode = edge.target();
       let nw = prev;
+      // Debug: check if edge is a real Cytoscape edge object
+      if (!edge || typeof edge.target !== 'function') {
+        console.warn('[convergeEdges] Invalid edge object:', edge);
+      }
       if (targetNode.data('type') === NODE_TYPE_ASSERTION) {
-        nw = getModifiedEdgeWeight(edge);
+        console.debug('[convergeEdges] Calling getModifiedEdgeWeight with edge:', edge);
+        nw = getModifiedEdgeWeight(cy, edge);
       }
       deltas.push({ edge, prev, nw });
       const delta = Math.abs(nw - prev);
@@ -1170,38 +557,35 @@ function convergeNodes({ cy, epsilon, maxIters }) {
         }
       } else if (nodeType === NODE_TYPE_ASSERTION) {
         // Assertion: If no (non-virgin) parents, remain latent (undefined)
-        const inc = node.incomers('edge').filter(e => !e.data('isVirgin'));
-        if (inc.length === 0) {
-          newProb = undefined;
-        } else {
-          newProb = propagateFromParents({
-            baseProb: 0.5, // always start naive
-            parents: inc,
-            getProb: e => {
-              const parent = e.source();
-              const parentType = parent.data('type');
-              if (parentType === NODE_TYPE_FACT) return FACT_PROB;
-              if (typeof parent.data('prob') === "number") return parent.data('prob');
-              // If parent is latent, treat as 0.5 (minimally informative)
-              return 0.5;
-            },
-            getWeight: e => {
-              const targetType = e.target().data('type');
-              if (targetType === NODE_TYPE_ASSERTION) {
-                return (typeof e.data('computedWeight') === "number") ? e.data('computedWeight') : 0;
-              }
-              // For AND/OR, ignored (and not called)
-              return 0;
-            },
-            saturationK: 1,
-            epsilon
-          });
-        }
+        const incomingEdges = node.incomers('edge');
+const nonVirginEdges = incomingEdges.filter(e => !e.data('isVirgin'));
+
+// Explicitly reset node probability when no informative parents
+if (nonVirginEdges.length === 0) {
+  newProb = undefined;
+  node.removeData('prob');  // crucial step to ensure clean slate
+} else {
+  newProb = propagateFromParents({
+    baseProb: 0.5,
+    parents: nonVirginEdges,
+    getProb: e => {
+      const parent = e.source();
+      return parent.data('type') === NODE_TYPE_FACT
+        ? FACT_PROB
+        : typeof parent.data('prob') === "number"
+          ? parent.data('prob')
+          : 0.5;
+    },
+    getWeight: e => e.data('computedWeight') || 0,
+    saturationK: 1,
+    epsilon
+  });
+}
+
       } else {
         // Unknown node type
         newProb = undefined;
       }
-
       deltas.push({ node, prev: node.data('prob'), newProb });
       const delta = Math.abs((typeof newProb === "number" && typeof node.data('prob') === "number") ? (newProb - node.data('prob')) : 0);
       if (delta > maxDelta) maxDelta = delta;
@@ -1250,8 +634,7 @@ function convergeAll({ cy, epsilon = config.epsilon, maxIters = 30 } = {}) {
     nodeResult = { converged: false, error: err };
   }
 
-  computeVisuals(); // <-- ensure visuals update after convergence
-
+computeVisuals(cy); // draws visuals with old isVirgin state
   return { edgeResult, nodeResult };
 }
 
@@ -1285,7 +668,7 @@ cy.add({
   },
   position: evt.position
 });
-        setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0);
+        setTimeout(() => { convergeAll({ cy }); computeVisuals(cy); }, 0);
       }
     },
     { label: 'Add logic', action: () => {
@@ -1298,7 +681,7 @@ cy.add({
           },
           position: evt.position
         });
-        setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0);
+        setTimeout(() => { convergeAll({ cy }); computeVisuals(cy); }, 0);
       }
     }
     // Optionally: Center Graph menu item if useful.
@@ -1330,7 +713,7 @@ cy.add({
         if (nodeType === NODE_TYPE_FACT && newType === NODE_TYPE_ASSERTION) {
           node.removeData('prob');
         }
-        setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0);
+        setTimeout(() => { convergeAll({ cy }); computeVisuals(cy); }, 0);
         hideMenu();
       };
       list.appendChild(toggleFact);
@@ -1341,7 +724,7 @@ cy.add({
       toggleLogic.onclick = () => {
         const newType = nodeType === NODE_TYPE_AND ? NODE_TYPE_OR : NODE_TYPE_AND;
         node.data({ type: newType });
-        setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0);
+        setTimeout(() => { convergeAll({ cy }); computeVisuals(cy); }, 0);
         hideMenu();
       };
       list.appendChild(toggleLogic);
@@ -1392,7 +775,7 @@ cy.add({
     // Delete always available
     const del = document.createElement('li');
     del.textContent = 'Delete Node';
-    del.onclick = () => { node.remove(); setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0); hideMenu(); };
+    del.onclick = () => { node.remove(); setTimeout(() => { convergeAll({ cy }); computeVisuals(cy); }, 0); hideMenu(); };
     list.appendChild(del);
 
   } else if (evt.target.isEdge && evt.target.isEdge()) {
@@ -1410,8 +793,24 @@ cy.add({
     list.appendChild(rationaleItem);
 
     const del = document.createElement('li');
-    del.textContent = 'Delete This Edge';
-    del.onclick = () => { edge.remove(); setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0); hideMenu(); };
+del.textContent = 'Delete This Edge';
+del.onclick = () => { 
+  edge.remove(); 
+  setTimeout(() => { 
+    convergeAll({ cy }); 
+    cy.nodes().forEach(node => {
+      const inc = node.incomers('edge').filter(e => !e.data('isVirgin'));
+      if (node.data('type') === NODE_TYPE_ASSERTION && inc.length === 0) {
+        node.removeData('prob');
+        node.removeData('robustness');
+        node.removeData('robustnessLabel');
+      }
+    });
+    computeVisuals(cy); 
+  }, 0); 
+  hideMenu(); 
+};
+
     list.appendChild(del);
 
 // Modifiers (disabled in Lite mode)
@@ -1549,7 +948,7 @@ cy.on('tap', 'edge', evt => {
       node.removeData('isVirgin');
     }
   });
-        computeVisuals();
+        computeVisuals(cy);
       }, 0);
     };
 
@@ -1625,7 +1024,7 @@ setTimeout(() => {
       node.removeData('isVirgin');
     }
   });
-  computeVisuals();
+  computeVisuals(cy);
 }, 0);
 });
 
@@ -1670,7 +1069,7 @@ function clearGraph() {
   // Prompt before clearing
   if (!confirm('Are you sure you want to clear the graph?')) return;
   cy.elements().remove();
-  setTimeout(() => { computeVisuals(); }, 0);
+  setTimeout(() => { computeVisuals(cy); }, 0);
   console.log('Graph cleared');
 }
 
@@ -1738,7 +1137,7 @@ cy.add(elements);
 
 // Force layout and rendering, then apply visuals
 cy.layout({ name: 'preset' }).run();
-computeVisuals();
+computeVisuals(cy);
 cy.fit();
 cy.resize();
 resetLayout();
@@ -1755,7 +1154,7 @@ console.log(`Graph loaded from file: ${file.name}`);
 
 function activateBayesTime() {
   // Trigger propagation
-  setTimeout(() => { convergeAll({ cy }); computeVisuals(); }, 0);
+  setTimeout(() => { convergeAll({ cy }); computeVisuals(cy); }, 0);
   console.log('Bayes Time triggered');
 }
 
@@ -1809,7 +1208,7 @@ cy.nodes().forEach(n => {
       node.removeData('isVirgin');
     }
   });
-    computeVisuals();
+    computeVisuals(cy);
     resetLayout();
     console.log('restoreAutosave: Success, graph restored');
   } catch (err) {
@@ -1893,7 +1292,7 @@ function finalizeBayesTimeCPT(userCPT) {
       node.removeData('isVirgin');
     }
   });
-  computeVisuals();
+  computeVisuals(cy);
   alert('Bayes Time CPT entry complete.');
 }
 // Enumerate all possible parent state combinations (assume binary for now: 0=No, 1=Yes)
@@ -1978,7 +1377,7 @@ function startBayesTimeSequence() {
       node.removeData('isVirgin');
     }
   });
-      computeVisuals();
+      computeVisuals(cy);
       alert('Naive Bayes entry complete.');
       return;
     }
@@ -2019,7 +1418,7 @@ onSave: (result) => {
       node.removeData('isVirgin');
     }
   });
-  computeVisuals();
+  computeVisuals(cy);
   advance();
 },
   onPrev: (nodeIdx > 0 || parentIdx > 0) ? retreat : null
