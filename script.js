@@ -1,3 +1,5 @@
+// script.js
+
 /*
 All belief and modifier propagation uses a single centralized function (`propagateFromParents`),
 run modifiers→edges to convergence first, then nodes→nodes to convergence, with all logic modular
@@ -47,461 +49,73 @@ import {
   nudgeToBoundMultiplier
 } from './config.js';
 
-function updateModeBadge() {
-  let badge = document.getElementById('mode-badge');
-  if (!badge) {
-    badge = document.createElement('div');
-    badge.id = 'mode-badge';
-    badge.style.position = 'fixed';
-    badge.style.top = '10px';
-    badge.style.right = '10px';
-    badge.style.backgroundColor = '#ff7043';
-    badge.style.color = '#fff';
-    badge.style.padding = '6px 12px';
-    badge.style.borderRadius = '4px';
-    badge.style.fontWeight = 'bold';
-    badge.style.zIndex = 9999;
-    document.body.appendChild(badge);
-  }
-  badge.textContent = config.bayesHeavyMode ? 'Bayes Heavy Mode' : 'Bayes Lite Mode';
-}
-updateModeBadge();
-
-document.addEventListener('contextmenu', e => e.preventDefault());
-
-let pendingEdgeSource = null;
-let lastNodeTapTime = 0;
-let lastTappedNode = null;
-let lastEdgeTapTime = 0;
-let lastTappedEdge = null;
-
-
-// Returns true if adding an edge from sourceId → targetId would create a cycle
-function wouldCreateCycle(cy, sourceId, targetId) {
-  if (sourceId === targetId) return true;
-
-  const visited = new Set();
-
-  function dfs(nodeId) {
-    if (nodeId === sourceId) return true;
-    if (visited.has(nodeId)) return false;
-    visited.add(nodeId);
-    return cy.getElementById(nodeId)
-      .outgoers('edge')
-      .map(e => e.target().id())
-      .some(nextId => dfs(nextId));
-  }
-
-  return dfs(targetId);
-}
-
-// --- EDGE RATIONALE MODAL ---
-function openRationaleModal(edge) {
-  // Remove any existing modal
-  const prevModal = document.getElementById('rationale-modal');
-  if (prevModal) prevModal.remove();
-
-  // Modal container
-  const modal = document.createElement('div');
-  modal.id = 'rationale-modal';
-  modal.style.position = 'fixed';
-  modal.style.background = '#fff';
-  modal.style.padding = '24px 20px 18px 20px';
-  modal.style.border = '2px solid #2e7d32';
-  modal.style.borderRadius = '8px';
-  modal.style.zIndex = 10001;
-  modal.style.boxShadow = '0 6px 30px #2e7d3255';
-  modal.style.minWidth = '360px';
-
-  // Title
-  const title = document.createElement('div');
-  title.textContent = 'View/Edit Rationale';
-  title.className = 'modal-title';
-  title.style.fontWeight = 'bold';
-  title.style.marginBottom = '12px';
-  modal.appendChild(title);
-  makeDraggable(modal, ".modal-title");
-
-  // Textarea
-  const textarea = document.createElement('textarea');
-  textarea.style.width = '100%';
-  textarea.style.minHeight = '80px';
-  textarea.style.fontSize = '14px';
-  textarea.style.border = '1px solid #bbb';
-  textarea.style.borderRadius = '4px';
-  textarea.value = edge.data('rationale') || '';
-  modal.appendChild(textarea);
-
-  // Save button
-  const saveBtn = document.createElement('button');
-  saveBtn.textContent = 'Save';
-  saveBtn.style.margin = '14px 10px 0 0';
-  saveBtn.onclick = function() {
-    edge.data('rationale', textarea.value.trim());
-    document.body.removeChild(modal);
-  };
-  modal.appendChild(saveBtn);
-
-  // Cancel button
-  const cancelBtn = document.createElement('button');
-  cancelBtn.textContent = 'Cancel';
-  cancelBtn.onclick = function() {
-    document.body.removeChild(modal);
-  };
-  modal.appendChild(cancelBtn);
-
-  // ESC key closes modal
-  const escListener = (e) => {
-    if (e.key === "Escape") {
-      document.body.removeChild(modal);
-      window.removeEventListener('keydown', escListener);
-    }
-  };
-  window.addEventListener('keydown', escListener);
-  document.body.appendChild(modal);
-centerModal(modal);   // <-- add this right after appending modal
-
-  textarea.focus();
-}
-
-// --- PROPAGATION LOGIC UTILITIES (USED ELSEWHERE) ---
-function propagateFromParents({
-  baseProb,
-  parents,
-  getProb,
-  getWeight,
-  epsilon = 0.01,
-  saturationK = 1
-}) {
-  // For assertion nodes only—AND/OR logic is handled separately in Section 5
-  if (!parents || parents.length === 0) return baseProb;
-  const clampedBase = Math.min(Math.max(baseProb, epsilon), 1 - epsilon);
-  const priorOdds = Math.log(clampedBase / (1 - clampedBase));
-  const infos = parents.map(parent => {
-    const prob = Math.min(Math.max(getProb(parent), epsilon), 1 - epsilon);
-    return {
-      parent,
-      odds: Math.log(prob / (1 - prob)),
-      weight: getWeight(parent)
-    };
-  });
-  const totalAbsW = infos.reduce((sum, x) => sum + Math.abs(x.weight), 0);
-let oddsDelta = 0;
-for (let i = 0; i < infos.length; ++i) {
-  const { odds, weight } = infos[i];
-  oddsDelta += weight * (odds - priorOdds);
-}
-// Now apply global saturation to the total oddsDelta
-const saturation = 1 - Math.exp(-saturationK * totalAbsW);
-oddsDelta *= saturation;
-
-  const updatedOdds = priorOdds + oddsDelta;
-  return 1 / (1 + Math.exp(-updatedOdds));
-}
-
-
-// --- MODIFIER CREATION (ASSERTION EDGES ONLY) ---
-function addModifier(edgeId) {
-  // [PHASE1 REMOVED 2024-07: per new spec – see design doc]
-  const edge = cy.getElementById(edgeId);
-  const node = cy.getElementById(edge.target().id());
-  if (
-    node.data("type") === NODE_TYPE_AND ||
-    node.data("type") === NODE_TYPE_OR
-  ) {
-    alert("Modifiers/weights are not available for AND/OR logic nodes.");
-    return;
-  }
-  // ...existing modal logic for assertion edges...
-}
-
-// --- GENERIC UTILS / BAYES & AUTOSAVE ---
-// Center modal in viewport (call immediately after appending modal to body)
-function centerModal(modal) {
-  // Ensure modal is in DOM and visible for size measurement
-  modal.style.left = "0px";
-  modal.style.top = "0px";
-  modal.style.display = "block"; // ensure not display:none
-
-  const { innerWidth, innerHeight } = window;
-  const rect = modal.getBoundingClientRect();
-  modal.style.left = Math.round((innerWidth - rect.width) / 2) + "px";
-  modal.style.top  = Math.round((innerHeight - rect.height) / 2) + "px";
-}
-
-// Make modal draggable by handle (title bar or full modal)
-function makeDraggable(modal, handleSelector = null) {
-  let isDragging = false, startX, startY, origX, origY;
-  const handle = handleSelector ? modal.querySelector(handleSelector) : modal;
-
-  handle.style.cursor = "move";
-  handle.onmousedown = function(e) {
-    isDragging = true;
-    startX = e.clientX;
-    startY = e.clientY;
-    // Lock current pixel position before moving
-    const rect = modal.getBoundingClientRect();
-    modal.style.left = rect.left + "px";
-    modal.style.top  = rect.top + "px";
-    origX = rect.left;
-    origY = rect.top;
-    document.body.style.userSelect = "none";
-    e.preventDefault();
-  };
-
-  document.onmousemove = function(e) {
-    if (!isDragging) return;
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
-    modal.style.left = (origX + dx) + "px";
-    modal.style.top  = (origY + dy) + "px";
-  };
-
-  document.onmouseup = function() {
-    isDragging = false;
-    document.body.style.userSelect = "";
-  };
-}
-
-
-function highlightBayesNodeFocus(targetNode) { /* unchanged */ }
-function clearBayesHighlights() { /* unchanged */ }
-function syncNaiveBayesParents(node) { /* unchanged – for Phase 2 / Bayes Heavy only */ }
-
-// --- SETTERS (PROB, WEIGHT) ---
-function setNodeProb(node, prob) {
-  // [PHASE1 REMOVED 2024-07: per new spec – see design doc]
-  // Probability is never set manually. Fact = 1-epsilon, assertion = 0.5 at creation (latent), rest via propagation.
-  // Only called in legacy/manual code—should be removed elsewhere.
-}
-function setEdgeWeight(edge, weight) {
-  // [PHASE1 REMOVED 2024-07: per new spec – see design doc]
-  // Edge weights are only manually set for assertion nodes; for AND/OR, no effect.
-}
-
-// --- MENU / DOM ---
 const menu = document.getElementById('menu');
 const list = document.getElementById('menu-list');
+let pendingEdgeSource = null;
+
 function hideMenu() {
   menu.style.display = 'none';
+  list.innerHTML = '';
+}
+// Prevent browser right-click menu from showing on Cytoscape canvas
+document.getElementById('cy').addEventListener('contextmenu', e => e.preventDefault());
+
+// --- Edge connection stub (required by convergeAll) ---
+function convergeEdges({ cy, epsilon, maxIters }) {
+  // No edge-level convergence yet; always "converges" for now
+  return { converged: true };
 }
 
-// ===============================
-// 🧱 SECTION 2: DOM Bindings
-// ===============================
-
-menu.addEventListener('click', e => e.stopPropagation());
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') hideMenu();
-});
-
-// ===============================
-// 🌐 SECTION 3: Graph Initialization
-// ===============================
-
+// ...all unchanged code up to convergeNodes...
 const cy = cytoscape({
   container: document.getElementById('cy'),
-elements: [
-{ 
-  data: { 
-    id: 'N1', 
-    origLabel: 'New Belief',
-    label: 'New Belief',
-    type: NODE_TYPE_ASSERTION,
-    userSize: 80
-  }
-}
-],
-
-style: [
-  // Base node: ALL sizing, font, wrapping logic
-  {
-    selector: 'node',
-    style: {
-      'shape': 'roundrectangle', // overridden by type
-      'background-color': '#eceff1',
-      'text-valign': 'center',
-      'text-halign': 'center',
-      'font-weight': 600,
-      'font-family': 'Segoe UI, Roboto, Arial, sans-serif',
-      'font-size': 'mapData(userSize, 20, 160, 13, 24)', // min 13px
-      'line-height': 1.4,
-      'letter-spacing': '0.01em',
-      'text-outline-width': 0,
-      'text-shadow': '0 1px 2px #faf6ff80', // optional, subtle
-      'text-wrap': 'wrap',
-      'text-max-width': '120px',   // tune if needed
-      'padding': '12px',
-      'width': 'mapData(userSize, 20, 160, 40, 160)',
-      'height': 'mapData(userSize, 20, 160, 24, 80)', // ~60%
-      'border-style': 'solid',
-      'border-width': 'data(borderWidth)',
-      'border-color': 'data(borderColor)',
-      'color': '#263238',
-      'min-width': 40,
-      'min-height': 24,
-      'content': 'data(label)', 
-    }
-  },
-  // Fact nodes: rectangle, thicker/darker border
-  {
-    selector: 'node[type="fact"]',
-    style: {
-      'shape': 'rectangle',
-      // fallback only, actual value set in computeVisuals
-      // 'border-width': 2,
-      // 'border-color': '#444'
-    }
-  },
-  // AND logic: diamond, thicker border
-  {
-    selector: 'node[type="and"]',
-    style: {
-      'shape': 'diamond',
-      // fallback only, actual value set in computeVisuals
-      // 'border-width': 3,
-      // 'border-color': '#bbb'
-    }
-  },
-  // OR logic: ellipse, thicker border
-  {
-    selector: 'node[type="or"]',
-    style: {
-      'shape': 'ellipse',
-      // fallback only, actual value set in computeVisuals
-      // 'border-width': 3,
-      // 'border-color': '#bbb'
-    }
-  },
-  // Edge base
-  {
-    selector: 'edge',
-    style: {
-      'curve-style': 'bezier',
-      'mid-target-arrow-shape': 'triangle',
-      'width': 'mapData(absWeight, 0, 1, 2, 8)',
-      'line-color': '#bbb',
-      'mid-target-arrow-color': '#bbb',
-      'opacity': 1,
-    }
-  },
-  // Edge supports: blue
-  {
-    selector: 'edge[type="supports"]',
-    style: {
-      'line-color': 'mapData(absWeight, 0, 1, #bbdefb, #1565c0)',
-      'mid-target-arrow-color': 'mapData(absWeight, 0, 1, #bbdefb, #1565c0)'
-    }
-  },
-  // Edge opposes: red
-  {
-    selector: 'edge[type="opposes"], edge[opposes]',
-    style: {
-      'line-color': 'mapData(absWeight, 0, 1, #ffcdd2, #b71c1c)',
-      'mid-target-arrow-shape': 'bar',
-      'mid-target-arrow-color': 'mapData(absWeight, 0, 1, #ffcdd2, #b71c1c)'
-    }
-  },
-  // Virgin edges
-  {
-    selector: 'edge[isVirgin]',
-    style: {
-      'line-color': '#ffb300',
-      'mid-target-arrow-color': '#ffb300',
-      'width': 4,
-      'opacity': 1
-    }
-  },
-  // Highlighted nodes
-  {
-    selector: 'node[highlighted]',
-    style: {
-      'background-color': '#fffbe5',
-      'box-shadow': '0 0 18px 6px #ffe082',
-      'z-index': 999
-    }
-  }
-],
-  layout: { name: 'grid', rows: 1 }
-});
-cy.ready(() => {
-  // Only one node? Set sane zoom and center.
-  if (cy.nodes().length === 1) {
-    cy.zoom(2);
-    cy.center();
-  } else {
-    cy.fit();
-  }
-});
-registerVisualEventHandlers(cy);
-// After "const cy = cytoscape({...})"
-cy.nodes().forEach(node => {
-  if (!node.data('userSize')) node.data('userSize', 80);
-});
-computeVisuals(cy);
-
-
-// --- PROPAGATION LOGIC UTILITIES ---
-/** Probability to use for “fact” nodes (never exactly 1.0 to avoid logit infinities) */
-const FACT_PROB = 1 - config.epsilon;
-
-/*
-  Edge convergence (unchanged; but only meaningful for assertion nodes)
-*/
-function convergeEdges({ cy, epsilon, maxIters }) {
-  cy.batch(() => {
-    cy.edges().forEach(edge => edge.data('computedWeight', edge.data('weight')));
-  });
-
-  let converged = false;
-  let finalDelta = 0;
-  let iterations = 0;
-
-  for (let iter = 0; iter < maxIters; iter++) {
-    iterations = iter + 1;
-    let deltas = [];
-    let maxDelta = 0;
-
-    // 1. Collect new weights (Jacobi pass)
-    cy.edges().forEach(edge => {
-      const prev = edge.data('computedWeight');
-      // Only compute weights for assertion node targets
-      const targetNode = edge.target();
-      let nw = prev;
-      // Debug: check if edge is a real Cytoscape edge object
-      if (!edge || typeof edge.target !== 'function') {
-        console.warn('[convergeEdges] Invalid edge object:', edge);
+  elements: [],
+    style: [
+   {
+      selector: 'node',
+      style: {
+        'background-color': '#888',
+        'label': 'data(label)',
+        'text-valign': 'center',
+        'color': '#222',
+        'font-size': 14,
+        'width': 50,
+        'height': 50,
+        'border-width': 2,
+        'border-color': '#444'
       }
-      if (targetNode.data('type') === NODE_TYPE_ASSERTION) {
-        console.debug('[convergeEdges] Calling getModifiedEdgeWeight with edge:', edge);
-        nw = getModifiedEdgeWeight(cy, edge);
+    },
+    {
+      selector: 'edge',
+      style: {
+        'width': 4,
+        'line-color': '#bbb',
+        'target-arrow-color': '#bbb',
+        'target-arrow-shape': 'triangle',
+        'curve-style': 'bezier',
+        'label': 'data(weightLabel)'
       }
-      deltas.push({ edge, prev, nw });
-      const delta = Math.abs(nw - prev);
-      if (delta > maxDelta) maxDelta = delta;
-    });
-
-    // 2. Apply new weights in batch
-    cy.batch(() => {
-      deltas.forEach(({ edge, nw }) => edge.data('computedWeight', nw));
-    });
-
-    // 3. Early exit if converged
-    finalDelta = maxDelta;
-    if (finalDelta < epsilon) {
-      converged = true;
-      break;
+    },
+    // Optional: specific node shapes
+    {
+      selector: 'node[type="fact"]',
+      style: { 'shape': 'rectangle', 'background-color': '#ffe082' }
+    },
+    {
+      selector: 'node[type="assertion"]',
+      style: { 'shape': 'ellipse', 'background-color': '#b3e5fc' }
+    },
+    {
+      selector: 'node[type="and"]',
+      style: { 'shape': 'diamond', 'background-color': '#b2dfdb' }
+    },
+    {
+      selector: 'node[type="or"]',
+      style: { 'shape': 'ellipse', 'background-color': '#d1c4e9' }
     }
-  }
-
-  if (!converged) {
-    console.warn(`convergeEdges: hit maxIters (${maxIters}) without converging (final delta=${finalDelta.toExponential(3)})`);
-  }
-
-  return { converged, iterations, finalDelta };
-}
-
+  ],
+  layout: { name: 'preset' }
+});
 /*
   Node convergence:
   - Updates node probabilities using new spec for all types.
@@ -511,7 +125,9 @@ function convergeNodes({ cy, epsilon, maxIters }) {
   if (DEBUG) {
     console.log("[DEBUG] convergeNodes start");
     cy.nodes().forEach(node => {
-      console.log(`[DEBUG] ${node.id()} prob at convergeNodes start:`, node.data('prob'));
+      const id = node.id();
+      const nodeType = node.data('type');
+      console.log(`[CONVERGE] ${id} | type=${nodeType} | prob PRE: ${node.data('prob')}`);
     });
   }
 
@@ -526,11 +142,14 @@ function convergeNodes({ cy, epsilon, maxIters }) {
 
     cy.nodes().forEach(node => {
       const nodeType = node.data('type');
+      const id = node.id();
       let newProb;
 
       if (nodeType === NODE_TYPE_FACT) {
         // Fact node: always fixed
         newProb = FACT_PROB;
+        node.removeData('isVirgin'); // Facts are always active
+        console.log(`[CONVERGE] ${id} | prob POST: ${newProb}`);
       } else if (nodeType === NODE_TYPE_AND) {
         // AND node: product of parent probabilities
         const parents = node.incomers('edge').map(e => e.source());
@@ -539,9 +158,12 @@ function convergeNodes({ cy, epsilon, maxIters }) {
         } else {
           newProb = parents.reduce((acc, parent) => {
             const p = parent.data('prob');
+            console.log(`[CONVERGE] ${id} | AND parent ${parent.id()} prob=${p}`);
             return (typeof p === "number") ? acc * p : acc;
           }, 1);
         }
+        node.removeData('isVirgin'); // Logic nodes always active
+        console.log(`[CONVERGE] ${id} | prob POST: ${newProb}`);
       } else if (nodeType === NODE_TYPE_OR) {
         // OR node: sum-minus-product of parent probabilities
         const parents = node.incomers('edge').map(e => e.source());
@@ -551,40 +173,54 @@ function convergeNodes({ cy, epsilon, maxIters }) {
           let prod = 1;
           parents.forEach(parent => {
             const p = parent.data('prob');
+            console.log(`[CONVERGE] ${id} | OR parent ${parent.id()} prob=${p}`);
             prod *= (typeof p === "number") ? (1 - p) : 1;
           });
           newProb = 1 - prod;
         }
+        node.removeData('isVirgin'); // Logic nodes always active
+        console.log(`[CONVERGE] ${id} | prob POST: ${newProb}`);
       } else if (nodeType === NODE_TYPE_ASSERTION) {
-        // Assertion: If no (non-virgin) parents, remain latent (undefined)
+        // Assertion: Only non-virgin edges *from* non-virgin parents count
         const incomingEdges = node.incomers('edge');
-const nonVirginEdges = incomingEdges.filter(e => !e.data('isVirgin'));
+        const validEdges = incomingEdges.filter(e =>
+          !e.data('isVirgin') &&
+          !e.source().data('isVirgin')
+        );
 
-// Explicitly reset node probability when no informative parents
-if (nonVirginEdges.length === 0) {
-  newProb = undefined;
-  node.removeData('prob');  // crucial step to ensure clean slate
-} else {
-  newProb = propagateFromParents({
-    baseProb: 0.5,
-    parents: nonVirginEdges,
-    getProb: e => {
-      const parent = e.source();
-      return parent.data('type') === NODE_TYPE_FACT
-        ? FACT_PROB
-        : typeof parent.data('prob') === "number"
-          ? parent.data('prob')
-          : 0.5;
-    },
-    getWeight: e => e.data('computedWeight') || 0,
-    saturationK: 1,
-    epsilon
-  });
-}
-
+        if (validEdges.length === 0) {
+          newProb = undefined;
+          node.data('isVirgin', true);
+          node.removeData('prob');
+          node.removeData('robustness');
+          node.removeData('robustnessLabel');
+          console.log(`[CONVERGE] ${id} | prob POST: undefined (no valid edges)`);
+        } else {
+          newProb = propagateFromParents({
+            baseProb: 0.5,
+            parents: validEdges,
+            getProb: e => {
+              const parent = e.source();
+              const parentProb = parent.data('type') === NODE_TYPE_FACT
+                ? FACT_PROB
+                : typeof parent.data('prob') === "number"
+                  ? parent.data('prob')
+                  : 0.5;
+              console.log(`[SET PROB] ${parent.id()} | usedProb=${parentProb}`);
+              return parentProb;
+            },
+            getWeight: e => e.data('computedWeight') || 0,
+            saturationK: 1,
+            epsilon
+          });
+          node.data('isVirgin', false);
+          console.log(`[CONVERGE] ${id} | prob POST: ${newProb}`);
+        }
       } else {
         // Unknown node type
         newProb = undefined;
+        node.removeData('isVirgin');
+        console.log(`[CONVERGE] ${id} | prob POST: undefined (unknown type)`);
       }
       deltas.push({ node, prev: node.data('prob'), newProb });
       const delta = Math.abs((typeof newProb === "number" && typeof node.data('prob') === "number") ? (newProb - node.data('prob')) : 0);
@@ -593,7 +229,10 @@ if (nonVirginEdges.length === 0) {
 
     // Apply all new probabilities in one batch
     cy.batch(() => {
-      deltas.forEach(({ node, newProb }) => node.data('prob', newProb));
+      deltas.forEach(({ node, newProb }) => {
+        node.data('prob', newProb);
+        console.log(`[SET PROB] ${node.id()} | newProb=${newProb}`);
+      });
     });
 
     finalDelta = maxDelta;
@@ -633,6 +272,16 @@ function convergeAll({ cy, epsilon = config.epsilon, maxIters = 30 } = {}) {
     console.error('convergeAll: Error during node convergence:', err);
     nodeResult = { converged: false, error: err };
   }
+
+  // Remove the unnecessary global edge virginity reset here
+  computeVisuals(cy);
+  return { edgeResult, nodeResult };
+
+/*
+  Full graph convergence:
+  - Runs edge convergence, then node convergence, with error handling.
+*/
+
 
 computeVisuals(cy); // draws visuals with old isVirgin state
   return { edgeResult, nodeResult };

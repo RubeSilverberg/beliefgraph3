@@ -1,3 +1,5 @@
+// Visuals.js
+
 // visuals.js
 
 import {
@@ -25,7 +27,7 @@ import {
 // --- Robustness label
 export function robustnessToLabel(robust) {
   if (robust < 0.15) return "Minimal";
-  if (robust < 0.35) return "Low";
+  if (robust < 0.35) return "Low";s
   if (robust < 0.60) return "Moderate";
   if (robust < 0.85) return "High";
   return "Very High";
@@ -33,56 +35,71 @@ export function robustnessToLabel(robust) {
 
 // --- Main visuals function (requires cy and getModifiedEdgeWeight passed in)
 export function computeVisuals(cy) {
+  console.log('[COMPUTEVISUALS ENTRY]');
   cy.nodes().forEach(node => {
+    const id = node.id();
+    const label = node.data('label');
+    const display = node.data('displayLabel');
+    const orig = node.data('origLabel');
+    const prob = node.data('prob');
+    const hasLabel = label !== undefined && label !== null && String(label).trim() !== '';
+    console.log(`[COMPUTEVISUALS] ${id} | label="${label}" | display="${display}" | orig="${orig}" | prob=${prob} | hasLabel=${hasLabel}`);
+    if (!hasLabel) {
+      console.warn(`[MISSING LABEL] ${id} missing or blank label`);
+    }
     const nodeType = node.data('type');
-    const displayLabel = node.data('displayLabel') || node.data('origLabel') || "";
-    let label = displayLabel;
+    const displayLabel = display || orig || "";
+    let newLabel = displayLabel;
     let borderWidth = 1;
     let borderColor = '#bbb';
     let shape = 'roundrectangle';
 
     if (nodeType === NODE_TYPE_FACT) {
-      label = `Fact: ${displayLabel}`;
+    newLabel = `Fact: ${displayLabel}`;
       shape = 'rectangle';
       borderWidth = 2;
       borderColor = '#444';
       node.removeData('robustness');
       node.removeData('robustnessLabel');
     } else if (nodeType === NODE_TYPE_ASSERTION) {
-       const incomingEdges = node.incomers('edge');
-  const nonVirginEdges = incomingEdges.filter(e => !e.data('isVirgin'));
+      const incomingEdges = node.incomers('edge');
+      // Only count edges that are non-virgin and whose parent is also non-virgin
+      const validEdges = incomingEdges.filter(e =>
+        !e.data('isVirgin') &&
+        !e.source().data('isVirgin')
+      );
 
-  if (typeof node.data('prob') === "number" && nonVirginEdges.length > 0) {
-    const p = node.data('prob');
-    let pPct = Math.round(p * 100);
-    if (pPct > 0 && pPct < 1) pPct = 1;
-    if (pPct > 99) pPct = 99;
-    label += `\n${pPct}%`;
+    if (typeof node.data('prob') === "number" && validEdges.length > 0) {
+      const p = node.data('prob');
+      let pPct = Math.round(p * 100);
+      if (pPct > 0 && pPct < 1) pPct = 1;
+      if (pPct > 99) pPct = 99;
+      newLabel += `\n${pPct}%`;
 
-    const aei = nonVirginEdges.reduce((sum, e) => {
-      const sourceType = e.source().data('type');
-      if (sourceType !== NODE_TYPE_ASSERTION && sourceType !== NODE_TYPE_FACT) return sum;
-      const w = getModifiedEdgeWeight(cy, e);
-      return sum + (typeof w === "number" ? Math.abs(w) : 0);
-    }, 0);
-    
-    const robust = saturation(aei);
-    const robustLabel = robustnessToLabel(robust);
-    node.data('robustness', robust);
-    node.data('robustnessLabel', robustLabel);
-    borderWidth = Math.max(2, Math.round(robust * 10));
-    const vivid = 0.2 + 0.8 * robust;
-    borderColor = `rgba(136,80,168,${vivid})`;
-  } else {
-    label += `\n—`;
-    node.removeData('robustness');
-    node.removeData('robustnessLabel');
-    borderWidth = 1;
-    borderColor = `rgba(136,80,168,0.1)`;
-}
+        const aei = validEdges.reduce((sum, e) => {
+          const sourceType = e.source().data('type');
+          if (sourceType !== NODE_TYPE_ASSERTION && sourceType !== NODE_TYPE_FACT) return sum;
+          const w = getModifiedEdgeWeight(cy, e);
+          return sum + (typeof w === "number" ? Math.abs(w) : 0);
+        }, 0);
+        
+        const robust = saturation(aei);
+        const robustLabel = robustnessToLabel(robust);
+        node.data('robustness', robust);
+        node.data('robustnessLabel', robustLabel);
+        borderWidth = Math.max(2, Math.round(robust * 10));
+        const vivid = 0.2 + 0.8 * robust;
+        borderColor = `rgba(136,80,168,${vivid})`;
+      } else {
+    newLabel += `\n—`;
+        node.removeData('robustness');
+        node.removeData('robustnessLabel');
+        borderWidth = 1;
+        borderColor = `rgba(136,80,168,0.1)`;
+      }
 
     } else if (nodeType === NODE_TYPE_AND) {
-      label = "AND";
+    newLabel = "AND";
       shape = "diamond";
       borderWidth = 3;
       borderColor = "#bbb";
@@ -92,7 +109,7 @@ export function computeVisuals(cy) {
         node.data('hoverLabel', displayLabel);
       }
     } else if (nodeType === NODE_TYPE_OR) {
-      label = "OR";
+    newLabel = "OR";
       shape = "ellipse";
       borderWidth = 3;
       borderColor = "#bbb";
@@ -102,19 +119,20 @@ export function computeVisuals(cy) {
         node.data('hoverLabel', displayLabel);
       }
     } else {
-      label = `[Unknown Type] ${displayLabel}`;
+    newLabel = `[Unknown Type] ${displayLabel}`;
       borderColor = '#bbb';
       node.removeData('robustness');
       node.removeData('robustnessLabel');
     }
 
     node.data({
-      label,
-      borderWidth,
-      borderColor,
-      shape
-    });
-    if (DEBUG) logMath(node.id(), `Visual: ${label.replace(/\n/g, ' | ')}`);
+    label: newLabel,
+    borderWidth,
+    borderColor,
+    shape
+  });
+  console.log(`[LABEL UPDATED] ${id} | newLabel="${newLabel}"`);
+  if (DEBUG) logMath(node.id(), `Visual: ${newLabel.replace(/\n/g, ' | ')}`);
   });
 
   cy.edges().forEach(edge => {
