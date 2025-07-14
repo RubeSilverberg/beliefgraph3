@@ -1,5 +1,6 @@
+console.log("Loaded style array:", typeof style !== 'undefined' ? style : '[style not defined]');
 // visuals.js
-
+console.log("Loaded visuals.js");
 import {
   NODE_TYPE_FACT,
   NODE_TYPE_ASSERTION,

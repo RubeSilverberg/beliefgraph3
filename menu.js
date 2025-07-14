@@ -1,3 +1,4 @@
+console.log("Loaded menu.js");
 import { wouldCreateCycle } from './logic.js';
 
 export function setupMenuAndEdgeModals({

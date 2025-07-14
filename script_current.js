@@ -1,3 +1,4 @@
+console.log("Loaded style array:", typeof style !== 'undefined' ? style : '[style not defined]');
 // script_current.js
 
 import {

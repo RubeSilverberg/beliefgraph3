@@ -1,6 +1,6 @@
 // modals.js
 // All modal popup creation and event handling logic
-
+console.log("Loaded modals.js");
 // Generic show/hide modal (if you want a unified interface, but not strictly required here)
 export function showModal(modal) {
   document.body.appendChild(modal);

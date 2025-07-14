@@ -1,3 +1,5 @@
+console.log("Loaded logic.js");
+
 // --- Helper Functions ---
 
 export function propagateFromParents({ baseProb, parents, getProb, getWeight, saturationK, epsilon }) {
