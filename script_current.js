@@ -40,7 +40,11 @@ import {
   startBayesTimeSequence,
   convergeAll,
   wouldCreateCycle,
-  // ...any other logic exports you use directly
+  getTopologicallySortedNodesWithParents,
+  syncNaiveBayesParents,
+  clearBayesHighlights,
+  highlightBayesNodeFocus,
+  // If you later add more, include here
 } from './logic.js';
 
 import {
@@ -50,50 +54,17 @@ import {
   openRationaleModal,
   openCPTModalTwoPerParent,
   openModifierModal
-} from './modal.js';
+} from './modals.js';
 
 import { setupMenuAndEdgeModals } from './menu.js';
 
+// Attach computeVisuals to window for cross-module use
+window.computeVisuals = computeVisuals;
+
+// Suppress browser context menu globally
 document.addEventListener('contextmenu', e => e.preventDefault());
-// ====== Cytoscape Setup (initialize cy with style/layout as before) ======
-// ... (your Cytoscape init code here; unchanged)
 
-// ====== Custom Context Menu and Event Wiring ======
-// (Paste your menu/context logic here, but do not redefine model logic functions)
-
-// ====== Interaction: Tap, Double-Tap, Edge Creation ======
-// (All event listeners—tap, double-tap, etc.—should just call the right imported functions)
-
-// ====== Button Event Hookup ======
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('btnRestoreAutosave').addEventListener('click', restoreAutosave);
-  document.getElementById('btnResetLayout').addEventListener('click', resetLayout);
-  document.getElementById('btnClearGraph').addEventListener('click', clearGraph);
-  document.getElementById('btnExportExcel').addEventListener('click', exportToExcelFromModel);
-  document.getElementById('btnSaveGraph').addEventListener('click', saveGraph);
-  document.getElementById('btnLoadGraph').addEventListener('click', loadGraph);
-  document.getElementById('btnBayesTime').addEventListener('click', startBayesTimeSequence);
-});
-
-// ====== Autosave Timer ======
-setInterval(autosave, 5 * 60 * 1000);
-
-// ====== Quiet Mode: Suppress Known Warnings/Errors ======
-(function(){
-  const origError = console.error;
-  const origWarn  = console.warn;
-  console.error = function(...args) {
-    const msg = args[0] + '';
-    if (msg.includes('layoutBase') || msg.includes('memoize')) return;
-    origError.apply(console, args);
-  };
-  console.warn = function(...args) {
-    const msg = args[0] + '';
-    if (msg.includes('The style value of `label` is deprecated')) return;
-    origWarn.apply(console, args);
-  };
-})();
-// ====== Cytoscape Setup ======
+// ====== Cytoscape Setup: Custom Node & Edge Styles ======
 const cy = cytoscape({
   container: document.getElementById('cy'),
   elements: [],
@@ -139,10 +110,15 @@ const cy = cytoscape({
       selector: 'node[type="or"]',
       style: { 'shape': 'ellipse', 'background-color': '#d1c4e9' }
     }
+    // Add advanced selectors as needed
   ],
   layout: { name: 'preset' }
 });
 
+// Make cy global if needed elsewhere
+window.cy = cy;
+
+// Ensure right-click suppression on the Cytoscape canvas (for browsers that don't respect document-level handler)
 setTimeout(() => {
   cy.container().addEventListener('contextmenu', e => {
     e.preventDefault();
@@ -150,11 +126,10 @@ setTimeout(() => {
   });
 }, 0);
 
+// Register all hover/visual event handlers
+registerVisualEventHandlers(cy);
 
-// Optionally, make cy globally accessible for debugging or cross-module use:
-window.cy = cy;
-
-// ====== (Event wiring and menu logic go below this) ======
+// Register custom context menu, edge modals, etc.
 setupMenuAndEdgeModals({
   cy,
   convergeAll,
@@ -167,3 +142,33 @@ setupMenuAndEdgeModals({
   NODE_TYPE_AND,
   NODE_TYPE_OR
 });
+
+// ====== Button Event Hookup ======
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('btnRestoreAutosave').addEventListener('click', restoreAutosave);
+  document.getElementById('btnResetLayout').addEventListener('click', resetLayout);
+  document.getElementById('btnClearGraph').addEventListener('click', clearGraph);
+  document.getElementById('btnExportExcel').addEventListener('click', exportToExcelFromModel);
+  document.getElementById('btnSaveGraph').addEventListener('click', saveGraph);
+  document.getElementById('btnLoadGraph').addEventListener('click', loadGraph);
+  document.getElementById('btnBayesTime').addEventListener('click', startBayesTimeSequence);
+});
+
+// ====== Autosave Timer ======
+setInterval(autosave, 5 * 60 * 1000);
+
+// ====== Quiet Mode: Suppress Known Warnings/Errors ======
+(function(){
+  const origError = console.error;
+  const origWarn  = console.warn;
+  console.error = function(...args) {
+    const msg = args[0] + '';
+    if (msg.includes('layoutBase') || msg.includes('memoize')) return;
+    origError.apply(console, args);
+  };
+  console.warn = function(...args) {
+    const msg = args[0] + '';
+    if (msg.includes('The style value of `label` is deprecated')) return;
+    origWarn.apply(console, args);
+  };
+})();

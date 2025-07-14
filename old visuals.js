@@ -1,3 +1,5 @@
+// Visuals.js
+
 // visuals.js
 
 import {
@@ -5,18 +7,24 @@ import {
   NODE_TYPE_ASSERTION,
   NODE_TYPE_AND,
   NODE_TYPE_OR,
+  EDGE_TYPE_SUPPORTS,
+  EDGE_TYPE_OPPOSES,
+  ALLOWED_NODE_TYPES,
+  ALLOWED_EDGE_TYPES,
   DEBUG,
   logMath,
+  likertToWeight,
   weightToLikert,
   likertDescriptor,
   saturation,
+  config,
+  WEIGHT_MIN,
   getModifiedEdgeWeight,
-  WEIGHT_MIN
+  updateEdgeModifierLabel,
+  nudgeToBoundMultiplier
 } from './config.js';
 
-/**
- * Convert robustness value [0,1] to qualitative label.
- */
+// --- Robustness label
 export function robustnessToLabel(robust) {
   if (robust < 0.15) return "Minimal";
   if (robust < 0.35) return "Low";
@@ -25,21 +33,29 @@ export function robustnessToLabel(robust) {
   return "Very High";
 }
 
-/**
- * Main function to update node/edge visuals based on graph state.
- * Should be called after any probability or weight update.
- */
+// --- Main visuals function (requires cy and getModifiedEdgeWeight passed in)
 export function computeVisuals(cy) {
+  console.log('[COMPUTEVISUALS ENTRY]');
   cy.nodes().forEach(node => {
+    const id = node.id();
+    const label = node.data('label');
+    const display = node.data('displayLabel');
+    const orig = node.data('origLabel');
+    const prob = node.data('prob');
+    const hasLabel = label !== undefined && label !== null && String(label).trim() !== '';
+    console.log(`[COMPUTEVISUALS] ${id} | label="${label}" | display="${display}" | orig="${orig}" | prob=${prob} | hasLabel=${hasLabel}`);
+    if (!hasLabel) {
+      console.warn(`[MISSING LABEL] ${id} missing or blank label`);
+    }
     const nodeType = node.data('type');
-    const displayLabel = node.data('displayLabel') || node.data('origLabel') || "";
-    let label = displayLabel;
+    const displayLabel = display || orig || "";
+    let newLabel = displayLabel;
     let borderWidth = 1;
     let borderColor = '#bbb';
     let shape = 'roundrectangle';
 
     if (nodeType === NODE_TYPE_FACT) {
-      label = `Fact: ${displayLabel}`;
+    newLabel = `Fact: ${displayLabel}`;
       shape = 'rectangle';
       borderWidth = 2;
       borderColor = '#444';
@@ -53,12 +69,12 @@ export function computeVisuals(cy) {
         !e.source().data('isVirgin')
       );
 
-      if (typeof node.data('prob') === "number" && validEdges.length > 0) {
-        const p = node.data('prob');
-        let pPct = Math.round(p * 100);
-        if (pPct > 0 && pPct < 1) pPct = 1;
-        if (pPct > 99) pPct = 99;
-        label += `\n${pPct}%`;
+    if (typeof node.data('prob') === "number" && validEdges.length > 0) {
+      const p = node.data('prob');
+      let pPct = Math.round(p * 100);
+      if (pPct > 0 && pPct < 1) pPct = 1;
+      if (pPct > 99) pPct = 99;
+      newLabel += `\n${pPct}%`;
 
         const aei = validEdges.reduce((sum, e) => {
           const sourceType = e.source().data('type');
@@ -66,7 +82,7 @@ export function computeVisuals(cy) {
           const w = getModifiedEdgeWeight(cy, e);
           return sum + (typeof w === "number" ? Math.abs(w) : 0);
         }, 0);
-
+        
         const robust = saturation(aei);
         const robustLabel = robustnessToLabel(robust);
         node.data('robustness', robust);
@@ -75,14 +91,15 @@ export function computeVisuals(cy) {
         const vivid = 0.2 + 0.8 * robust;
         borderColor = `rgba(136,80,168,${vivid})`;
       } else {
-        label += `\n—`;
+    newLabel += `\n—`;
         node.removeData('robustness');
         node.removeData('robustnessLabel');
         borderWidth = 1;
         borderColor = `rgba(136,80,168,0.1)`;
       }
+
     } else if (nodeType === NODE_TYPE_AND) {
-      label = "AND";
+    newLabel = "AND";
       shape = "diamond";
       borderWidth = 3;
       borderColor = "#bbb";
@@ -92,7 +109,7 @@ export function computeVisuals(cy) {
         node.data('hoverLabel', displayLabel);
       }
     } else if (nodeType === NODE_TYPE_OR) {
-      label = "OR";
+    newLabel = "OR";
       shape = "ellipse";
       borderWidth = 3;
       borderColor = "#bbb";
@@ -102,19 +119,20 @@ export function computeVisuals(cy) {
         node.data('hoverLabel', displayLabel);
       }
     } else {
-      label = `[Unknown Type] ${displayLabel}`;
+    newLabel = `[Unknown Type] ${displayLabel}`;
       borderColor = '#bbb';
       node.removeData('robustness');
       node.removeData('robustnessLabel');
     }
 
     node.data({
-      label,
-      borderWidth,
-      borderColor,
-      shape
-    });
-    if (DEBUG) logMath(node.id(), `Visual: ${label.replace(/\n/g, ' | ')}`);
+    label: newLabel,
+    borderWidth,
+    borderColor,
+    shape
+  });
+  console.log(`[LABEL UPDATED] ${id} | newLabel="${newLabel}"`);
+  if (DEBUG) logMath(node.id(), `Visual: ${newLabel.replace(/\n/g, ' | ')}`);
   });
 
   cy.edges().forEach(edge => {
@@ -129,7 +147,7 @@ export function computeVisuals(cy) {
       absW = Math.abs(displayWeight);
       const likertValue = weightToLikert(displayWeight);
       const hasModifiers = (edge.data('modifiers') ?? []).length > 0;
-      if (Math.abs(displayWeight) > WEIGHT_MIN || hasModifiers) {
+      if (Math.abs(displayWeight) > 0.01 || hasModifiers) {
         label = likertDescriptor(likertValue);
       }
     } else {
@@ -145,9 +163,7 @@ export function computeVisuals(cy) {
   cy.style().update();
 }
 
-/**
- * Draw floating modifier boxes only for assertion node edges.
- */
+// --- Draws floating modifier boxes only for assertion node edges
 export function drawModifierBoxes(cy) {
   document.querySelectorAll('.modifier-box').forEach(el => el.remove());
   cy.edges().forEach(edge => {
@@ -190,10 +206,7 @@ export function drawModifierBoxes(cy) {
     container.parentElement.appendChild(box);
   });
 }
-
-/**
- * Node hover: probability/logic display per node type.
- */
+// --- Node hover: probability/logic display per node type ---
 export function showNodeHoverBox(cy, node) {
   removeNodeHoverBox();
   const pos = node.renderedPosition();
@@ -232,7 +245,7 @@ export function showNodeHoverBox(cy, node) {
     }
     const rlabel = node.data('robustnessLabel');
     if (rlabel) {
-      box.innerHTML += `<br><span><b style="color:#8000ff">Robustness</b>: <b>${rlabel}</b></span>`;
+      box.innerHTML += `<br><span><b style=\"color:#8000ff\">Robustness</b>: <b>${rlabel}</b></span>`;
     }
   } else if (nodeType === NODE_TYPE_AND) {
     box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><i>AND logic node<br>(product of parent probs)</i>`;
@@ -249,9 +262,6 @@ export function removeNodeHoverBox() {
   document.querySelectorAll('.node-hover-box').forEach(el => el.remove());
 }
 
-/**
- * Edge hover: only show for assertion node targets.
- */
 export function showModifierBox(cy, edge) {
   removeModifierBox();
   const targetNode = edge.target();
@@ -259,6 +269,7 @@ export function showModifierBox(cy, edge) {
     return;
   }
   const mods = edge.data('modifiers') ?? [];
+  // You may need to import or pass in weightToLikert/likertDescriptor as above
   const baseLikert = weightToLikert(edge.data('weight'));
   const baseLabel = likertDescriptor(baseLikert);
 
@@ -308,11 +319,6 @@ export function showModifierBox(cy, edge) {
 export function removeModifierBox() {
   document.querySelectorAll('.modifier-box').forEach(el => el.remove());
 }
-
-/**
- * Register Cytoscape event handlers for all node/edge hover visuals.
- * Should be called once after cy init.
- */
 export function registerVisualEventHandlers(cy) {
   cy.on('mouseover', 'node', evt => {
     showNodeHoverBox(cy, evt.target);

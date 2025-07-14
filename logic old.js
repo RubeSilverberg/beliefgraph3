@@ -1,7 +1,7 @@
 // --- Helper Functions ---
 
 export function propagateFromParents({ baseProb, parents, getProb, getWeight, saturationK, epsilon }) {
-  // Legacy, no longer used: for reference only
+  // Weighted sum with saturation (simple sigmoid)
   let total = 0, totalWeight = 0;
   parents.forEach(e => {
     const prob = getProb(e);
@@ -45,86 +45,17 @@ export function highlightBayesNodeFocus(node) {
   node.data('highlighted', true);
 }
 
-// --- Robust Belief Propagation Logic ---
+// --- Core Belief Propagation Logic ---
 
-// FACT_PROB: Never exactly 1 to avoid logit infinity (move to config if needed)
-export const FACT_PROB = 0.99;
-
-// Robust propagateFromParents for assertion nodes (logit odds, global saturation)
-function propagateFromParentsRobust({ baseProb, parents, getProb, getWeight, epsilon = 0.01, saturationK = 1 }) {
-  if (!parents || parents.length === 0) return baseProb;
-  const clampedBase = Math.min(Math.max(baseProb, epsilon), 1 - epsilon);
-  const priorOdds = Math.log(clampedBase / (1 - clampedBase));
-  const infos = parents.map(parent => {
-    const prob = Math.min(Math.max(getProb(parent), epsilon), 1 - epsilon);
-    return {
-      parent,
-      odds: Math.log(prob / (1 - prob)),
-      weight: getWeight(parent)
-    };
-  });
-  const totalAbsW = infos.reduce((sum, x) => sum + Math.abs(x.weight), 0);
-  let oddsDelta = 0;
-  for (let i = 0; i < infos.length; ++i) {
-    const { odds, weight } = infos[i];
-    oddsDelta += weight * (odds - priorOdds);
-  }
-  // Apply global saturation to oddsDelta
-  const saturation = 1 - Math.exp(-saturationK * totalAbsW);
-  oddsDelta *= saturation;
-  const updatedOdds = priorOdds + oddsDelta;
-  return 1 / (1 + Math.exp(-updatedOdds));
+export function convergeEdges({ cy }) {
+  // No edge-level convergence yet; always "converges"
+  return { converged: true };
 }
 
-export function convergeEdges({ cy, epsilon = 0.01, maxIters = 30 }) {
-  cy.batch(() => {
-    cy.edges().forEach(edge => edge.data('computedWeight', edge.data('weight')));
-  });
+export function convergeNodes({ cy, epsilon, maxIters }) {
+  if (window.DEBUG) console.log("[DEBUG] convergeNodes start");
 
-  let converged = false;
-  let finalDelta = 0;
-  let iterations = 0;
-
-  for (let iter = 0; iter < maxIters; iter++) {
-    iterations = iter + 1;
-    let deltas = [];
-    let maxDelta = 0;
-
-    cy.edges().forEach(edge => {
-      const prev = edge.data('computedWeight');
-      const targetNode = edge.target();
-      let nw = prev;
-      if (targetNode.data('type') === 'assertion') {
-        nw = window.getModifiedEdgeWeight
-          ? window.getModifiedEdgeWeight(cy, edge)
-          : edge.data('weight');
-      }
-      deltas.push({ edge, prev, nw });
-      const delta = Math.abs(nw - prev);
-      if (delta > maxDelta) maxDelta = delta;
-    });
-
-    cy.batch(() => {
-      deltas.forEach(({ edge, nw }) => edge.data('computedWeight', nw));
-    });
-
-    finalDelta = maxDelta;
-    if (finalDelta < epsilon) {
-      converged = true;
-      break;
-    }
-  }
-
-  if (!converged) {
-    console.warn(`convergeEdges: hit maxIters (${maxIters}) without converging (final delta=${finalDelta.toExponential(3)})`);
-  }
-
-  return { converged, iterations, finalDelta };
-}
-
-export function convergeNodes({ cy, epsilon = 0.01, maxIters = 30 }) {
   let converged = false, finalDelta = 0, iterations = 0;
-
   for (let iter = 0; iter < maxIters; iter++) {
     iterations = iter + 1;
     let deltas = [];
@@ -132,24 +63,32 @@ export function convergeNodes({ cy, epsilon = 0.01, maxIters = 30 }) {
 
     cy.nodes().forEach(node => {
       const nodeType = node.data('type');
+      const id = node.id();
       let newProb;
 
-      if (nodeType === 'fact') {
-        newProb = FACT_PROB;
+      // Handle FACT nodes (always set, never virgin)
+      if (nodeType === window.NODE_TYPE_FACT) {
+        newProb = window.FACT_PROB;
         node.removeData('isVirgin');
-      } else if (nodeType === 'and') {
+        deltas.push({ node, prev: node.data('prob'), newProb });
+      }
+
+      // Handle AND nodes
+      else if (nodeType === window.NODE_TYPE_AND) {
         const parents = node.incomers('edge').map(e => e.source());
         if (parents.length === 0) {
           newProb = undefined;
           node.data('isVirgin', true);
         } else {
-          newProb = parents.reduce((acc, parent) => {
-            const p = parent.data('prob');
-            return (typeof p === "number") ? acc * p : acc;
-          }, 1);
+          newProb = parents.reduce((acc, parent) =>
+            (typeof parent.data('prob') === "number") ? acc * parent.data('prob') : acc, 1);
           node.removeData('isVirgin');
         }
-      } else if (nodeType === 'or') {
+        deltas.push({ node, prev: node.data('prob'), newProb });
+      }
+
+      // Handle OR nodes
+      else if (nodeType === window.NODE_TYPE_OR) {
         const parents = node.incomers('edge').map(e => e.source());
         if (parents.length === 0) {
           newProb = undefined;
@@ -157,49 +96,65 @@ export function convergeNodes({ cy, epsilon = 0.01, maxIters = 30 }) {
         } else {
           let prod = 1;
           parents.forEach(parent => {
-            const p = parent.data('prob');
-            prod *= (typeof p === "number") ? (1 - p) : 1;
+            prod *= (typeof parent.data('prob') === "number") ? (1 - parent.data('prob')) : 1;
           });
           newProb = 1 - prod;
           node.removeData('isVirgin');
         }
-      } else if (nodeType === 'assertion') {
-        // Only consider edges where parent is not virgin
-        const incomingEdges = node.incomers('edge');
-        const validEdges = incomingEdges.filter(e =>
-          !e.data('isVirgin') &&
-          !e.source().data('isVirgin')
-        );
-
-        if (validEdges.length === 0) {
-          newProb = undefined;
-          node.data('isVirgin', true);
-        } else {
-          node.removeData('isVirgin');
-          newProb = propagateFromParentsRobust({
-            baseProb: 0.5,
-            parents: validEdges,
-            getProb: e => {
-              const parent = e.source();
-              if (parent.data('type') === 'fact') return FACT_PROB;
-              return (typeof parent.data('prob') === "number") ? parent.data('prob') : 0.5;
-            },
-            getWeight: e => e.data('computedWeight') || 0,
-            saturationK: 1,
-            epsilon
-          });
-        }
+        deltas.push({ node, prev: node.data('prob'), newProb });
       }
 
-      deltas.push({ node, prev: node.data('prob'), newProb });
+      // Handle ASSERTION nodes
+      else if (nodeType === window.NODE_TYPE_ASSERTION) {
+        const incomingEdges = node.incomers('edge');
+        // Only keep edges where source is NOT virgin
+        const validEdges = incomingEdges.filter(e =>
+          !e.data('isVirgin') && !e.source().data('isVirgin')
+        );
+
+        // If no valid edges, mark as virgin and skip further processing
+        if (validEdges.length === 0) {
+          node.data('isVirgin', true);
+          return; // Skip this node entirely
+        }
+        node.removeData('isVirgin');
+        // Compute propagated probability
+        newProb = window.propagateFromParents({
+          baseProb: 0.5,
+          parents: validEdges,
+          getProb: e => {
+            const parent = e.source();
+            return (typeof parent.data('prob') === "number")
+              ? parent.data('prob')
+              : (parent.data('type') === window.NODE_TYPE_FACT
+                  ? window.FACT_PROB : 0.5);
+          },
+          getWeight: e => e.data('computedWeight') || 0,
+          saturationK: 1,
+          epsilon
+        });
+        deltas.push({ node, prev: node.data('prob'), newProb });
+      }
+
+      // For any other node type (shouldn't happen), treat as non-virgin and update
+      else {
+        newProb = undefined;
+        node.removeData('isVirgin');
+        deltas.push({ node, prev: node.data('prob'), newProb });
+      }
+
+      // Calculate delta for updated nodes only
       if (typeof newProb === "number" && typeof node.data('prob') === "number") {
         const delta = Math.abs(newProb - node.data('prob'));
         if (delta > maxDelta) maxDelta = delta;
       }
     });
 
+    // Batch update node probabilities
     cy.batch(() => {
-      deltas.forEach(({ node, newProb }) => node.data('prob', newProb));
+      deltas.forEach(({ node, newProb }) => {
+        node.data('prob', newProb);
+      });
     });
 
     finalDelta = maxDelta;
@@ -216,11 +171,11 @@ export function convergeNodes({ cy, epsilon = 0.01, maxIters = 30 }) {
   return { converged, iterations, finalDelta };
 }
 
-// Main convergence controller
-export function convergeAll({ cy, epsilon = 0.01, maxIters = 30 } = {}) {
+export function convergeAll({ cy, epsilon = window.config?.epsilon, maxIters = 30 } = {}) {
+  if (window.DEBUG) console.log('convergeAll triggered');
   let edgeResult, nodeResult;
   try {
-    edgeResult = convergeEdges({ cy, epsilon, maxIters });
+    edgeResult = convergeEdges({ cy });
     if (!edgeResult.converged) console.warn('convergeAll: Edge stage failed to converge');
   } catch (err) {
     console.error('convergeAll: Error during edge convergence:', err);
@@ -256,7 +211,6 @@ export function wouldCreateCycle(cy, sourceId, targetId) {
 }
 
 // --- Bayes Time and CPT Logic ---
-// [unchanged: finalizeBayesTimeCPT, getParentStateCombos, startBayesTimeSequence]
 
 export function finalizeBayesTimeCPT(userCPT) {
   const cy = window.cy;
