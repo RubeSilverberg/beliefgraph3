@@ -49,6 +49,8 @@ import {
   nudgeToBoundMultiplier
 } from './config.js';
 
+import { wouldCreateCycle } from './logic.js';
+
 const menu = document.getElementById('menu');
 const list = document.getElementById('menu-list');
 let pendingEdgeSource = null;

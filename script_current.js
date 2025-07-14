@@ -52,6 +52,9 @@ import {
   openModifierModal
 } from './modal.js';
 
+import { setupMenuAndEdgeModals } from './menu.js';
+
+document.addEventListener('contextmenu', e => e.preventDefault());
 // ====== Cytoscape Setup (initialize cy with style/layout as before) ======
 // ... (your Cytoscape init code here; unchanged)
 
@@ -140,7 +143,27 @@ const cy = cytoscape({
   layout: { name: 'preset' }
 });
 
+setTimeout(() => {
+  cy.container().addEventListener('contextmenu', e => {
+    e.preventDefault();
+    return false;
+  });
+}, 0);
+
+
 // Optionally, make cy globally accessible for debugging or cross-module use:
 window.cy = cy;
 
 // ====== (Event wiring and menu logic go below this) ======
+setupMenuAndEdgeModals({
+  cy,
+  convergeAll,
+  computeVisuals,
+  openVisualSignalsModal,
+  openNotesModal,
+  openRationaleModal,
+  NODE_TYPE_ASSERTION,
+  NODE_TYPE_FACT,
+  NODE_TYPE_AND,
+  NODE_TYPE_OR
+});

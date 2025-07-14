@@ -1,19 +1,4 @@
-// --- DEBUG CONTEXT MENU EVENTS ---
-if (typeof window !== 'undefined') {
-  document.addEventListener('contextmenu', (e) => {
-    // Use Cytoscape's container for robust detection
-    const cyEl = window.cy && typeof window.cy.container === 'function' ? window.cy.container() : document.getElementById('cy');
-    const isOnCyCanvas = cyEl && (e.target === cyEl || cyEl.contains(e.target));
-    console.log(`[CTX DOM] Right-click on ${e.target.tagName} | On Cytoscape canvas: ${isOnCyCanvas}`);
-    if (isOnCyCanvas) {
-      e.preventDefault();
-      // Show custom menu (example: call a global showMenu function if defined)
-      if (typeof window.showCyContextMenu === 'function') {
-        window.showCyContextMenu(e);
-      }
-    }
-  });
-}
+
 // --- MODIFIER UTILS ---
 export function nudgeToBoundMultiplier(currentWeight, likert, bound = 0.99) {
   const L = Math.max(-5, Math.min(5, likert));
