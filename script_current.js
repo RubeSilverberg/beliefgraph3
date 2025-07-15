@@ -63,37 +63,47 @@ window.computeVisuals = computeVisuals;
 
 // ====== Central Node Sizing Logic ======
 export function adjustNodeSize(node, change = 0, options = {}) {
-  // If user is using +/- buttons, update sizeIndex
-  let sizeIndex = node.data('sizeIndex') ?? 3;
-  sizeIndex = Math.max(1, Math.min(15, sizeIndex + change)); // 10 steps
-  node.data('sizeIndex', sizeIndex);
+ // If user is using +/- buttons, update sizeIndex
+let sizeIndex = node.data('sizeIndex') ?? 3;
+sizeIndex = Math.max(1, Math.min(20, sizeIndex + change));
+node.data('sizeIndex', sizeIndex);
 
-  // Base font size (let user change steps if desired)
-  const baseFont = 14;
-  const fontStep = 1.5;
-  const fontSize = Math.round(baseFont + (sizeIndex - 3) * fontStep);
-  node.data('fontSize', fontSize);
+// Base font size grows with user size
+const baseFont = 14;
+const fontStep = 1.1;
+const fontSize = Math.round(baseFont + (sizeIndex - 3) * fontStep);
+node.data('fontSize', fontSize);
 
-  // Estimate text width: longest line only
-  const text = (node.data('displayLabel') || node.data('label') || node.data('origLabel') || '').toString();
-  const lines = text.split('\n');
-  const longest = lines.reduce((max, line) => Math.max(max, line.length), 0);
-  // Heuristic: each char ~0.55em; add padding for each line break
-  const minWidth = 60;
-  const perChar = 0.55 * fontSize; // px per character
-  let width = Math.max(minWidth, Math.ceil(longest * perChar + 28)); // +padding
-  // Clamp width if you want, e.g., 60–350px:
-  width = Math.max(60, Math.min(width, 350));
+// Text sizing
+const text = (node.data('displayLabel') || node.data('label') || node.data('origLabel') || '').toString();
+const lines = text.split('\n');
+const longest = lines.reduce((max, line) => Math.max(max, line.length), 0);
 
-  // Height: base + #lines
-  const baseHeight = fontSize * 1.7; // padding for one line
-  const height = Math.ceil(baseHeight + (lines.length - 1) * fontSize * 1.1);
+// Allow user size to raise the width cap
+const minWidth = 60;
+const baseMaxWidth = 180; // default width for organic wrapping
+const maxUserWidth = 350; // hard cap for huge user nodes
+const userMaxWidth = baseMaxWidth + (sizeIndex - 3) * 22; // each step gives more width
+const actualMaxWidth = Math.min(userMaxWidth, maxUserWidth);
 
-  node.data('width', width);
-  node.data('height', height);
-  // You can set textMaxWidth here if you want (see below)
-  node.data('textMaxWidth', width - 10); // little buffer
+const perChar = 0.37 * fontSize; // heuristic, moderate fit
+let width = Math.max(minWidth, Math.ceil(longest * perChar));
+width = Math.min(width, actualMaxWidth);
+
+node.data('width', width);
+node.data('textMaxWidth', width - 8); // keep text from bumping edge
+
+// Estimate actual line count including wrapped lines, not just explicit \n
+const charsPerLine = Math.max(1, Math.floor((width - 8) / (0.55 * fontSize))); // tweak 0.55 as needed for your font
+const estimatedWrappedLines = Math.ceil(text.length / charsPerLine);
+const numLines = Math.max(lines.length, estimatedWrappedLines);
+
+// Height calculation: aggressive vertical growth for more lines (real or wrapped)
+const baseHeight = fontSize * 1.7;
+const height = Math.ceil(baseHeight + (numLines - 1) * fontSize * 2);
+node.data('height', height);
 }
+
 
 
 // Suppress browser context menu globally
@@ -130,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
           'border-width': 'data(borderWidth)',
           'border-color': 'data(borderColor)',
           'min-width': 40,
-          'min-height': 24,
+          'min-height': 28,
           'content': 'data(label)'
         }
       },
