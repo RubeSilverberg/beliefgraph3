@@ -1,11 +1,10 @@
 console.log("Loaded menu.js");
 import { wouldCreateCycle } from './logic.js';
-
+import { openVisualSignalsModal } from './modals.js';
 export function setupMenuAndEdgeModals({
   cy,
   convergeAll,
   computeVisuals,
-  openVisualSignalsModal,
   openNotesModal,
   openRationaleModal,
   NODE_TYPE_ASSERTION,
@@ -35,6 +34,12 @@ export function setupMenuAndEdgeModals({
     menu.style.display = 'none';
     document.body.appendChild(menu);
   }
+// Double-click (double-tap) event listener for node label editing
+window.cy.on('doubleTap', 'node', function(event) {
+  openEditNodeLabelModal(event.target);
+});
+
+
   if (!list) {
     list = document.createElement('ul');
     list.id = 'menu-list';
@@ -91,7 +96,8 @@ export function setupMenuAndEdgeModals({
                 label: 'New Belief',
                 type: NODE_TYPE_ASSERTION,
                 isVirgin: true,
-                userSize: 80
+                 width: 60,       // <<-- add this
+                 height: 36       // <<-- add this (60 * 0.6)
               },
               position: evt.position
             });
@@ -160,7 +166,7 @@ export function setupMenuAndEdgeModals({
       visualSignalsItem.textContent = 'Visual Signals...';
       visualSignalsItem.style.cursor = 'pointer';
       visualSignalsItem.onclick = () => {
-        openVisualSignalsModal(node);
+        openVisualSignalsModal(node, cy);
         hideMenu();
       };
       list.appendChild(visualSignalsItem);

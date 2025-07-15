@@ -953,7 +953,7 @@ function computeVisuals() {
 
     if (nodeType === NODE_TYPE_FACT) {
       // Fact: always "Fact: ...", rectangle, robust border
-      label = `Fact: ${displayLabel}`;
+      label = `Fact: \n${displayLabel}`;
       shape = 'rectangle';
       borderWidth = 2;
       borderColor = '#444';

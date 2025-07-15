@@ -66,6 +66,8 @@ document.addEventListener('contextmenu', e => e.preventDefault());
 
 
 document.addEventListener('DOMContentLoaded', () => {
+
+
   // ====== Cytoscape Setup: Custom Node & Edge Styles ======
   const cy = cytoscape({
     container: document.getElementById('cy'),
@@ -74,31 +76,32 @@ document.addEventListener('DOMContentLoaded', () => {
       // Base node: ALL sizing, font, wrapping logic
       {
         selector: 'node',
-        style: {
-          'shape': 'roundrectangle', // overridden by type
-          'background-color': '#eceff1',
-          'text-valign': 'center',
-          'text-halign': 'center',
-          'font-weight': 600,
-          'font-family': 'Segoe UI, Roboto, Arial, sans-serif',
-          'font-size': 'mapData(userSize, 20, 160, 13, 24)', // min 13px
-          'line-height': 1.4,
-          'letter-spacing': '0.01em',
-          'text-outline-width': 0,
-          'text-shadow': '0 1px 2px #faf6ff80', // optional, subtle
-          'text-wrap': 'wrap',
-          'text-max-width': '120px',   // tune if needed
-          'padding': '12px',
-          'width': 'mapData(userSize, 20, 160, 40, 160)',
-          'height': 'mapData(userSize, 20, 160, 24, 80)', // ~60%
-          'border-style': 'solid',
-          'border-width': 'data(borderWidth)',
-          'border-color': 'data(borderColor)',
-          'color': '#263238',
-          'min-width': 40,
-          'min-height': 24,
-          'content': 'data(label)', 
-        }
+ style: {
+'width': 'data(width)',
+'height': 'data(height)',
+  'color': 'data(textColor)',
+  'shape': 'roundrectangle', // overridden by type
+  'background-color': '#eceff1',
+  'text-valign': 'center',
+  'text-halign': 'center',
+  'font-weight': 600,
+  'font-family': 'Segoe UI, Roboto, Arial, sans-serif',
+  'font-size': 16, // Set your default; can be adjusted as needed
+  'line-height': 1.4,
+  'letter-spacing': '0.01em',
+  'text-outline-width': 0,
+  'text-shadow': '0 1px 2px #faf6ff80', // optional, subtle
+  'text-wrap': 'wrap',
+  'text-max-width': '120px',   // tune if needed
+  'padding': '12px',
+  'border-style': 'solid',
+  'border-width': 'data(borderWidth)',
+  'border-color': 'data(borderColor)',
+  'min-width': 40,
+  'min-height': 24,
+  'content': 'data(label)'
+}
+
       },
       // Fact nodes: rectangle, thicker/darker border
       {
@@ -181,7 +184,14 @@ document.addEventListener('DOMContentLoaded', () => {
     ],
 
     layout: { name: 'preset' }
+
   });
+
+  // Double-click node to edit label
+cy.on('dblclick', 'node', function(event) {
+  const node = event.target;
+  openEditNodeLabelModal(node);
+});
 
   // Make cy global if needed elsewhere
   window.cy = cy;

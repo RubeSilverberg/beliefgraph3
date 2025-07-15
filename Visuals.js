@@ -40,7 +40,7 @@ export function computeVisuals(cy) {
     let shape = 'roundrectangle';
 
     if (nodeType === NODE_TYPE_FACT) {
-      label = `Fact: ${displayLabel}`;
+      label = `Fact: \n${displayLabel}`;
       shape = 'rectangle';
       borderWidth = 2;
       borderColor = '#444';

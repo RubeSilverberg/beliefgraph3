@@ -1,6 +1,7 @@
 // modals.js
 // All modal popup creation and event handling logic
 console.log("Loaded modals.js");
+import { computeVisuals } from './visuals.js';
 // Generic show/hide modal (if you want a unified interface, but not strictly required here)
 export function showModal(modal) {
   document.body.appendChild(modal);
@@ -117,6 +118,95 @@ export function openEditNodeLabelModal(node) {
   displayInput.focus();
 }
 
+export function openVisualSignalsModal(node, cy) {
+  const overlay = document.getElementById('modalOverlay');
+  const modal = document.getElementById('visualSignalsModalContent');
+  if (!overlay || !modal) {
+    console.error("Modal overlay/content div missing in HTML.");
+    return;
+  }
+
+  // Modal HTML
+  modal.innerHTML = `
+    <div style="position:relative;">
+      <button id="closeVisualSignalsModal"
+              style="position:absolute; top:8px; right:8px; font-size:18px; background:none; border:none; cursor:pointer;">&times;</button>
+      <h3 style="margin-top:0">Visual Signals for Node</h3>
+      <button id="increaseNodeSize">+</button>
+      <button id="decreaseNodeSize">−</button>
+      <span style="margin-left:10px; font-size:0.95em; color:#666;">Node Size</span>
+      <br><br>
+      <label>Text Color:
+        <select id="textColorSelect">
+          <option value="red">Red</option>
+          <option value="blue">Blue</option>
+          <option value="purple">Purple</option>
+          <option value="virgin">Virgin Color</option>
+        </select>
+      </label>
+      <br><br>
+      <label>Node Floret Color:
+        <select id="floretColorSelect">
+          <option value="red">Red</option>
+          <option value="blue">Blue</option>
+          <option value="purple">Purple</option>
+          <option value="virgin">Virgin Color</option>
+        </select>
+      </label>
+    </div>
+  `;
+
+  // Show modal
+  overlay.style.display = 'block';
+
+  // --- Event handlers ---
+
+  // Close button
+  document.getElementById('closeVisualSignalsModal').onclick = closeModal;
+
+  // Click outside modal closes it
+  function outsideClickHandler(e) {
+    if (e.target === overlay) closeModal();
+  }
+  overlay.addEventListener('mousedown', outsideClickHandler);
+
+  function closeModal() {
+    overlay.style.display = 'none';
+    overlay.removeEventListener('mousedown', outsideClickHandler);
+  }
+
+  // Node size adjustment
+  document.getElementById('increaseNodeSize').onclick = () => adjustNodeSize(node, 1, cy);
+  document.getElementById('decreaseNodeSize').onclick = () => adjustNodeSize(node, -1, cy);
+
+  // Text color
+  document.getElementById('textColorSelect').onchange = (e) => changeTextColor(node, e.target.value, cy);
+
+  // Floret color
+  document.getElementById('floretColorSelect').onchange = (e) => changeFloretColor(node, e.target.value, cy);
+}
+
+function adjustNodeSize(node, change, cy) {
+  let currentSize = node.data('width') || 60;
+  const sizeIncrement = 10;
+  // Clamp between 40 and 130 (adjust as needed)
+  currentSize = Math.max(40, Math.min(130, currentSize + sizeIncrement * change));
+  node.data('width', currentSize);
+  node.data('height', Math.round(currentSize * 0.6)); // Maintain proportion
+  computeVisuals(cy);
+}
+
+
+function changeTextColor(node, color, cy) {
+  node.data('textColor', color);
+  computeVisuals(cy);
+}
+
+function changeFloretColor(node, color, cy) {
+  node.data('floretColor', color);
+  computeVisuals(cy);
+}
+
 // --- Notes Modal ---
 export function openNotesModal(node) {
   hideModal('notes-modal');
@@ -144,7 +234,7 @@ export function openNotesModal(node) {
   // Textarea
   const textarea = document.createElement('textarea');
   textarea.style.width = '100%';
-  textarea.style.minHeight = '80px';
+  textarea.style.minHeight = '60px';
   textarea.style.fontSize = '14px';
   textarea.style.border = '1px solid #bbb';
   textarea.style.borderRadius = '4px';
@@ -209,7 +299,7 @@ export function openRationaleModal(element, type) {
   // Textarea
   const textarea = document.createElement('textarea');
   textarea.style.width = '100%';
-  textarea.style.minHeight = '80px';
+  textarea.style.minHeight = '60px';
   textarea.style.fontSize = '14px';
   textarea.style.border = '1px solid #bbb';
   textarea.style.borderRadius = '4px';

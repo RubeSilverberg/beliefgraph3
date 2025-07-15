@@ -167,3 +167,34 @@ html, body {
 #edit-label-modal button:hover {
   background: #e0e0e0;
 }
+#modalOverlay {
+  position: fixed;
+  z-index: 9999;
+  left: 0; top: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.22);
+  display: none;
+}
+
+#visualSignalsModalContent {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 320px;
+  max-width: 360px;
+  background: #f1f1f1;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 32px #0003;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+#visualSignalsModalContent h3 {
+  text-align: center;
+}
+
+#visualSignalsModalContent button,
+#visualSignalsModalContent select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+}
