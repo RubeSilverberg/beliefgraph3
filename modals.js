@@ -161,6 +161,10 @@ export function openVisualSignalsModal(node, cy) {
         <option value="red">Red</option>
         <option value="blue">Blue</option>
         <option value="purple">Purple</option>
+            <option value="#f9a825">Orange (Central)</option>
+    <option value="green">Green</option>
+    <option value="#00897b">Teal</option>
+    <option value="#d81b60">Magenta</option>
       </select>
     </label>
     <br><br>

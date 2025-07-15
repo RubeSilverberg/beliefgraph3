@@ -65,12 +65,12 @@ window.computeVisuals = computeVisuals;
 export function adjustNodeSize(node, change = 0, options = {}) {
   // If user is using +/- buttons, update sizeIndex
   let sizeIndex = node.data('sizeIndex') ?? 3;
-  sizeIndex = Math.max(1, Math.min(10, sizeIndex + change)); // 10 steps
+  sizeIndex = Math.max(1, Math.min(15, sizeIndex + change)); // 10 steps
   node.data('sizeIndex', sizeIndex);
 
   // Base font size (let user change steps if desired)
   const baseFont = 14;
-  const fontStep = 1.2;
+  const fontStep = 1.5;
   const fontSize = Math.round(baseFont + (sizeIndex - 3) * fontStep);
   node.data('fontSize', fontSize);
 
@@ -201,7 +201,8 @@ document.addEventListener('DOMContentLoaded', () => {
       {
         selector: 'node[floretColor]',
         style: {
-          'background-color': 'data(floretColor)'
+          'background-color': 'data(floretColor)',
+          'background-opacity': 0.18
         }
       }
     ],
