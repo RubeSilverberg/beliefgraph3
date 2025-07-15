@@ -113,7 +113,9 @@ export function computeVisuals(cy) {
       label,
       borderWidth,
       borderColor,
-      shape
+      shape,
+      floretColor: node.data('floretColor'), // preserves current value
+  textColor: node.data('textColor')      // same for text, optional but recommended
     });
     if (DEBUG) logMath(node.id(), `Visual: ${label.replace(/\n/g, ' | ')}`);
   });

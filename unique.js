@@ -253,9 +253,12 @@ function openEditNodeLabelModal(node) {
   const hoverVal = hoverInput.value.trim();
   if (!displayVal) return;
 
+
   node.data('displayLabel', displayVal);
   node.data('hoverLabel', hoverVal);
   node.removeData('isVirgin');  // <-- Clear isVirgin on label edit
+  adjustNodeSize(node);
+  computeVisuals(window.cy);
 
   document.body.removeChild(modal);
   setTimeout(() => { computeVisuals(); }, 0);

@@ -1,4 +1,6 @@
 // modals.js
+import { adjustNodeSize } from './script_current.js'; // or wherever it's defined
+
 // All modal popup creation and event handling logic
 console.log("Loaded modals.js");
 import { computeVisuals } from './visuals.js';
@@ -90,9 +92,12 @@ export function openEditNodeLabelModal(node) {
     const hoverVal = hoverInput.value.trim();
     if (!displayVal) return;
 
+
     node.data('displayLabel', displayVal);
     node.data('hoverLabel', hoverVal);
     node.removeData('isVirgin');
+    adjustNodeSize(node);
+    computeVisuals(window.cy);
 
     hideModal(modal.id);
     setTimeout(() => {
@@ -117,95 +122,116 @@ export function openEditNodeLabelModal(node) {
   showModal(modal);
   displayInput.focus();
 }
+function applyFloretColor(node, color, cy) {
+  const floretNodes = node.predecessors('node').add(node);
+  floretNodes.forEach(n => {
+    n.data('floretColor', color);
+    console.log('Set floretColor on', n.id(), 'to', color);
+  });
+  cy.style().update();
+}
 
 export function openVisualSignalsModal(node, cy) {
-  const overlay = document.getElementById('modalOverlay');
-  const modal = document.getElementById('visualSignalsModalContent');
-  if (!overlay || !modal) {
-    console.error("Modal overlay/content div missing in HTML.");
-    return;
-  }
+  hideModal('visual-signals-modal'); // remove any existing modal
 
-  // Modal HTML
+  const modal = document.createElement('div');
+  modal.id = 'visual-signals-modal';
+  modal.style.position = 'fixed';
+  modal.style.background = '#fff';
+  modal.style.padding = '24px 20px 18px 20px';
+  modal.style.border = '2px solid #1976d2';
+  modal.style.borderRadius = '8px';
+  modal.style.zIndex = 10001;
+  modal.style.boxShadow = '0 6px 30px #1976d255';
+  modal.style.minWidth = '350px';
+
   modal.innerHTML = `
-    <div style="position:relative;">
+    <div class="modal-title" style="font-weight:bold; margin-bottom:14px; cursor:move;">
+      Visual Signals for Node
       <button id="closeVisualSignalsModal"
               style="position:absolute; top:8px; right:8px; font-size:18px; background:none; border:none; cursor:pointer;">&times;</button>
-      <h3 style="margin-top:0">Visual Signals for Node</h3>
-      <button id="increaseNodeSize">+</button>
-      <button id="decreaseNodeSize">−</button>
-      <span style="margin-left:10px; font-size:0.95em; color:#666;">Node Size</span>
-      <br><br>
-      <label>Text Color:
-        <select id="textColorSelect">
-          <option value="red">Red</option>
-          <option value="blue">Blue</option>
-          <option value="purple">Purple</option>
-          <option value="virgin">Virgin Color</option>
-        </select>
-      </label>
-      <br><br>
-      <label>Node Floret Color:
-        <select id="floretColorSelect">
-          <option value="red">Red</option>
-          <option value="blue">Blue</option>
-          <option value="purple">Purple</option>
-          <option value="virgin">Virgin Color</option>
-        </select>
-      </label>
     </div>
+    <button id="increaseNodeSize">+</button>
+    <button id="decreaseNodeSize">−</button>
+    <span style="margin-left:10px; font-size:0.95em; color:#666;">Node Size</span>
+    <br><br>
+    <label>Text Color:
+      <select id="textColorSelect">
+        <option value="virgin">Standard Shade</option>
+        <option value="red">Red</option>
+        <option value="blue">Blue</option>
+        <option value="purple">Purple</option>
+      </select>
+    </label>
+    <br><br>
+    <label>Node Floret Color:
+      <select id="floretColorSelect">
+        <option value="virgin">Standard Shade</option>
+        <option value="red">Red</option>
+        <option value="blue">Blue</option>
+        <option value="purple">Purple</option>
+      </select>
+    </label>
   `;
 
-  // Show modal
-  overlay.style.display = 'block';
+  showModal(modal);
+  centerModal(modal);
+  makeDraggable(modal, '.modal-title');
 
-  // --- Event handlers ---
+  // --- Ensure dropdowns reflect current node state ---
+  // Text color dropdown
+  const textColor = node.data('textColor') || 'virgin';
+  document.getElementById('textColorSelect').value = textColor;
 
-  // Close button
-  document.getElementById('closeVisualSignalsModal').onclick = closeModal;
+  // Floret color dropdown
+  const floretColor = node.data('floretColor');
+  if (!floretColor || floretColor === '#eee') {
+    document.getElementById('floretColorSelect').value = 'virgin';
+  } else {
+    document.getElementById('floretColorSelect').value = floretColor;
+  }
+
+  // Close button handler
+  const closeBtn = document.getElementById('closeVisualSignalsModal');
+  closeBtn.onclick = () => hideModal(modal.id);
+
+  // Node size handlers
+  document.getElementById('increaseNodeSize').onclick = () => { adjustNodeSize(node, 1); computeVisuals(cy); };
+document.getElementById('decreaseNodeSize').onclick = () => { adjustNodeSize(node, -1); computeVisuals(cy); };
+
+
+  // Text color handler
+  document.getElementById('textColorSelect').onchange = (e) => changeTextColor(node, e.target.value, cy);
+
+  // Floret color handler
+  document.getElementById('floretColorSelect').onchange = (e) => {
+    let val = e.target.value === 'virgin' ? '#eee' : e.target.value;
+    applyFloretColor(node, val, cy);
+  };
 
   // Click outside modal closes it
   function outsideClickHandler(e) {
-    if (e.target === overlay) closeModal();
+    if (!modal.contains(e.target)) {
+      hideModal(modal.id);
+      document.removeEventListener('mousedown', outsideClickHandler);
+    }
   }
-  overlay.addEventListener('mousedown', outsideClickHandler);
-
-  function closeModal() {
-    overlay.style.display = 'none';
-    overlay.removeEventListener('mousedown', outsideClickHandler);
-  }
-
-  // Node size adjustment
-  document.getElementById('increaseNodeSize').onclick = () => adjustNodeSize(node, 1, cy);
-  document.getElementById('decreaseNodeSize').onclick = () => adjustNodeSize(node, -1, cy);
-
-  // Text color
-  document.getElementById('textColorSelect').onchange = (e) => changeTextColor(node, e.target.value, cy);
-
-  // Floret color
-  document.getElementById('floretColorSelect').onchange = (e) => changeFloretColor(node, e.target.value, cy);
+  document.addEventListener('mousedown', outsideClickHandler);
 }
-
-function adjustNodeSize(node, change, cy) {
-  let currentSize = node.data('width') || 60;
-  const sizeIncrement = 10;
-  // Clamp between 40 and 130 (adjust as needed)
-  currentSize = Math.max(40, Math.min(130, currentSize + sizeIncrement * change));
-  node.data('width', currentSize);
-  node.data('height', Math.round(currentSize * 0.6)); // Maintain proportion
-  computeVisuals(cy);
-}
-
 
 function changeTextColor(node, color, cy) {
+  if (color === 'virgin') color = '#222'; // black (or use '#000' if you want true black)
   node.data('textColor', color);
   computeVisuals(cy);
 }
 
 function changeFloretColor(node, color, cy) {
+  if (color === 'virgin') color = '#eee'; // light gray
   node.data('floretColor', color);
   computeVisuals(cy);
 }
+
+
 
 // --- Notes Modal ---
 export function openNotesModal(node) {

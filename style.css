@@ -167,13 +167,6 @@ html, body {
 #edit-label-modal button:hover {
   background: #e0e0e0;
 }
-#modalOverlay {
-  position: fixed;
-  z-index: 9999;
-  left: 0; top: 0; width: 100vw; height: 100vh;
-  background: rgba(0,0,0,0.22);
-  display: none;
-}
 
 #visualSignalsModalContent {
   position: absolute;
