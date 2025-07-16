@@ -226,7 +226,6 @@ document.addEventListener('DOMContentLoaded', () => {
     ],
     layout: { name: 'preset' }
   });
-
   // Double-click node to edit label
   cy.on('dblclick', 'node', function(event) {
     const node = event.target;

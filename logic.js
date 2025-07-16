@@ -132,6 +132,7 @@ export function convergeNodes({ cy, epsilon = 0.01, maxIters = 30 }) {
     iterations = iter + 1;
     let deltas = [];
     let maxDelta = 0;
+    let changed = false;
 
     cy.nodes().forEach(node => {
       const nodeType = node.data('type');
@@ -142,59 +143,59 @@ export function convergeNodes({ cy, epsilon = 0.01, maxIters = 30 }) {
         node.removeData('isVirgin');
       } else if (nodeType === 'and') {
         const parents = node.incomers('edge').map(e => e.source());
-        if (parents.length === 0) {
+        if (parents.length === 0 || parents.some(parent => typeof parent.data('prob') !== "number")) {
           newProb = undefined;
           node.data('isVirgin', true);
         } else {
-          newProb = parents.reduce((acc, parent) => {
-            const p = parent.data('prob');
-            return (typeof p === "number") ? acc * p : acc;
-          }, 1);
+          newProb = parents.reduce((acc, parent) => acc * parent.data('prob'), 1);
           node.removeData('isVirgin');
         }
       } else if (nodeType === 'or') {
         const parents = node.incomers('edge').map(e => e.source());
-        if (parents.length === 0) {
+        if (parents.length === 0 || parents.some(parent => typeof parent.data('prob') !== "number")) {
           newProb = undefined;
           node.data('isVirgin', true);
         } else {
           let prod = 1;
           parents.forEach(parent => {
-            const p = parent.data('prob');
-            prod *= (typeof p === "number") ? (1 - p) : 1;
+            prod *= (1 - parent.data('prob'));
           });
           newProb = 1 - prod;
-          node.removeData('isVirgin');
-        }
-      } else if (nodeType === 'assertion') {
-        // Only consider edges where parent is not virgin
-        const incomingEdges = node.incomers('edge');
-        const validEdges = incomingEdges.filter(e =>
-          !e.data('isVirgin') &&
-          !e.source().data('isVirgin')
-        );
+    node.removeData('isVirgin');
+  }
+} else if (nodeType === 'assertion') {
+  const incomingEdges = node.incomers('edge');
+  // Filter for parent edges where the source has a defined prob
+  const validEdges = incomingEdges.filter(e =>
+    typeof e.source().data('prob') === "number"
+  );
 
-        if (validEdges.length === 0) {
-          newProb = undefined;
-          node.data('isVirgin', true);
-        } else {
-          node.removeData('isVirgin');
-          newProb = propagateFromParentsRobust({
-            baseProb: 0.5,
-            parents: validEdges,
-            getProb: e => {
-              const parent = e.source();
-              if (parent.data('type') === 'fact') return FACT_PROB;
-              return (typeof parent.data('prob') === "number") ? parent.data('prob') : 0.5;
-            },
-            getWeight: e => e.data('computedWeight') || 0,
-            saturationK: 1,
-            epsilon
-          });
-        }
-      }
+  if (validEdges.length === 0) {
+    newProb = undefined;
+    node.data('isVirgin', true);
+  } else {
+    node.removeData('isVirgin');
+    newProb = propagateFromParentsRobust({
+      baseProb: 0.5,
+      parents: validEdges,
+      getProb: e => {
+        const parent = e.source();
+        if (parent.data('type') === 'fact') return FACT_PROB;
+        return parent.data('prob');
+      },
+      getWeight: e => e.data('computedWeight') || 0,
+      saturationK: 1,
+      epsilon
+    });
+  }
+}
+
 
       deltas.push({ node, prev: node.data('prob'), newProb });
+      // If newProb is different, mark as changed
+      if (newProb !== node.data('prob')) {
+        changed = true;
+      }
       if (typeof newProb === "number" && typeof node.data('prob') === "number") {
         const delta = Math.abs(newProb - node.data('prob'));
         if (delta > maxDelta) maxDelta = delta;
@@ -206,7 +207,7 @@ export function convergeNodes({ cy, epsilon = 0.01, maxIters = 30 }) {
     });
 
     finalDelta = maxDelta;
-    if (finalDelta < epsilon) {
+    if (!changed || finalDelta < epsilon) {
       converged = true;
       break;
     }
@@ -218,6 +219,7 @@ export function convergeNodes({ cy, epsilon = 0.01, maxIters = 30 }) {
 
   return { converged, iterations, finalDelta };
 }
+
 
 // Main convergence controller
 export function convergeAll({ cy, epsilon = 0.01, maxIters = 30 } = {}) {
@@ -403,6 +405,7 @@ export function loadGraph() {
         const elements = JSON.parse(evt.target.result);
         cy.elements().remove();
         cy.add(elements);
+        convergeAll({ cy });
         cy.layout({ name: 'preset' }).run();
         window.computeVisuals?.(cy);
         cy.fit();

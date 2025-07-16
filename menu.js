@@ -101,7 +101,8 @@ window.cy.on('doubleTap', 'node', function(event) {
               },
               position: evt.position
             });
-            setTimeout(() => { convergeAll({ cy }); computeVisuals(cy); }, 0);
+            convergeAll({ cy });
+            computeVisuals(cy);
           }
         },
         {
@@ -115,7 +116,8 @@ window.cy.on('doubleTap', 'node', function(event) {
               },
               position: evt.position
             });
-            setTimeout(() => { convergeAll({ cy }); computeVisuals(cy); }, 0);
+            convergeAll({ cy });
+            computeVisuals(cy);
           }
         }
       ].forEach(({ label, action }) => {
@@ -144,7 +146,8 @@ window.cy.on('doubleTap', 'node', function(event) {
           const newType = nodeType === NODE_TYPE_FACT ? NODE_TYPE_ASSERTION : NODE_TYPE_FACT;
           node.data({ type: newType });
           if (nodeType === NODE_TYPE_FACT && newType === NODE_TYPE_ASSERTION) node.removeData('prob');
-          setTimeout(() => { convergeAll({ cy }); computeVisuals(cy); }, 0);
+          convergeAll({ cy });
+          computeVisuals(cy);
           hideMenu();
         };
         list.appendChild(toggleFact);
@@ -156,7 +159,8 @@ window.cy.on('doubleTap', 'node', function(event) {
         toggleLogic.onclick = () => {
           const newType = nodeType === NODE_TYPE_AND ? NODE_TYPE_OR : NODE_TYPE_AND;
           node.data({ type: newType });
-          setTimeout(() => { convergeAll({ cy }); computeVisuals(cy); }, 0);
+          convergeAll({ cy });
+          computeVisuals(cy);
           hideMenu();
         };
         list.appendChild(toggleLogic);
@@ -184,6 +188,7 @@ window.cy.on('doubleTap', 'node', function(event) {
       del.textContent = 'Delete Node';
       del.style.cursor = 'pointer';
       del.onclick = () => { node.remove(); setTimeout(() => { convergeAll({ cy }); computeVisuals(cy); }, 0); hideMenu(); };
+      del.onclick = () => { node.remove(); convergeAll({ cy }); computeVisuals(cy); hideMenu(); };
       list.appendChild(del);
 
     } else if (evt.target.isEdge && evt.target.isEdge()) {
@@ -205,18 +210,16 @@ window.cy.on('doubleTap', 'node', function(event) {
       del.style.cursor = 'pointer';
       del.onclick = () => {
         edge.remove();
-        setTimeout(() => {
-          convergeAll({ cy });
-          cy.nodes().forEach(node => {
-            const inc = node.incomers('edge').filter(e => !e.data('isVirgin'));
-            if (node.data('type') === NODE_TYPE_ASSERTION && inc.length === 0) {
-              node.removeData('prob');
-              node.removeData('robustness');
-              node.removeData('robustnessLabel');
-            }
-          });
-          computeVisuals(cy);
-        }, 0);
+        convergeAll({ cy });
+        cy.nodes().forEach(node => {
+          const inc = node.incomers('edge').filter(e => !e.data('isVirgin'));
+          if (node.data('type') === NODE_TYPE_ASSERTION && inc.length === 0) {
+            node.removeData('prob');
+            node.removeData('robustness');
+            node.removeData('robustnessLabel');
+          }
+        });
+        computeVisuals(cy);
         hideMenu();
       };
       list.appendChild(del);
@@ -274,20 +277,18 @@ window.cy.on('doubleTap', 'node', function(event) {
 
     cy.add({ group: 'edges', data: edgeData });
     pendingEdgeSource = null;
-    setTimeout(() => {
-      convergeAll({ cy });
-      cy.nodes().forEach(node => {
-        if (
-          node.data('type') === NODE_TYPE_ASSERTION &&
-          node.data('isVirgin') &&
-          typeof node.data('prob') === 'number' &&
-          node.incomers('edge').length > 0
-        ) {
-          node.removeData('isVirgin');
-        }
-      });
-      computeVisuals(cy);
-    }, 0);
+    convergeAll({ cy });
+    cy.nodes().forEach(node => {
+      if (
+        node.data('type') === NODE_TYPE_ASSERTION &&
+        node.data('isVirgin') &&
+        typeof node.data('prob') === 'number' &&
+        node.incomers('edge').length > 0
+      ) {
+        node.removeData('isVirgin');
+      }
+    });
+    computeVisuals(cy);
   });
 
   // --- Double-Tap Edge for Editing Influence/Modifier ---
@@ -321,6 +322,7 @@ window.cy.on('doubleTap', 'node', function(event) {
       label.className = "modifier-modal-title";
       label.style.marginBottom = '10px';
       modal.appendChild(label);
+        makeDraggable(modal, '.modifier-modal-title');
 
       // Opposing checkbox (always present)
       const opposesContainer = document.createElement('div');
@@ -421,4 +423,37 @@ window.cy.on('doubleTap', 'node', function(event) {
       lastEdgeTapTime = now;
     }
   });
+}
+// --- Make modal draggable by handle (title bar or full modal)
+function makeDraggable(modal, handleSelector = null) {
+  let isDragging = false, startX, startY, origX, origY;
+  const handle = handleSelector ? modal.querySelector(handleSelector) : modal;
+  if (!handle) return;
+
+  handle.style.cursor = "move";
+  handle.onmousedown = function(e) {
+    isDragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    const rect = modal.getBoundingClientRect();
+    modal.style.left = rect.left + "px";
+    modal.style.top  = rect.top + "px";
+    origX = rect.left;
+    origY = rect.top;
+    document.body.style.userSelect = "none";
+    e.preventDefault();
+  };
+
+  document.onmousemove = function(e) {
+    if (!isDragging) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    modal.style.left = (origX + dx) + "px";
+    modal.style.top  = (origY + dy) + "px";
+  };
+
+  document.onmouseup = function() {
+    isDragging = false;
+    document.body.style.userSelect = "";
+  };
 }
