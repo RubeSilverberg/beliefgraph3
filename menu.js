@@ -362,7 +362,7 @@ window.cy.on('doubleTap', 'node', function(event) {
       btn.textContent = 'OK';
       btn.style.margin = '10px 5px 0 0';
       btn.onclick = function () {
-        const opposes = opposesCheckbox.checked;
+    const opposes = opposesCheckbox.checked;
 
         if (targetType === NODE_TYPE_ASSERTION && select) {
           const prevWeight = edge.data('weight');

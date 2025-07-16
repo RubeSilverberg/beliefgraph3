@@ -73,14 +73,16 @@ export function computeVisuals(cy) {
         node.data('robustness', robust);
         node.data('robustnessLabel', robustLabel);
         borderWidth = Math.max(2, Math.round(robust * 10));
-        const vivid = 0.2 + 0.8 * robust;
-        borderColor = `rgba(136,80,168,${vivid})`;
+// Grayscale: 238 (very light gray) at minimal, 111 (nearly black) at very high robustness
+const grayLevel = Math.round(238 - 127 * robust);
+borderColor = `rgb(${grayLevel},${grayLevel},${grayLevel})`;
+
       } else {
         label += `\n—`;
         node.removeData('robustness');
         node.removeData('robustnessLabel');
         borderWidth = 1;
-        borderColor = `rgba(136,80,168,0.1)`;
+borderColor = '#222'
       }
     } else if (nodeType === NODE_TYPE_AND) {
       label = "AND";
@@ -235,7 +237,12 @@ export function showNodeHoverBox(cy, node) {
     }
     const rlabel = node.data('robustnessLabel');
     if (rlabel) {
-      box.innerHTML += `<br><span><b style="color:#8000ff">Robustness</b>: <b>${rlabel}</b></span>`;
+      // Compute grayscale for the robustness label
+const robust = node.data('robustness');
+const grayscale = robust !== undefined
+  ? `rgb(${Math.round(180 - 60 * robust)}, ${Math.round(180 - 60 * robust)}, ${Math.round(180 - 60 * robust)})`
+  : '#888';
+box.innerHTML += `<br><span><b style="color:#111">Robustness</b>: <b style="color:${grayscale}">${rlabel}</b></span>`;
     }
   } else if (nodeType === NODE_TYPE_AND) {
     box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><i>AND logic node<br>(product of parent probs)</i>`;
