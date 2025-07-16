@@ -248,9 +248,9 @@ export function wouldCreateCycle(cy, sourceId, targetId) {
     if (visited.has(nodeId)) return false;
     visited.add(nodeId);
     const node = cy.getElementById(nodeId);
-    const parents = node.incomers('edge').map(e => e.source().id());
-    for (const parentId of parents) {
-      if (dfs(parentId)) return true;
+    const children = node.outgoers('edge').map(e => e.target().id());
+    for (const childId of children) {
+      if (dfs(childId)) return true;
     }
     return false;
   }
