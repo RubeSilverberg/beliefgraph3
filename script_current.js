@@ -53,7 +53,6 @@ import {
   openNotesModal,
   openRationaleModal,
   openCPTModalTwoPerParent,
-  openModifierModal
 } from './modals.js';
 
 import { setupMenuAndEdgeModals } from './menu.js';
@@ -148,6 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
 {
   selector: 'node[type="fact"]',
   style: {
+    'shape': 'rectangle',
     'background-color': '#666', // or '#333'
     'color': '#fff',
     'border-color': '#666',     // or slightly lighter for subtle border

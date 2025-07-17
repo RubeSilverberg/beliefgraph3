@@ -6,22 +6,21 @@
   <!-- Link to your stylesheet -->
   <link rel="stylesheet" href="style.css" />
 
-  <!-- Cytoscape core + plugins (even if ghosted) -->
+  <!-- Cytoscape core -->
   <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
-
-
-  <!-- SheetJS for Excel export -->
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
-  <!-- Canvas -->
-  <div id="cy"></div>
+  <!-- Cytoscape Canvas -->
+  <div id="cy" style="width: 100vw; height: 100vh;"></div>
 
   <!-- Controls -->
   <div id="controls">
     <button id="btnResetLayout">Reset Layout</button>
     <button id="btnClearGraph">Clear</button>
-    <button id="btnExportExcel">Export to Excel</button>
+    <!-- REPLACED Export to Excel with Math Documentation -->
+    <button onclick="window.open('https://colab.research.google.com/drive/1SWjr3Fo8Uzb02KErN4BLh3in2_68ozjJ#scrollTo=1jVCcaxG3AT6', '_blank')">
+      Math Documentation
+    </button>
     <button id="btnSaveGraph">Save</button>
     <button id="btnLoadGraph">Load</button>
     <button id="btnBayesTime">Bayes Time</button>
@@ -39,4 +38,3 @@
   <script type="module" src="script_current.js"></script>
 </body>
 </html>
-
