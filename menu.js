@@ -318,7 +318,7 @@ window.cy.on('doubleTap', 'node', function(event) {
       modal.style.minWidth = '300px';
 
       const label = document.createElement('div');
-      label.textContent = 'Set baseline influence:';
+      label.textContent = 'Set weight:';
       label.className = "modifier-modal-title";
       label.style.marginBottom = '10px';
       modal.appendChild(label);

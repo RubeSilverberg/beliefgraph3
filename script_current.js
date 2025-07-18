@@ -1,4 +1,4 @@
-console.log("Loaded style array:", typeof style !== 'undefined' ? style : '[style not defined]');
+console.log("Loaded style array:", typeof style !== 'undefined' ? style : '[style not defined]' );
 // script_current.js
 
 import {
@@ -35,7 +35,6 @@ import {
   restoreAutosave,
   saveGraph,
   loadGraph,
-  exportToExcelFromModel,
   finalizeBayesTimeCPT,
   getParentStateCombos,
   startBayesTimeSequence,
@@ -65,18 +64,18 @@ export function adjustNodeSize(node, change = 0, options = {}) {
  // If user is using +/- buttons, update sizeIndex
 let sizeIndex = node.data('sizeIndex') ?? 3;
 sizeIndex = Math.max(1, Math.min(20, sizeIndex + change));
-node.data('sizeIndex', sizeIndex);
+node.data('sizeIndex', sizeIndex );
 
 // Base font size grows with user size
 const baseFont = 14;
 const fontStep = 1.1;
-const fontSize = Math.round(baseFont + (sizeIndex - 3) * fontStep);
-node.data('fontSize', fontSize);
+const fontSize = Math.round(baseFont + (sizeIndex - 3) * fontStep );
+node.data('fontSize', fontSize );
 
 // Text sizing
 const text = (node.data('displayLabel') || node.data('label') || node.data('origLabel') || '').toString();
 const lines = text.split('\n');
-const longest = lines.reduce((max, line) => Math.max(max, line.length), 0);
+const longest = lines.reduce((max, line) => Math.max(max, line.length ), 0 );
 
 // Allow user size to raise the width cap
 const minWidth = 60;
@@ -102,8 +101,6 @@ const baseHeight = fontSize * 1.7;
 const height = Math.ceil(baseHeight + (numLines - 1) * fontSize * 2);
 node.data('height', height);
 }
-
-
 
 // Suppress browser context menu globally
 document.addEventListener('contextmenu', e => e.preventDefault());
@@ -145,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
       },
       // Fact nodes: rectangle, thicker/darker border
 {
-  selector: 'node[type="fact"]',
+  selector: 'node[type ="fact"]',
   style: {
     'shape': 'rectangle',
     'background-color': '#666', // or '#333'
@@ -156,23 +153,25 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 },
 
+// AND logic: diamond, thicker border, bigger
+{
+  selector: 'node[type="and"]',
+  style: {
+    'shape': 'diamond',
+    'width': 80,
+    'height': 80
+  }
+},
+// OR logic: ellipse, thicker border, bigger
+{
+  selector: 'node[type="or"]',
+  style: {
+    'shape': 'ellipse',
+    'width': 80,
+    'height': 80
+  }
+},
 
-      // AND logic: diamond, thicker border
-      {
-        selector: 'node[type="and"]',
-        style: {
-          'shape': 'diamond'
-          // fallback only, actual value set in computeVisuals
-        }
-      },
-      // OR logic: ellipse, thicker border
-      {
-        selector: 'node[type="or"]',
-        style: {
-          'shape': 'ellipse'
-          // fallback only, actual value set in computeVisuals
-        }
-      },
 // Edge base
 {
   selector: 'edge',
@@ -187,8 +186,8 @@ document.addEventListener('DOMContentLoaded', () => {
 },
 // Edge supports: dynamic grey scale, solid
 {
-  selector: 'edge[type="supports"]',
-  style: {
+  selector : 'edge[type="supports"]',
+  style : {
     'line-color': 'mapData(absWeight, 0, 1, #e0e0e0, #444)',
     'mid-target-arrow-color': 'mapData(absWeight, 0, 1, #e0e0e0, #444)',
     'line-style': 'solid',
@@ -197,8 +196,8 @@ document.addEventListener('DOMContentLoaded', () => {
 },
 // Edge opposes: dynamic grey scale, dotted
 {
-  selector: 'edge[type="opposes"], edge[opposes]',
-  style: {
+  selector : 'edge[type ="opposes"], edge[opposes]',
+  style : {
     'line-color': 'mapData(absWeight, 0, 1, #e0e0e0, #444)',
     'mid-target-arrow-color': 'mapData(absWeight, 0, 1, #e0e0e0, #444)',
     'line-style': 'dotted',
@@ -263,7 +262,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnRestoreAutosave').addEventListener('click', restoreAutosave);
   document.getElementById('btnResetLayout').addEventListener('click', resetLayout);
   document.getElementById('btnClearGraph').addEventListener('click', clearGraph);
-  document.getElementById('btnExportExcel').addEventListener('click', exportToExcelFromModel);
   document.getElementById('btnSaveGraph').addEventListener('click', saveGraph);
   document.getElementById('btnLoadGraph').addEventListener('click', loadGraph);
   document.getElementById('btnBayesTime').addEventListener('click', startBayesTimeSequence);

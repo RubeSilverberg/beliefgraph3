@@ -46,8 +46,10 @@ export function computeVisuals(cy) {
       borderColor = '#444';
       node.removeData('robustness');
       node.removeData('robustnessLabel');
+      node.data('textColor', '#fff');
     } else if (nodeType === NODE_TYPE_ASSERTION) {
       const incomingEdges = node.incomers('edge');
+      node.data('textColor', '#000');
       // Only count edges that are non-virgin and whose parent is also non-virgin
       const validEdges = incomingEdges.filter(e =>
         !e.data('isVirgin') &&
@@ -82,10 +84,17 @@ borderColor = `rgb(${grayLevel},${grayLevel},${grayLevel})`;
         node.removeData('robustness');
         node.removeData('robustnessLabel');
         borderWidth = 1;
-borderColor = '#222'
+        borderColor = '#222';
       }
     } else if (nodeType === NODE_TYPE_AND) {
-      label = "AND";
+      let pct = typeof node.data('prob') === "number" ? Math.round(node.data('prob') * 100) : null;
+      if (pct !== null) {
+        if (pct > 0 && pct < 1) pct = 1;
+        if (pct > 99) pct = 99;
+        label = `AND\n${pct}%`;
+      } else {
+        label = "AND\n—";
+      }
       shape = "diamond";
       borderWidth = 3;
       borderColor = "#bbb";
@@ -95,7 +104,14 @@ borderColor = '#222'
         node.data('hoverLabel', displayLabel);
       }
     } else if (nodeType === NODE_TYPE_OR) {
-      label = "OR";
+      let pct = typeof node.data('prob') === "number" ? Math.round(node.data('prob') * 100) : null;
+      if (pct !== null) {
+        if (pct > 0 && pct < 1) pct = 1;
+        if (pct > 99) pct = 99;
+        label = `OR\n${pct}%`;
+      } else {
+        label = "OR\n—";
+      }
       shape = "ellipse";
       borderWidth = 3;
       borderColor = "#bbb";
@@ -244,13 +260,19 @@ const grayscale = robust !== undefined
   : '#888';
 box.innerHTML += `<br><span><b style="color:#111">Robustness</b>: <b style="color:${grayscale}">${rlabel}</b></span>`;
     }
-  } else if (nodeType === NODE_TYPE_AND) {
-    box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><i>AND logic node<br>(product of parent probs)</i>`;
-  } else if (nodeType === NODE_TYPE_OR) {
-    box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><i>OR logic node<br>(sum-minus-product of parent probs)</i>`;
-  } else {
-    box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><i>Unknown node type</i>`;
-  }
+ } else if (nodeType === NODE_TYPE_AND) {
+  let probStr = typeof node.data('prob') === "number"
+    ? `<br>Current: <b>${Math.round(100 * node.data('prob'))}%</b>`
+    : "<br>Current: <b>—</b>";
+  box.innerHTML = `<b>AND</b>${probStr}<br><i>AND logic node<br>(product of parent probs)</i>`;
+} else if (nodeType === NODE_TYPE_OR) {
+  let probStr = typeof node.data('prob') === "number"
+    ? `<br>Current: <b>${Math.round(100 * node.data('prob'))}%</b>`
+    : "<br>Current: <b>—</b>";
+  box.innerHTML = `<b>OR</b>${probStr}<br><i>OR logic node<br>(sum-minus-product of parent probs)</i>`;
+} else {
+  box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><i>Unknown node type</i>`;
+}
 
   container.parentElement.appendChild(box);
 }

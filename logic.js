@@ -463,29 +463,6 @@ export function restoreAutosave() {
   }
 }
 
-export function exportToExcelFromModel() {
-  const cy = window.cy;
-  if (typeof window.XLSX === 'undefined' || typeof cy === 'undefined') {
-    alert('Cannot export: Excel library or graph missing.');
-    return;
-  }
-  const wb = window.XLSX.utils.book_new();
-  const nodes = cy.nodes().map(n => ({
-    id: n.id(),
-    label: n.data('origLabel'),
-    prob: n.data('prob')
-  }));
-  const edges = cy.edges().map(e => ({
-    source: e.data('source'),
-    target: e.data('target'),
-    weight: e.data('weight')
-  }));
-  window.XLSX.utils.book_append_sheet(wb, window.XLSX.utils.json_to_sheet(nodes), 'Nodes');
-  window.XLSX.utils.book_append_sheet(wb, window.XLSX.utils.json_to_sheet(edges), 'Edges');
-  window.XLSX.writeFile(wb, 'graph.xlsx');
-  console.log('Exported graph to Excel');
-}
-
 // --- Layout and Clear ---
 
 export function resetLayout() {
