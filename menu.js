@@ -73,6 +73,7 @@ window.cy.on('doubleTap', 'node', function(event) {
   let lastEdgeTapTime = 0;
 
   cy.on('cxttap', evt => {
+    if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
     console.log('cxttap fired');
     evt.originalEvent.preventDefault();
     evt.originalEvent.stopPropagation();
@@ -88,6 +89,7 @@ window.cy.on('doubleTap', 'node', function(event) {
       [
         {
           label: 'Add Assertion or Fact Node Here', action: () => {
+            if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
             cy.add({
               group: 'nodes',
               data: {
@@ -107,6 +109,7 @@ window.cy.on('doubleTap', 'node', function(event) {
         },
         {
           label: 'Add logic', action: () => {
+            if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
             cy.add({
               group: 'nodes',
               data: {
@@ -188,7 +191,13 @@ window.cy.on('doubleTap', 'node', function(event) {
       del.textContent = 'Delete Node';
       del.style.cursor = 'pointer';
       del.onclick = () => { node.remove(); setTimeout(() => { convergeAll({ cy }); computeVisuals(cy); }, 0); hideMenu(); };
-      del.onclick = () => { node.remove(); convergeAll({ cy }); computeVisuals(cy); hideMenu(); };
+      del.onclick = () => {
+        if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
+        node.remove();
+        convergeAll({ cy });
+        computeVisuals(cy);
+        hideMenu();
+      };
       list.appendChild(del);
 
     } else if (evt.target.isEdge && evt.target.isEdge()) {
@@ -209,6 +218,7 @@ window.cy.on('doubleTap', 'node', function(event) {
       del.textContent = 'Delete This Edge';
       del.style.cursor = 'pointer';
       del.onclick = () => {
+        if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
         edge.remove();
         convergeAll({ cy });
         cy.nodes().forEach(node => {
@@ -245,6 +255,7 @@ window.cy.on('doubleTap', 'node', function(event) {
 
   // Handle edge creation after "Connect to..." is activated
   cy.on('tap', evt => {
+    if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
     if (!pendingEdgeSource) return;
     const target = evt.target;
     // Must click a node, and not the same node
@@ -293,7 +304,7 @@ window.cy.on('doubleTap', 'node', function(event) {
 
   // --- Double-Tap Edge for Editing Influence/Modifier ---
   cy.on('tap', 'edge', evt => {
-    if (window.bayesHeavyMode) return;
+    if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
     const edge = evt.target;
     const now = Date.now();
     const id = edge.id();

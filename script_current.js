@@ -56,6 +56,17 @@ import {
 
 import { setupMenuAndEdgeModals } from './menu.js';
 
+// === Bayes mode global ===
+let mode = 'lite'; // 'lite' or 'heavy'
+window.getBayesMode = () => mode;
+function setBayesMode(newMode) {
+  if (newMode !== 'lite' && newMode !== 'heavy') return;
+  mode = newMode;
+  console.log(`Bayes mode set to: ${mode}`);
+  if (window.computeVisuals) window.computeVisuals(window.cy);
+}
+window.setBayesMode = setBayesMode;
+
 // Attach computeVisuals to window for cross-module use
 window.computeVisuals = computeVisuals;
 
@@ -259,13 +270,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ====== Button Event Hookup ======
+
   document.getElementById('btnRestoreAutosave').addEventListener('click', restoreAutosave);
   document.getElementById('btnResetLayout').addEventListener('click', resetLayout);
   document.getElementById('btnClearGraph').addEventListener('click', clearGraph);
   document.getElementById('btnSaveGraph').addEventListener('click', saveGraph);
   document.getElementById('btnLoadGraph').addEventListener('click', loadGraph);
-  document.getElementById('btnBayesTime').addEventListener('click', startBayesTimeSequence);
-
+document.getElementById('btnBayesTime').onclick = function() {
+  setBayesMode(mode === 'lite' ? 'heavy' : 'lite');
+};
+  
   // ====== Autosave Timer ======
   setInterval(autosave, 5 * 60 * 1000);
 

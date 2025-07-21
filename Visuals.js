@@ -47,45 +47,60 @@ export function computeVisuals(cy) {
       node.removeData('robustness');
       node.removeData('robustnessLabel');
       node.data('textColor', '#fff');
-    } else if (nodeType === NODE_TYPE_ASSERTION) {
-      const incomingEdges = node.incomers('edge');
+    }
+    else if (nodeType === NODE_TYPE_ASSERTION) {
+      const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
       node.data('textColor', '#000');
+      const incomingEdges = node.incomers('edge');
       // Only count edges that are non-virgin and whose parent is also non-virgin
       const validEdges = incomingEdges.filter(e =>
         !e.data('isVirgin') &&
         !e.source().data('isVirgin')
       );
 
-      if (typeof node.data('prob') === "number" && validEdges.length > 0) {
-        const p = node.data('prob');
-        let pPct = Math.round(p * 100);
-        if (pPct > 0 && pPct < 1) pPct = 1;
-        if (pPct > 99) pPct = 99;
-        label += `\n${pPct}%`;
-
-        const aei = validEdges.reduce((sum, e) => {
-          const sourceType = e.source().data('type');
-          if (sourceType !== NODE_TYPE_ASSERTION && sourceType !== NODE_TYPE_FACT) return sum;
-          const w = getModifiedEdgeWeight(cy, e);
-          return sum + (typeof w === "number" ? Math.abs(w) : 0);
-        }, 0);
-
-        const robust = saturation(aei);
-        const robustLabel = robustnessToLabel(robust);
-        node.data('robustness', robust);
-        node.data('robustnessLabel', robustLabel);
-        borderWidth = Math.max(2, Math.round(robust * 10));
-// Grayscale: 238 (very light gray) at minimal, 111 (nearly black) at very high robustness
-const grayLevel = Math.round(238 - 127 * robust);
-borderColor = `rgb(${grayLevel},${grayLevel},${grayLevel})`;
-
-      } else {
-        label += `\n—`;
+      if (bayesMode === 'heavy') {
+        // Show only CPT or '—', no robustness in Heavy mode
+        const cptProb = node.data('cptProb');
+        let probDisplay = typeof cptProb === "number" ? Math.round(cptProb * 100) + '%' : '—';
+        label += `\n${probDisplay}`;
         node.removeData('robustness');
         node.removeData('robustnessLabel');
-        borderWidth = 1;
-        borderColor = '#222';
+        borderWidth = 2;
+        borderColor = '#333';
+      } else {
+        // Normal Lite mode visuals: show edge-driven prob and robustness
+        if (typeof node.data('prob') === "number" && validEdges.length > 0) {
+          const p = node.data('prob');
+          let pPct = Math.round(p * 100);
+          if (pPct > 0 && pPct < 1) pPct = 1;
+          if (pPct > 99) pPct = 99;
+          label += `\n${pPct}%`;
+
+          const aei = validEdges.reduce((sum, e) => {
+            const sourceType = e.source().data('type');
+            if (sourceType !== NODE_TYPE_ASSERTION && sourceType !== NODE_TYPE_FACT) return sum;
+            const w = getModifiedEdgeWeight(cy, e);
+            return sum + (typeof w === "number" ? Math.abs(w) : 0);
+          }, 0);
+
+          const robust = saturation(aei);
+          const robustLabel = robustnessToLabel(robust);
+          node.data('robustness', robust);
+          node.data('robustnessLabel', robustLabel);
+          borderWidth = Math.max(2, Math.round(robust * 10));
+          // Grayscale: 238 (very light gray) at minimal, 111 (nearly black) at very high robustness
+          const grayLevel = Math.round(238 - 127 * robust);
+          borderColor = `rgb(${grayLevel},${grayLevel},${grayLevel})`;
+
+        } else {
+          label += `\n—`;
+          node.removeData('robustness');
+          node.removeData('robustnessLabel');
+          borderWidth = 1;
+          borderColor = '#222';
+        }
       }
+      
     } else if (nodeType === NODE_TYPE_AND) {
       let pct = typeof node.data('prob') === "number" ? Math.round(node.data('prob') * 100) : null;
       if (pct !== null) {
@@ -126,7 +141,6 @@ borderColor = `rgb(${grayLevel},${grayLevel},${grayLevel})`;
       node.removeData('robustness');
       node.removeData('robustnessLabel');
     }
-
     node.data({
       label,
       borderWidth,
@@ -138,7 +152,18 @@ borderColor = `rgb(${grayLevel},${grayLevel},${grayLevel})`;
     if (DEBUG) logMath(node.id(), `Visual: ${label.replace(/\n/g, ' | ')}`);
   });
 
-  cy.edges().forEach(edge => {
+ cy.edges().forEach(edge => {
+  const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
+
+  if (bayesMode === 'heavy') {
+    // Force edge to look virgin regardless of real state
+    edge.data({
+      absWeight: 0,
+      weightLabel: '',
+      isVirgin: true // purely for styling
+    });
+  } else {
+    // Normal edge rendering logic
     const targetNode = edge.target();
     let absW = 0, label = '';
     if (targetNode.data('type') === NODE_TYPE_ASSERTION) {
@@ -161,7 +186,8 @@ borderColor = `rgb(${grayLevel},${grayLevel},${grayLevel})`;
       absWeight: absW,
       weightLabel: label
     });
-  });
+  }
+});
 
   cy.style().update();
 }
