@@ -187,6 +187,13 @@ export function convergeNodes({ cy, epsilon = 0.01, maxIters = 30 }) {
       saturationK: 1,
       epsilon
     });
+    console.log(
+  'assertion node:', node.id(),
+  'parents:', validEdges.map(e => e.source().id()),
+  'weights:', validEdges.map(e => e.data('computedWeight')),
+  'parent probs:', validEdges.map(e => e.source().data('prob')),
+  'computed newProb:', newProb
+);
   }
 }
 

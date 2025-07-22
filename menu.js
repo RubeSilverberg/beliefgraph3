@@ -304,7 +304,13 @@ window.cy.on('doubleTap', 'node', function(event) {
 
   // --- Double-Tap Edge for Editing Influence/Modifier ---
   cy.on('tap', 'edge', evt => {
-    if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
+    if (window.getBayesMode && window.getBayesMode() === 'heavy') {
+  // Open Bayes modal for this edge
+  window.openBayesModalForEdge
+    ? window.openBayesModalForEdge(evt.target)
+    : alert('Bayes modal not wired yet.');
+  return;
+}
     const edge = evt.target;
     const now = Date.now();
     const id = edge.id();

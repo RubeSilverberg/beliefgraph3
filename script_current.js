@@ -63,12 +63,55 @@ function setBayesMode(newMode) {
   if (newMode !== 'lite' && newMode !== 'heavy') return;
   mode = newMode;
   console.log(`Bayes mode set to: ${mode}`);
+  handleModeProcesses(newMode);
+  updateModeIndicator(newMode);
   if (window.computeVisuals) window.computeVisuals(window.cy);
 }
+
 window.setBayesMode = setBayesMode;
 
 // Attach computeVisuals to window for cross-module use
 window.computeVisuals = computeVisuals;
+
+function handleModeProcesses(mode) {
+  // Put any mode-specific logic here.
+  // Example: enable/disable controls, lock out propagation, show modals, etc.
+  if (mode === 'heavy') {
+    // Example: disable propagate button
+    // document.getElementById('propagateBtn').disabled = true;
+  } else {
+    // Example: re-enable propagate button
+    // document.getElementById('propagateBtn').disabled = false;
+  }
+}
+
+function updateModeIndicator(mode) {
+  // Example: show or hide a badge/banner for mode
+  let badge = document.getElementById('modeBadge');
+  if (!badge) {
+    badge = document.createElement('div');
+    badge.id = 'modeBadge';
+    badge.style.position = 'fixed';
+    badge.style.top = '16px';
+    badge.style.right = '16px';
+    badge.style.padding = '6px 18px';
+    badge.style.borderRadius = '10px';
+    badge.style.fontWeight = 'bold';
+    badge.style.zIndex = 9999;
+    badge.style.boxShadow = '0 2px 10px rgba(0,0,0,0.25)';
+    badge.style.pointerEvents = 'none'; // don't block clicks
+    document.body.appendChild(badge);
+  }
+  if (mode === 'heavy') {
+    badge.style.background = 'red';
+    badge.style.color = 'white';
+    badge.textContent = 'BAYES HEAVY MODE';
+    badge.style.display = '';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
 
 // ====== Central Node Sizing Logic ======
 export function adjustNodeSize(node, change = 0, options = {}) {
@@ -270,16 +313,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ====== Button Event Hookup ======
-
+  document.getElementById('btnBayesTime').onclick = function() {
+  setBayesMode(mode === 'lite' ? 'heavy' : 'lite');
+};
   document.getElementById('btnRestoreAutosave').addEventListener('click', restoreAutosave);
   document.getElementById('btnResetLayout').addEventListener('click', resetLayout);
   document.getElementById('btnClearGraph').addEventListener('click', clearGraph);
   document.getElementById('btnSaveGraph').addEventListener('click', saveGraph);
   document.getElementById('btnLoadGraph').addEventListener('click', loadGraph);
-document.getElementById('btnBayesTime').onclick = function() {
-  setBayesMode(mode === 'lite' ? 'heavy' : 'lite');
-};
-  
+
   // ====== Autosave Timer ======
   setInterval(autosave, 5 * 60 * 1000);
 

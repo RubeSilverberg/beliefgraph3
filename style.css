@@ -120,13 +120,7 @@ html, body {
   resize: vertical;
   font-family: inherit;
 }
-.bayes-time-modal {
-  left: 40px !important;
-  bottom: 40px !important;
-  top: auto !important;
-  right: auto !important;
-  transform: none !important;
-}
+
 #edit-label-modal {
   position: fixed;
   left: 0;
@@ -190,4 +184,20 @@ html, body {
   width: 100%;
   padding: 10px;
   margin-bottom: 10px;
+}
+#bayes-modal.modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 410px;
+  max-width: 98vw;
+  background: #fff;
+  color: #111;
+  padding: 28px 28px 20px 28px;
+  border-radius: 10px;
+  box-shadow: 0 4px 40px #0007, 0 0 0 1.5px #ddd;
+  z-index: 1002;
+  opacity: 1 !important;
 }
