@@ -303,143 +303,135 @@ window.cy.on('doubleTap', 'node', function(event) {
   });
 
   // --- Double-Tap Edge for Editing Influence/Modifier ---
-  cy.on('dblclick', 'edge', evt => {
-    if (window.getBayesMode && window.getBayesMode() === 'heavy') {
-  // Open Bayes modal for this edge
-  window.openBayesModalForEdge
-    ? window.openBayesModalForEdge(evt.target)
-    : alert('Bayes modal not wired yet.');
-  return;
-}
-    const edge = evt.target;
-    const now = Date.now();
-    const id = edge.id();
-    const targetNode = edge.target();
-    const targetType = targetNode.data('type');
+// --- Double-Click Edge for Editing Influence/Modifier ---
+cy.on('dblclick', 'edge', evt => {
+  if (window.getBayesMode && window.getBayesMode() === 'heavy') {
+    // Open Bayes modal for this edge
+    window.openBayesModalForEdge
+      ? window.openBayesModalForEdge(evt.target)
+      : alert('Bayes modal not wired yet.');
+    return;
+  }
+  const edge = evt.target;
+  const targetNode = edge.target();
+  const targetType = targetNode.data('type');
 
-    if (id === lastTappedEdge && now - lastEdgeTapTime < 300) {
-      const prevModal = document.getElementById('modifier-modal');
-      if (prevModal) prevModal.remove();
+  // Always remove any existing modifier modal
+  const prevModal = document.getElementById('modifier-modal');
+  if (prevModal) prevModal.remove();
 
-      const modal = document.createElement('div');
-      modal.id = 'modifier-modal';
-      modal.className = 'modifier-modal';
-      modal.style.position = 'fixed';
-      modal.style.background = '#fff';
-      modal.style.border = '1px solid #aaa';
-      modal.style.padding = '16px';
-      modal.style.zIndex = 10001;
-      modal.style.boxShadow = '0 2px 8px rgba(0,0,0,0.25)';
-      modal.style.left = 'calc(50vw - 160px)';
-      modal.style.top = 'calc(50vh - 90px)';
-      modal.style.minWidth = '300px';
+  const modal = document.createElement('div');
+  modal.id = 'modifier-modal';
+  modal.className = 'modifier-modal';
+  modal.style.position = 'fixed';
+  modal.style.background = '#fff';
+  modal.style.border = '1px solid #aaa';
+  modal.style.padding = '16px';
+  modal.style.zIndex = 10001;
+  modal.style.boxShadow = '0 2px 8px rgba(0,0,0,0.25)';
+  modal.style.left = 'calc(50vw - 160px)';
+  modal.style.top = 'calc(50vh - 90px)';
+  modal.style.minWidth = '300px';
 
-      const label = document.createElement('div');
-      label.textContent = 'Set weight:';
-      label.className = "modifier-modal-title";
-      label.style.marginBottom = '10px';
-      modal.appendChild(label);
-        makeDraggable(modal, '.modifier-modal-title');
+  const label = document.createElement('div');
+  label.textContent = 'Set weight:';
+  label.className = "modifier-modal-title";
+  label.style.marginBottom = '10px';
+  modal.appendChild(label);
+  makeDraggable(modal, '.modifier-modal-title');
 
-      // Opposing checkbox (always present)
-      const opposesContainer = document.createElement('div');
-      opposesContainer.style.marginBottom = '8px';
-      const opposesCheckbox = document.createElement('input');
-      opposesCheckbox.type = 'checkbox';
-      opposesCheckbox.id = 'opposes-checkbox';
-      opposesCheckbox.checked = !!edge.data('opposes');
-      const opposesLabel = document.createElement('label');
-      opposesLabel.textContent = "Opposing ('not') influence";
-      opposesLabel.htmlFor = 'opposes-checkbox';
-      opposesContainer.appendChild(opposesCheckbox);
-      opposesContainer.appendChild(opposesLabel);
-      modal.appendChild(opposesContainer);
+  // Opposing checkbox (always present)
+  const opposesContainer = document.createElement('div');
+  opposesContainer.style.marginBottom = '8px';
+  const opposesCheckbox = document.createElement('input');
+  opposesCheckbox.type = 'checkbox';
+  opposesCheckbox.id = 'opposes-checkbox';
+  opposesCheckbox.checked = !!edge.data('opposes');
+  const opposesLabel = document.createElement('label');
+  opposesLabel.textContent = "Opposing ('not') influence";
+  opposesLabel.htmlFor = 'opposes-checkbox';
+  opposesContainer.appendChild(opposesCheckbox);
+  opposesContainer.appendChild(opposesLabel);
+  modal.appendChild(opposesContainer);
 
-      let select;
-      if (targetType === NODE_TYPE_ASSERTION) {
-        select = document.createElement('select');
-        select.style.marginBottom = '10px';
-        const options = [
-          { label: "Maximal", value: 1 },
-          { label: "Strong", value: 0.85 },
-          { label: "Moderate", value: 0.60 },
-          { label: "Small", value: 0.35 },
-          { label: "Minimal", value: 0.15 }
-        ];
-        const currentAbs = Math.abs(edge.data('weight') ?? 0.15);
-        options.forEach(opt => {
-          const o = document.createElement('option');
-          o.value = opt.value;
-          o.textContent = opt.label;
-          if (Math.abs(currentAbs - opt.value) < 0.01) o.selected = true;
-          select.appendChild(o);
-        });
-        modal.appendChild(select);
-      }
+  let select;
+  if (targetType === NODE_TYPE_ASSERTION) {
+    select = document.createElement('select');
+    select.style.marginBottom = '10px';
+    const options = [
+      { label: "Maximal", value: 1 },
+      { label: "Strong", value: 0.85 },
+      { label: "Moderate", value: 0.60 },
+      { label: "Small", value: 0.35 },
+      { label: "Minimal", value: 0.15 }
+    ];
+    const currentAbs = Math.abs(edge.data('weight') ?? 0.15);
+    options.forEach(opt => {
+      const o = document.createElement('option');
+      o.value = opt.value;
+      o.textContent = opt.label;
+      if (Math.abs(currentAbs - opt.value) < 0.01) o.selected = true;
+      select.appendChild(o);
+    });
+    modal.appendChild(select);
+  }
 
-      const btn = document.createElement('button');
-      btn.textContent = 'OK';
-      btn.style.margin = '10px 5px 0 0';
-      btn.onclick = function () {
+  const btn = document.createElement('button');
+  btn.textContent = 'OK';
+  btn.style.margin = '10px 5px 0 0';
+  btn.onclick = function () {
     const opposes = opposesCheckbox.checked;
 
-        if (targetType === NODE_TYPE_ASSERTION && select) {
-          const prevWeight = edge.data('weight');
-          const val = parseFloat(select.value);
-          edge.data('weight', val);
+    if (targetType === NODE_TYPE_ASSERTION && select) {
+      const prevWeight = edge.data('weight');
+      const val = parseFloat(select.value);
+      edge.data('weight', val);
 
-          if (prevWeight !== val) {
-            edge.removeData('isVirgin');
-          }
-        } else {
-          edge.removeData('isVirgin');
-        }
-
-        if (opposes) {
-          edge.data('opposes', true);
-          edge.data('type', 'opposes');
-        } else {
-          edge.removeData('opposes');
-          edge.data('type', 'supports');
-        }
-
-        document.body.removeChild(modal);
-        setTimeout(() => {
-          convergeAll({ cy });
-          cy.nodes().forEach(node => {
-            if (
-              node.data('type') === NODE_TYPE_ASSERTION &&
-              node.data('isVirgin') &&
-              typeof node.data('prob') === 'number' &&
-              node.incomers('edge').length > 0
-            ) {
-              node.removeData('isVirgin');
-            }
-          });
-          computeVisuals(cy);
-        }, 0);
-      };
-
-      modal.appendChild(btn);
-
-      const cancel = document.createElement('button');
-      cancel.textContent = 'Cancel';
-      cancel.onclick = function () {
-        document.body.removeChild(modal);
-      };
-      modal.appendChild(cancel);
-
-      document.body.appendChild(modal);
-
-      if (select) select.focus();
-
-      lastTappedEdge = null;
-      lastEdgeTapTime = 0;
+      if (prevWeight !== val) {
+        edge.removeData('isVirgin');
+      }
     } else {
-      lastTappedEdge = id;
-      lastEdgeTapTime = now;
+      edge.removeData('isVirgin');
     }
-  });
+
+    if (opposes) {
+      edge.data('opposes', true);
+      edge.data('type', 'opposes');
+    } else {
+      edge.removeData('opposes');
+      edge.data('type', 'supports');
+    }
+
+    document.body.removeChild(modal);
+    setTimeout(() => {
+      convergeAll({ cy });
+      cy.nodes().forEach(node => {
+        if (
+          node.data('type') === NODE_TYPE_ASSERTION &&
+          node.data('isVirgin') &&
+          typeof node.data('prob') === 'number' &&
+          node.incomers('edge').length > 0
+        ) {
+          node.removeData('isVirgin');
+        }
+      });
+      computeVisuals(cy);
+    }, 0);
+  };
+
+  modal.appendChild(btn);
+
+  const cancel = document.createElement('button');
+  cancel.textContent = 'Cancel';
+  cancel.onclick = function () {
+    document.body.removeChild(modal);
+  };
+  modal.appendChild(cancel);
+
+  document.body.appendChild(modal);
+
+  if (select) select.focus();
+});
 }
 // --- Make modal draggable by handle (title bar or full modal)
 function makeDraggable(modal, handleSelector = null) {

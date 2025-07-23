@@ -1,4 +1,7 @@
-    let stepIndex = 0; // 0 = baseline, 1 = condTrue, 2 = condFalse, 3 = summary
+
+import { propagateBayesHeavy } from './bayes-logic.js';
+
+let stepIndex = 0; // 0 = baseline, 1 = condTrue, 2 = condFalse, 3 = summary
 
     // State
     let baseline = 50, condTrue = 70, condFalse = 30, inverse = false;
@@ -188,10 +191,21 @@ setCondFalseBtn.onclick = () => {
       msg += qualitativeRatio(ratio);
       summaryText.innerHTML = msg;
     }
-    okBtn.addEventListener('click', () => {
-      document.getElementById('bayes-modal').classList.add('hidden');
-      location.reload();
+okBtn.addEventListener('click', () => {
+  document.getElementById('bayes-modal').classList.add('hidden');
+  // Save modal values to the edge
+  if (window._currentBayesEdge) {
+    window._currentBayesEdge.data('cpt', {
+      baseline,
+      condTrue,
+      condFalse,
+      inverse,
     });
+  }
+  propagateBayesHeavy(window.cy)
+    computeVisuals(window.cy);
+});
+
 cancelBtn.addEventListener('click', () => {
   if (confirm('Cancel and discard changes to this conditional?')) {
     modal.classList.add('hidden');

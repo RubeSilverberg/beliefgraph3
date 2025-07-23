@@ -60,9 +60,9 @@ export function computeVisuals(cy) {
 
       if (bayesMode === 'heavy') {
         // Show only CPT or '—', no robustness in Heavy mode
-        const cptProb = node.data('cptProb');
-        let probDisplay = typeof cptProb === "number" ? Math.round(cptProb * 100) + '%' : '—';
-        label += `\n${probDisplay}`;
+const p = node.data('prob');
+let probDisplay = typeof p === "number" ? Math.round(p * 100) + '%' : '—';
+label += `\n${probDisplay}`;
         node.removeData('robustness');
         node.removeData('robustnessLabel');
         borderWidth = 2;
