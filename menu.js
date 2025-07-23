@@ -303,7 +303,7 @@ window.cy.on('doubleTap', 'node', function(event) {
   });
 
   // --- Double-Tap Edge for Editing Influence/Modifier ---
-  cy.on('tap', 'edge', evt => {
+  cy.on('dblclick', 'edge', evt => {
     if (window.getBayesMode && window.getBayesMode() === 'heavy') {
   // Open Bayes modal for this edge
   window.openBayesModalForEdge

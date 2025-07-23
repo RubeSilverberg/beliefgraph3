@@ -287,8 +287,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 // Ensure only one tooltip at a time
 let edgeTooltipDiv = null;
-
 cy.on('mouseover', 'edge', function(evt) {
+  if (window.getBayesMode && window.getBayesMode() !== 'heavy') return; // Only show in heavy mode
   const edge = evt.target;
   const cpt = edge.data('cpt') || {};
 
@@ -315,7 +315,19 @@ cy.on('mouseover', 'edge', function(evt) {
   `;
   document.body.appendChild(edgeTooltipDiv);
 
-  // Position near mouse
+  // ---- Set initial position immediately ----
+  let clientX = 0, clientY = 0;
+  if (evt.originalEvent) {
+    clientX = evt.originalEvent.clientX;
+    clientY = evt.originalEvent.clientY;
+  } else if (window.event) { // fallback (rarely needed)
+    clientX = window.event.clientX;
+    clientY = window.event.clientY;
+  }
+  edgeTooltipDiv.style.left = (clientX + 18) + 'px';
+  edgeTooltipDiv.style.top = (clientY + 8) + 'px';
+
+  // Keep tooltip following mouse
   document.body.onmousemove = function(e) {
     if (edgeTooltipDiv) {
       edgeTooltipDiv.style.left = (e.clientX + 18) + 'px';
@@ -323,6 +335,7 @@ cy.on('mouseover', 'edge', function(evt) {
     }
   };
 });
+
 
 // Remove tooltip on mouseout
 cy.on('mouseout', 'edge', function(evt) {

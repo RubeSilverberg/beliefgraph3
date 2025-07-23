@@ -379,9 +379,11 @@ export function registerVisualEventHandlers(cy) {
     removeNodeHoverBox();
   });
 
-  cy.on('mouseover', 'edge', evt => {
-    showModifierBox(cy, evt.target);
-  });
+cy.on('mouseover', 'edge', evt => {
+  // Only show in Lite mode (or when NOT heavy)
+  if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
+  showModifierBox(cy, evt.target);
+});
   cy.on('mouseout', 'edge', evt => {
     removeModifierBox();
   });
