@@ -1,3 +1,5 @@
+    let stepIndex = 0; // 0 = baseline, 1 = condTrue, 2 = condFalse, 3 = summary
+
     // State
     let baseline = 50, condTrue = 70, condFalse = 30, inverse = false;
 
@@ -6,6 +8,32 @@
     const stepCondTrue = document.getElementById('step-cond-true');
     const stepCondFalse = document.getElementById('step-cond-false');
     const stepSummary = document.getElementById('step-summary');
+    const modal = document.getElementById('bayes-modal');
+const header = document.getElementById('bayes-modal-header');
+let isDragging = false, dragOffsetX = 0, dragOffsetY = 0;
+
+header.style.cursor = 'move';
+
+header.onmousedown = function(e) {
+  isDragging = true;
+  dragOffsetX = e.clientX - modal.offsetLeft;
+  dragOffsetY = e.clientY - modal.offsetTop;
+  document.body.style.userSelect = 'none';
+};
+
+document.onmouseup = function() {
+  isDragging = false;
+  document.body.style.userSelect = '';
+};
+
+document.onmousemove = function(e) {
+  if (isDragging) {
+    modal.style.left = (e.clientX - dragOffsetX) + 'px';
+    modal.style.top = (e.clientY - dragOffsetY) + 'px';
+    modal.style.position = 'fixed'; // Required
+  }
+};
+
 
     // Baseline
     const baselineSlider = document.getElementById('baseline-slider');
@@ -58,10 +86,10 @@
       return "VASTLY more likely";
     }
 document.getElementById('ok-btn').addEventListener('click', function() {
-  document.getElementById('bayes-modal').style.display = 'none';
+  document.getElementById('bayes-modal').classList.add('hidden');
 });
 document.getElementById('cancel-btn').addEventListener('click', function() {
-  document.getElementById('bayes-modal').style.display = 'none';
+  document.getElementById('bayes-modal').classList.add('hidden');
 });
 
     // --- Baseline ---
@@ -77,23 +105,20 @@ document.getElementById('cancel-btn').addEventListener('click', function() {
       parentFalseWord.textContent = inverse ? "true" : "false";
       parentFalseWord2.textContent = inverse ? "true" : "false";
     });
-    setBaselineBtn.addEventListener('click', () => {
-      baselineInputRow.classList.add('hidden');
-      baselineLockedRow.classList.remove('hidden');
-      baselineLockedValue.textContent = baseline + "%";
-      // Reveal next step
-      stepCondTrue.classList.remove('hidden');
-      // Init condTrue
-      condTrueSlider.value = Math.max(baseline, 50);
-      condTrueValue.textContent = condTrueSlider.value + "%";
-      updateCondTrue();
-    });
+setBaselineBtn.onclick = () => {
+  baselineInputRow.classList.add('hidden');
+  baselineLockedRow.classList.remove('hidden');
+  baselineLockedValue.textContent = baseline + "%";
+  stepIndex = 1;
+  renderStep();
+  condTrueSlider.value = Math.max(baseline, 50);
+  condTrueValue.textContent = condTrueSlider.value + "%";
+  updateCondTrue();
+};
+
     document.getElementById('edit-baseline-btn').addEventListener('click', () => {
-      baselineInputRow.classList.remove('hidden');
-      baselineLockedRow.classList.add('hidden');
-      stepCondTrue.classList.add('hidden');
-      stepCondFalse.classList.add('hidden');
-      stepSummary.classList.add('hidden');
+stepIndex = 0;
+renderStep();
     });
 
     // --- Cond True ---
@@ -109,22 +134,21 @@ document.getElementById('cancel-btn').addEventListener('click', function() {
       condTrueWarning.textContent = legal ? "" : `Value must be between baseline (${baseline}%) and 100%`;
     }
     condTrueSlider.addEventListener('input', updateCondTrue);
-    setCondTrueBtn.addEventListener('click', () => {
-      condTrueInputRow.classList.add('hidden');
-      condTrueLockedRow.classList.remove('hidden');
-      condTrueLockedValue.textContent = condTrue + "%";
-      // Reveal next step
-      stepCondFalse.classList.remove('hidden');
-      condFalseSlider.value = Math.min(baseline, 50);
-      condFalseValue.textContent = condFalseSlider.value + "%";
-      updateCondFalse();
-    });
+setCondTrueBtn.onclick = () => {
+  condTrueInputRow.classList.add('hidden');
+  condTrueLockedRow.classList.remove('hidden');
+  condTrueLockedValue.textContent = condTrue + "%";
+  stepIndex = 2;
+  renderStep();
+  condFalseSlider.value = Math.min(baseline, 50);
+  condFalseValue.textContent = condFalseSlider.value + "%";
+  updateCondFalse();
+};
+
     document.getElementById('edit-cond-true-btn').addEventListener('click', () => {
-      condTrueInputRow.classList.remove('hidden');
-      condTrueLockedRow.classList.add('hidden');
-      stepCondFalse.classList.add('hidden');
-      stepSummary.classList.add('hidden');
-    });
+  stepIndex = 1;
+  renderStep();
+});
 
     // --- Cond False ---
     function updateCondFalse() {
@@ -138,18 +162,16 @@ document.getElementById('cancel-btn').addEventListener('click', function() {
       condFalseWarning.textContent = legal ? "" : `Value must be between 0% and baseline (${baseline}%)`;
     }
     condFalseSlider.addEventListener('input', updateCondFalse);
-    setCondFalseBtn.addEventListener('click', () => {
-      condFalseInputRow.classList.add('hidden');
-      condFalseLockedRow.classList.remove('hidden');
-      condFalseLockedValue.textContent = condFalse + "%";
-      // Reveal summary
-      stepSummary.classList.remove('hidden');
-      updateSummary();
-    });
+setCondFalseBtn.onclick = () => {
+  condFalseInputRow.classList.add('hidden');
+  condFalseLockedRow.classList.remove('hidden');
+  condFalseLockedValue.textContent = condFalse + "%";
+  stepIndex = 3;
+  renderStep();
+};
     document.getElementById('edit-cond-false-btn').addEventListener('click', () => {
-      condFalseInputRow.classList.remove('hidden');
-      condFalseLockedRow.classList.add('hidden');
-      stepSummary.classList.add('hidden');
+  stepIndex = 2;
+  renderStep();
     });
 
     // --- Summary ---
@@ -167,13 +189,15 @@ document.getElementById('cancel-btn').addEventListener('click', function() {
       summaryText.innerHTML = msg;
     }
     okBtn.addEventListener('click', () => {
-document.getElementById('bayes-modal').style.display = 'none';
+      document.getElementById('bayes-modal').classList.add('hidden');
       location.reload();
     });
-    cancelBtn.addEventListener('click', () => {
-  document.getElementById('bayes-modal').style.display = 'none';
-  if (confirm('Cancel and discard?')) location.reload();
-    });
+cancelBtn.addEventListener('click', () => {
+  if (confirm('Cancel and discard changes to this conditional?')) {
+    modal.classList.add('hidden');
+    // Optionally, reset any Bayes modal state here.
+  }
+});
 
     // Initial render
     updateBaseline();
@@ -196,5 +220,29 @@ window.openBayesModalForEdge = function(edge) {
   document.getElementById('cond-false-value').textContent = (cpt.condFalse !== undefined ? cpt.condFalse : 30) + '%';
   document.getElementById('inverse-checkbox').checked = !!cpt.inverse;
 
-document.getElementById('bayes-modal').style.display = 'block';
+  document.getElementById('bayes-modal').classList.remove('hidden');
+  stepIndex = 0;
+  renderStep();
 };
+function renderStep() {
+  // Step visibility
+  stepBaseline.classList.remove('hidden');
+  stepCondTrue.classList.toggle('hidden', stepIndex < 1);
+  stepCondFalse.classList.toggle('hidden', stepIndex < 2);
+  stepSummary.classList.toggle('hidden', stepIndex !== 3);
+
+  // Baseline row
+  baselineInputRow.classList.toggle('hidden', stepIndex !== 0);
+  baselineLockedRow.classList.toggle('hidden', stepIndex === 0);
+
+  // Cond True row
+  condTrueInputRow.classList.toggle('hidden', stepIndex !== 1);
+  condTrueLockedRow.classList.toggle('hidden', stepIndex === 1 || stepIndex === 0);
+
+  // Cond False row
+  condFalseInputRow.classList.toggle('hidden', stepIndex !== 2);
+  condFalseLockedRow.classList.toggle('hidden', stepIndex === 2 || stepIndex < 2);
+
+  // Summary
+  if (stepIndex === 3) updateSummary();
+}

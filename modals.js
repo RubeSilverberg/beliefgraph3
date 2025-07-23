@@ -8,11 +8,17 @@ import { computeVisuals } from './visuals.js';
 export function showModal(modal) {
   document.body.appendChild(modal);
   centerModal(modal);
+  modal.classList.remove('hidden');
   modal.focus && modal.focus();
 }
 export function hideModal(modalId) {
   const modal = document.getElementById(modalId);
-  if (modal) document.body.removeChild(modal);
+  if (modal) {
+    modal.classList.add('hidden');
+    setTimeout(() => {
+      if (modal.parentNode) modal.parentNode.removeChild(modal);
+    }, 200);
+  }
 }
 
 // --- Edit Node Label Modal ---
@@ -22,6 +28,7 @@ export function openEditNodeLabelModal(node) {
 
   const modal = document.createElement('div');
   modal.id = 'edit-label-modal';
+  modal.className = 'hidden';
   modal.style.position = 'fixed';
   modal.style.background = '#fff';
   modal.style.padding = '24px 24px 18px 24px';
@@ -136,6 +143,7 @@ export function openVisualSignalsModal(node, cy) {
 
   const modal = document.createElement('div');
   modal.id = 'visual-signals-modal';
+  modal.className = 'hidden';
   modal.style.position = 'fixed';
   modal.style.background = '#fff';
   modal.style.padding = '24px 20px 18px 20px';
@@ -243,6 +251,7 @@ export function openNotesModal(node) {
 
   const modal = document.createElement('div');
   modal.id = 'notes-modal';
+  modal.className = 'hidden';
   modal.style.position = 'fixed';
   modal.style.background = '#fff';
   modal.style.padding = '24px 20px 18px 20px';
@@ -308,6 +317,7 @@ export function openRationaleModal(element, type) {
 
   const modal = document.createElement('div');
   modal.id = 'rationale-modal';
+  modal.className = 'hidden';
   modal.style.position = 'fixed';
   modal.style.background = '#fff';
   modal.style.padding = '24px 20px 18px 20px';
@@ -373,6 +383,7 @@ export function openCPTModalTwoPerParent({ node, parentId, existing, onSave, onP
 
   const modal = document.createElement('div');
   modal.id = 'cpt-modal';
+  modal.className = 'hidden';
   modal.style.position = 'fixed';
   modal.style.background = '#fff';
   modal.style.padding = '24px 24px 18px 24px';

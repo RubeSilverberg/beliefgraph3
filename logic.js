@@ -52,20 +52,37 @@ export function highlightBayesNodeFocus(node) {
 // FACT_PROB: Never exactly 1 to avoid logit infinity (move to config if needed)
 export const FACT_PROB = 0.99;
 
-// Robust propagateFromParents for assertion nodes (logit odds, global saturation)
 function propagateFromParentsRobust({ baseProb, parents, getProb, getWeight, epsilon = 0.01, saturationK = 1 }) {
   if (!parents || parents.length === 0) return baseProb;
+
+  // Filter to valid parents (exclude edges whose parent prob is null/undefined/virgin)
+  const validEdges = parents.filter(e => {
+    const prob = getProb(e);
+    return prob !== undefined && prob !== null;
+  });
+
+  if (validEdges.length === 1) {
+    const edge = validEdges[0];
+    const prob = getProb(edge);
+    const sign = edge.data('opposes') || edge.data('type') === 'opposes' ? -1 : 1;
+    const effectiveWeight = getWeight(edge) * sign;
+    if (Math.abs(effectiveWeight) >= 0.99) {
+      return effectiveWeight > 0 ? prob : 1 - prob;
+    }
+  }
+
+  // Standard propagation for blended/ambiguous/multiple edges
   const clampedBase = Math.min(Math.max(baseProb, epsilon), 1 - epsilon);
   const priorOdds = Math.log(clampedBase / (1 - clampedBase));
   const infos = parents.map(edge => {
-  const prob = Math.min(Math.max(getProb(edge), epsilon), 1 - epsilon);
-  const sign = edge.data('opposes') || edge.data('type') === 'opposes' ? -1 : 1;
-  return {
-    parent: edge,
-    odds: Math.log(prob / (1 - prob)),
-    weight: getWeight(edge) * sign
-  };
-});
+    const prob = Math.min(Math.max(getProb(edge), epsilon), 1 - epsilon);
+    const sign = edge.data('opposes') || edge.data('type') === 'opposes' ? -1 : 1;
+    return {
+      parent: edge,
+      odds: Math.log(prob / (1 - prob)),
+      weight: getWeight(edge) * sign
+    };
+  });
   const totalAbsW = infos.reduce((sum, x) => sum + Math.abs(x.weight), 0);
   let oddsDelta = 0;
   for (let i = 0; i < infos.length; ++i) {

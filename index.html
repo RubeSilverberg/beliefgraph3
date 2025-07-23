@@ -33,12 +33,13 @@
   </div>
 
   <!-- Visual Signals Modal and Content -->
-  <div id="visualSignalsModalContent" style="display:none;"></div>
+  <div id="visualSignalsModalContent" class="hidden"></div>
 
   <!-- Bayes Modal and Content -->
-<div id="bayes-modal" style="display:none;" class="modal">
-    <!-- Step 1: Baseline -->
-    <div id="step-baseline" class="step">
+<div id="bayes-modal" class="modal hidden">
+  <div id="bayes-modal-header" class="modal-header">Bayes Heavy Editor</div>
+  <!-- Step 1: Baseline -->
+  <div id="step-baseline" class="step">
       <div class="step-title">1. Baseline Probability</div>
       <div class="step-sub">Chance <b>[Child]</b> is true if nothing is known about <b>[Parent]</b>.</div>
       <div id="baseline-input-row">

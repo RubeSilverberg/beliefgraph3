@@ -279,11 +279,59 @@ document.addEventListener('DOMContentLoaded', () => {
     ],
     layout: { name: 'preset' }
   });
+  
   // Double-click node to edit label
   cy.on('dblclick', 'node', function(event) {
     const node = event.target;
     openEditNodeLabelModal(node);
   });
+// Ensure only one tooltip at a time
+let edgeTooltipDiv = null;
+
+cy.on('mouseover', 'edge', function(evt) {
+  const edge = evt.target;
+  const cpt = edge.data('cpt') || {};
+
+  // Extract values (provide fallback dashes if missing)
+  const baseline = cpt.baseline !== undefined ? cpt.baseline : '—';
+  const pTrue = cpt.condTrue !== undefined ? cpt.condTrue : '—';
+  const pFalse = cpt.condFalse !== undefined ? cpt.condFalse : '—';
+  let lr = '—';
+  if (typeof pTrue === 'number' && typeof pFalse === 'number' && pFalse !== 0) {
+    lr = (pTrue / pFalse).toFixed(2) + '×';
+  }
+
+  // Remove any existing tooltip
+  if (edgeTooltipDiv) edgeTooltipDiv.remove();
+
+  // Create tooltip div
+  edgeTooltipDiv = document.createElement('div');
+  edgeTooltipDiv.className = 'edge-tooltip';
+  edgeTooltipDiv.innerHTML = `
+    <div><b>Likelihood Ratio:</b> <span class="lr-value">${lr}</span></div>
+    <div>Baseline: <b>${baseline}%</b></div>
+    <div>P(child | parent = true): <b>${pTrue}%</b></div>
+    <div>P(child | parent = false): <b>${pFalse}%</b></div>
+  `;
+  document.body.appendChild(edgeTooltipDiv);
+
+  // Position near mouse
+  document.body.onmousemove = function(e) {
+    if (edgeTooltipDiv) {
+      edgeTooltipDiv.style.left = (e.clientX + 18) + 'px';
+      edgeTooltipDiv.style.top = (e.clientY + 8) + 'px';
+    }
+  };
+});
+
+// Remove tooltip on mouseout
+cy.on('mouseout', 'edge', function(evt) {
+  if (edgeTooltipDiv) {
+    edgeTooltipDiv.remove();
+    edgeTooltipDiv = null;
+    document.body.onmousemove = null;
+  }
+});
 
   // Make cy global if needed elsewhere
   window.cy = cy;
