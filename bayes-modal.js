@@ -201,6 +201,7 @@ okBtn.addEventListener('click', () => {
       condFalse,
       inverse,
     });
+        window._currentBayesEdge.removeData('isVirgin');
   }
   propagateBayesHeavy(window.cy)
     computeVisuals(window.cy);

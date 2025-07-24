@@ -44,63 +44,84 @@ export function computeVisuals(cy) {
       shape = 'rectangle';
       borderWidth = 2;
       borderColor = '#444';
-      node.removeData('robustness');
-      node.removeData('robustnessLabel');
       node.data('textColor', '#fff');
     }
     else if (nodeType === NODE_TYPE_ASSERTION) {
       const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
       node.data('textColor', '#000');
-      const incomingEdges = node.incomers('edge');
-      // Only count edges that are non-virgin and whose parent is also non-virgin
-      const validEdges = incomingEdges.filter(e =>
-        !e.data('isVirgin') &&
-        !e.source().data('isVirgin')
-      );
-
+      // === HEAVY MODE SHORT-CIRCUIT ===
       if (bayesMode === 'heavy') {
-        // Show only CPT or '—', no robustness in Heavy mode
-const p = node.data('prob');
-let probDisplay = typeof p === "number" ? Math.round(p * 100) + '%' : '—';
-label += `\n${probDisplay}`;
-        node.removeData('robustness');
-        node.removeData('robustnessLabel');
+        const heavyProb = node.data('heavyProb');
+        let pPct = typeof heavyProb === "number" ? Math.round(heavyProb * 100) : null;
+        label += pPct !== null ? `\n${pPct}%` : `\n—`;
         borderWidth = 2;
         borderColor = '#333';
-      } else {
-        // Normal Lite mode visuals: show edge-driven prob and robustness
-        if (typeof node.data('prob') === "number" && validEdges.length > 0) {
-          const p = node.data('prob');
-          let pPct = Math.round(p * 100);
-          if (pPct > 0 && pPct < 1) pPct = 1;
-          if (pPct > 99) pPct = 99;
-          label += `\n${pPct}%`;
-
-          const aei = validEdges.reduce((sum, e) => {
-            const sourceType = e.source().data('type');
-            if (sourceType !== NODE_TYPE_ASSERTION && sourceType !== NODE_TYPE_FACT) return sum;
-            const w = getModifiedEdgeWeight(cy, e);
-            return sum + (typeof w === "number" ? Math.abs(w) : 0);
-          }, 0);
-
-          const robust = saturation(aei);
-          const robustLabel = robustnessToLabel(robust);
-          node.data('robustness', robust);
-          node.data('robustnessLabel', robustLabel);
-          borderWidth = Math.max(2, Math.round(robust * 10));
-          // Grayscale: 238 (very light gray) at minimal, 111 (nearly black) at very high robustness
-          const grayLevel = Math.round(238 - 127 * robust);
-          borderColor = `rgb(${grayLevel},${grayLevel},${grayLevel})`;
-
-        } else {
-          label += `\n—`;
-          node.removeData('robustness');
-          node.removeData('robustnessLabel');
-          borderWidth = 1;
-          borderColor = '#222';
-        }
+        node.data({
+          label,
+          borderWidth,
+          borderColor,
+          shape,
+          floretColor: node.data('floretColor'),
+          textColor: node.data('textColor')
+        });
+        return;
       }
-      
+      const incomingEdges = node.incomers('edge');
+      const validEdges = incomingEdges.filter(e =>
+        !e.data('isVirgin') && !e.source().data('isVirgin')
+      );
+
+      // === EARLY VIRGIN CASE (Lite only) ===
+      if (bayesMode === 'lite' && validEdges.length === 0) {
+        label += `\n—`;
+        node.data({
+          isVirgin: true,
+          robustness: undefined,
+          robustnessLabel: undefined,
+          borderWidth: 1,
+          borderColor: '#222',
+          label 
+        });
+        return;
+      } else {
+        node.removeData('isVirgin');
+      }
+
+      let p = node.data('prob');
+      let pPct = typeof p === "number" ? Math.round(p * 100) : null;
+
+      // --- Shared baseline label logic ---
+      label += pPct !== null
+        ? `\n${Math.min(Math.max(pPct, 1), 99)}%`
+        : `\n—`;
+
+      // --- Shared defaults ---
+      borderWidth = 2;
+      borderColor = '#333';
+
+      // --- Mode-specific overrides ---
+      if (bayesMode !== 'heavy' && typeof p === "number" && validEdges.length > 0) {
+        const aei = validEdges.reduce((sum, e) => {
+          const sourceType = e.source().data('type');
+          if (sourceType !== NODE_TYPE_ASSERTION && sourceType !== NODE_TYPE_FACT) return sum;
+          const w = getModifiedEdgeWeight(cy, e);
+          return sum + (typeof w === "number" ? Math.abs(w) : 0);
+        }, 0);
+
+        const robust = saturation(aei);
+        const robustLabel = robustnessToLabel(robust);
+        node.data({ robustness: robust, robustnessLabel: robustLabel });
+
+        borderWidth = Math.max(2, Math.round(robust * 10));
+        const grayLevel = Math.round(238 - 127 * robust);
+        borderColor = `rgb(${grayLevel},${grayLevel},${grayLevel})`;
+      } else {
+        node.removeData('robustness');
+        node.removeData('robustnessLabel');
+      }
+
+      node.data({ borderWidth, borderColor });
+
     } else if (nodeType === NODE_TYPE_AND) {
       let pct = typeof node.data('prob') === "number" ? Math.round(node.data('prob') * 100) : null;
       if (pct !== null) {
@@ -146,48 +167,60 @@ label += `\n${probDisplay}`;
       borderWidth,
       borderColor,
       shape,
-      floretColor: node.data('floretColor'), // preserves current value
-  textColor: node.data('textColor')      // same for text, optional but recommended
+      floretColor: node.data('floretColor'),
+      textColor: node.data('textColor')
     });
     if (DEBUG) logMath(node.id(), `Visual: ${label.replace(/\n/g, ' | ')}`);
   });
 
- cy.edges().forEach(edge => {
-  const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
+  cy.edges().forEach(edge => {
+    const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
 
-  if (bayesMode === 'heavy') {
-    // Force edge to look virgin regardless of real state
-    edge.data({
-      absWeight: 0,
-      weightLabel: '',
-      isVirgin: true // purely for styling
-    });
-  } else {
-    // Normal edge rendering logic
-    const targetNode = edge.target();
-    let absW = 0, label = '';
-    if (targetNode.data('type') === NODE_TYPE_ASSERTION) {
-      const effectiveWeight = getModifiedEdgeWeight(cy, edge);
-      let displayWeight = effectiveWeight;
-      if (Math.abs(effectiveWeight) > 0 && Math.abs(effectiveWeight) < 0.011) {
-        displayWeight = effectiveWeight > 0 ? 0.01 : -0.01;
+    // ====== DO NOT purge any edge fields ======
+
+    // ====== Now recalc/set the fields for the current mode ======
+    let isVirgin = false;
+    let absWeight = 0;
+    let edgeType = edge.data('type');
+
+    if (bayesMode === 'heavy') {
+      const cpt = edge.data('cpt');
+      isVirgin = !cpt || typeof cpt.baseline !== 'number';
+      edge.data('isVirgin', isVirgin ? true : undefined);
+
+      if (!isVirgin) {
+        if (
+          typeof cpt.condTrue === 'number' &&
+          typeof cpt.condFalse === 'number' &&
+          cpt.condFalse > 0
+        ) {
+          const logRatio = Math.log(cpt.condTrue / cpt.condFalse);
+          absWeight = Math.min(1, Math.abs(logRatio / 3)); // 3 is your scaler
+          edgeType = logRatio < 0 ? 'opposes' : 'supports';
+          edge.data('type', edgeType); // override for heavy
+        }
       }
-      absW = Math.abs(displayWeight);
-      const likertValue = weightToLikert(displayWeight);
-      const hasModifiers = (edge.data('modifiers') ?? []).length > 0;
-      if (Math.abs(displayWeight) > WEIGHT_MIN || hasModifiers) {
-        label = likertDescriptor(likertValue);
+    } else { // Lite mode
+      // Lite mode virginity: parent has no prob
+      const parentProb = edge.source().data('prob');
+      isVirgin = typeof parentProb !== "number";
+      edge.data('isVirgin', isVirgin ? true : undefined);
+
+      if (!isVirgin) {
+        absWeight = edge.data('absWeight') ?? 0;
+        // edgeType is already set in Lite
       }
-    } else {
-      label = '';
-      absW = 0;
     }
-    edge.data({
-      absWeight: absW,
-      weightLabel: label
-    });
-  }
-});
+
+    // ====== Set color and absWeight for virgin/non-virgin ======
+    if (isVirgin) {
+      edge.data('lineColor', bayesMode === 'heavy' ? '#A26DD2' : '#ffb300');
+      edge.data('absWeight', 0);
+    } else {
+      edge.data('absWeight', absWeight);
+      // Color and dash handled by Cytoscape style array via type and absWeight
+    }
+  });
 
   cy.style().update();
 }
@@ -280,25 +313,25 @@ export function showNodeHoverBox(cy, node) {
     const rlabel = node.data('robustnessLabel');
     if (rlabel) {
       // Compute grayscale for the robustness label
-const robust = node.data('robustness');
-const grayscale = robust !== undefined
-  ? `rgb(${Math.round(180 - 60 * robust)}, ${Math.round(180 - 60 * robust)}, ${Math.round(180 - 60 * robust)})`
-  : '#888';
-box.innerHTML += `<br><span><b style="color:#111">Robustness</b>: <b style="color:${grayscale}">${rlabel}</b></span>`;
+      const robust = node.data('robustness');
+      const grayscale = robust !== undefined
+        ? `rgb(${Math.round(180 - 60 * robust)}, ${Math.round(180 - 60 * robust)}, ${Math.round(180 - 60 * robust)})`
+        : '#888';
+      box.innerHTML += `<br><span><b style="color:#111">Robustness</b>: <b style="color:${grayscale}">${rlabel}</b></span>`;
     }
- } else if (nodeType === NODE_TYPE_AND) {
-  let probStr = typeof node.data('prob') === "number"
-    ? `<br>Current: <b>${Math.round(100 * node.data('prob'))}%</b>`
-    : "<br>Current: <b>—</b>";
-  box.innerHTML = `<b>AND</b>${probStr}<br><i>AND logic node<br>(product of parent probs)</i>`;
-} else if (nodeType === NODE_TYPE_OR) {
-  let probStr = typeof node.data('prob') === "number"
-    ? `<br>Current: <b>${Math.round(100 * node.data('prob'))}%</b>`
-    : "<br>Current: <b>—</b>";
-  box.innerHTML = `<b>OR</b>${probStr}<br><i>OR logic node<br>(sum-minus-product of parent probs)</i>`;
-} else {
-  box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><i>Unknown node type</i>`;
-}
+  } else if (nodeType === NODE_TYPE_AND) {
+    let probStr = typeof node.data('prob') === "number"
+      ? `<br>Current: <b>${Math.round(100 * node.data('prob'))}%</b>`
+      : "<br>Current: <b>—</b>";
+    box.innerHTML = `<b>AND</b>${probStr}<br><i>AND logic node<br>(product of parent probs)</i>`;
+  } else if (nodeType === NODE_TYPE_OR) {
+    let probStr = typeof node.data('prob') === "number"
+      ? `<br>Current: <b>${Math.round(100 * node.data('prob'))}%</b>`
+      : "<br>Current: <b>—</b>";
+    box.innerHTML = `<b>OR</b>${probStr}<br><i>OR logic node<br>(sum-minus-product of parent probs)</i>`;
+  } else {
+    box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><i>Unknown node type</i>`;
+  }
 
   container.parentElement.appendChild(box);
 }
@@ -379,11 +412,11 @@ export function registerVisualEventHandlers(cy) {
     removeNodeHoverBox();
   });
 
-cy.on('mouseover', 'edge', evt => {
-  // Only show in Lite mode (or when NOT heavy)
-  if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
-  showModifierBox(cy, evt.target);
-});
+  cy.on('mouseover', 'edge', evt => {
+    // Only show in Lite mode (or when NOT heavy)
+    if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
+    showModifierBox(cy, evt.target);
+  });
   cy.on('mouseout', 'edge', evt => {
     removeModifierBox();
   });
