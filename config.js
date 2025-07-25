@@ -1,5 +1,4 @@
-console.log("Loaded style array:", typeof style !== 'undefined' ? style : '[style not defined]');
-console.log("Loaded config.js");
+
 // --- MODIFIER UTILS ---
 export function nudgeToBoundMultiplier(currentWeight, likert, bound = 0.99) {
   const L = Math.max(-5, Math.min(5, likert));

@@ -1,4 +1,3 @@
-console.log("Loaded style array:", typeof style !== 'undefined' ? style : '[style not defined]');
 // visuals.js
 console.log("Loaded visuals.js");
 import {
@@ -122,41 +121,35 @@ export function computeVisuals(cy) {
 
       node.data({ borderWidth, borderColor });
 
-    } else if (nodeType === NODE_TYPE_AND) {
-      let pct = typeof node.data('prob') === "number" ? Math.round(node.data('prob') * 100) : null;
+    } 
+    // --- AND/OR nodes (mode-dependent) ---
+    else if (nodeType === NODE_TYPE_AND || nodeType === NODE_TYPE_OR) {
+      const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
+      let pct;
+      if (bayesMode === 'heavy') {
+        pct = typeof node.data('heavyProb') === "number" ? Math.round(node.data('heavyProb') * 100) : null;
+      } else {
+        pct = typeof node.data('prob') === "number" ? Math.round(node.data('prob') * 100) : null;
+      }
+      let typeLabel = nodeType === NODE_TYPE_AND ? "AND" : "OR";
       if (pct !== null) {
         if (pct > 0 && pct < 1) pct = 1;
         if (pct > 99) pct = 99;
-        label = `AND\n${pct}%`;
+        label = `${typeLabel}\n${pct}%`;
       } else {
-        label = "AND\n—";
+        label = `${typeLabel}\n—`;
       }
-      shape = "diamond";
+      shape = nodeType === NODE_TYPE_AND ? "diamond" : "ellipse";
       borderWidth = 3;
       borderColor = "#bbb";
       node.removeData('robustness');
       node.removeData('robustnessLabel');
-      if (!node.data('hoverLabel') && displayLabel !== "AND") {
+      if (!node.data('hoverLabel') && displayLabel !== typeLabel) {
         node.data('hoverLabel', displayLabel);
       }
-    } else if (nodeType === NODE_TYPE_OR) {
-      let pct = typeof node.data('prob') === "number" ? Math.round(node.data('prob') * 100) : null;
-      if (pct !== null) {
-        if (pct > 0 && pct < 1) pct = 1;
-        if (pct > 99) pct = 99;
-        label = `OR\n${pct}%`;
-      } else {
-        label = "OR\n—";
-      }
-      shape = "ellipse";
-      borderWidth = 3;
-      borderColor = "#bbb";
-      node.removeData('robustness');
-      node.removeData('robustnessLabel');
-      if (!node.data('hoverLabel') && displayLabel !== "OR") {
-        node.data('hoverLabel', displayLabel);
-      }
-    } else {
+    } 
+    // --- Unknown type ---
+    else {
       label = `[Unknown Type] ${displayLabel}`;
       borderColor = '#bbb';
       node.removeData('robustness');
@@ -272,7 +265,7 @@ export function drawModifierBoxes(cy) {
 }
 
 /**
- * Node hover: probability/logic display per node type.
+ * Node hover: probability/logic display per node type, MODE-SPLIT.
  */
 export function showNodeHoverBox(cy, node) {
   removeNodeHoverBox();
@@ -297,42 +290,79 @@ export function showNodeHoverBox(cy, node) {
   const displayLabel = node.data('displayLabel') || node.data('origLabel') || "";
   const hoverLabel = node.data('hoverLabel');
   const nodeType = node.data('type');
+  const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
+
+  // Helper for robust display
+  function formatProb(p) {
+    return (typeof p === "number") ? `<b>${Math.round(100 * p)}%</b>` : "<b>—</b>";
+  }
 
   if (nodeType === NODE_TYPE_FACT) {
     box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><span>Fact node</span>`;
     container.parentElement.appendChild(box);
     return;
-  } else if (nodeType === NODE_TYPE_ASSERTION) {
-    if (typeof node.data('prob') !== "number") {
-      box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><span>Current: <b>—</b></span><br><i>No incoming information.</i>`;
-    } else {
-      const curProb = Math.round(100 * node.data('prob'));
-      box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br>
-        <span>Current: <b>${curProb}%</b></span>`;
-    }
-    const rlabel = node.data('robustnessLabel');
-    if (rlabel) {
-      // Compute grayscale for the robustness label
-      const robust = node.data('robustness');
-      const grayscale = robust !== undefined
-        ? `rgb(${Math.round(180 - 60 * robust)}, ${Math.round(180 - 60 * robust)}, ${Math.round(180 - 60 * robust)})`
-        : '#888';
-      box.innerHTML += `<br><span><b style="color:#111">Robustness</b>: <b style="color:${grayscale}">${rlabel}</b></span>`;
-    }
-  } else if (nodeType === NODE_TYPE_AND) {
-    let probStr = typeof node.data('prob') === "number"
-      ? `<br>Current: <b>${Math.round(100 * node.data('prob'))}%</b>`
-      : "<br>Current: <b>—</b>";
-    box.innerHTML = `<b>AND</b>${probStr}<br><i>AND logic node<br>(product of parent probs)</i>`;
-  } else if (nodeType === NODE_TYPE_OR) {
-    let probStr = typeof node.data('prob') === "number"
-      ? `<br>Current: <b>${Math.round(100 * node.data('prob'))}%</b>`
-      : "<br>Current: <b>—</b>";
-    box.innerHTML = `<b>OR</b>${probStr}<br><i>OR logic node<br>(sum-minus-product of parent probs)</i>`;
-  } else {
-    box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><i>Unknown node type</i>`;
   }
 
+  // MODE FORK: Heavy vs Lite
+  if (bayesMode === 'heavy') {
+    // --- Assertion node, Heavy Mode ---
+    if (nodeType === NODE_TYPE_ASSERTION) {
+      const hp = node.data('heavyProb');
+      box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br>
+        <span>Current: ${formatProb(hp)}</span>`;
+      // No robustness shown for heavy unless you implement it
+      container.parentElement.appendChild(box);
+      return;
+    }
+    // --- AND/OR nodes, Heavy Mode ---
+    if (nodeType === NODE_TYPE_AND || nodeType === NODE_TYPE_OR) {
+      const hp = node.data('heavyProb');
+      let typeLabel = nodeType === NODE_TYPE_AND ? 'AND' : 'OR';
+      box.innerHTML = `<b>${typeLabel}</b><br>Current: ${formatProb(hp)}`;
+      // Optionally, brief logic explanation
+      if (nodeType === NODE_TYPE_AND)
+        box.innerHTML += "<br><i>AND logic node (product of heavy parent probs)</i>";
+      else
+        box.innerHTML += "<br><i>OR logic node (sum-minus-product of heavy parent probs)</i>";
+      container.parentElement.appendChild(box);
+      return;
+    }
+  } else {
+    // --- Lite Mode ---
+    if (nodeType === NODE_TYPE_ASSERTION) {
+      const lp = node.data('prob');
+      if (typeof lp !== "number") {
+        box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><span>Current: <b>—</b></span><br><i>No incoming information.</i>`;
+      } else {
+        box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br>
+          <span>Current: <b>${Math.round(100 * lp)}%</b></span>`;
+      }
+      const rlabel = node.data('robustnessLabel');
+      if (rlabel) {
+        // Compute grayscale for the robustness label
+        const robust = node.data('robustness');
+        const grayscale = robust !== undefined
+          ? `rgb(${Math.round(180 - 60 * robust)}, ${Math.round(180 - 60 * robust)}, ${Math.round(180 - 60 * robust)})`
+          : '#888';
+        box.innerHTML += `<br><span><b style="color:#111">Robustness</b>: <b style="color:${grayscale}">${rlabel}</b></span>`;
+      }
+      container.parentElement.appendChild(box);
+      return;
+    }
+    if (nodeType === NODE_TYPE_AND || nodeType === NODE_TYPE_OR) {
+      let typeLabel = nodeType === NODE_TYPE_AND ? 'AND' : 'OR';
+      const lp = node.data('prob');
+      box.innerHTML = `<b>${typeLabel}</b><br>Current: ${formatProb(lp)}`;
+      if (nodeType === NODE_TYPE_AND)
+        box.innerHTML += "<br><i>AND logic node<br>(product of parent probs)</i>";
+      else
+        box.innerHTML += "<br><i>OR logic node<br>(sum-minus-product of parent probs)</i>";
+      container.parentElement.appendChild(box);
+      return;
+    }
+  }
+  // Default fallback
+  box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><i>Unknown node type</i>`;
   container.parentElement.appendChild(box);
 }
 
@@ -388,6 +418,7 @@ export function showModifierBox(cy, edge) {
       if (mod.likert < 0) color = '#c62828';
       const val = mod.likert > 0 ? '+' + mod.likert : '' + mod.likert;
       box.innerHTML += `<div style="color:${color};margin:2px 0;">
+       
         ${val}: ${mod.label}
       </div>`;
     });

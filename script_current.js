@@ -1,4 +1,3 @@
-console.log("Loaded style array:", typeof style !== 'undefined' ? style : '[style not defined]');
 // script_current.js
 
 import {
@@ -167,116 +166,116 @@ document.addEventListener('DOMContentLoaded', () => {
     container: document.getElementById('cy'),
     elements: [],
     style: [
-      // Base node: ALL sizing, font, wrapping logic
-      {
-        selector: 'node',
-        style: {
-          'width': 'data(width)',
-          'height': 'data(height)',
-          'color': 'data(textColor)',
-          'shape': 'roundrectangle', // overridden by type
-          'background-color': '#eceff1',
-          'text-valign': 'center',
-          'text-halign': 'center',
-          'font-weight': 600,
-          'font-family': 'Segoe UI, Roboto, Arial, sans-serif',
-          'font-size': 'data(fontSize)',
-          'line-height': 1.4,
-          'letter-spacing': '0.01em',
-          'text-outline-width': 0,
-          'text-shadow': '0 1px 2px #faf6ff80', // optional, subtle
-          'text-wrap': 'wrap',
-          'text-max-width': 'data(textMaxWidth)',   // tune if needed
-          'padding': '12px',
-          'border-style': 'solid',
-          'border-width': 'data(borderWidth)',
-          'border-color': 'data(borderColor)',
-          'min-width': 40,
-          'min-height': 28,
-          'content': 'data(label)'
-        }
-      },
-      // Fact nodes: rectangle, thicker/darker border
-      {
-        selector: 'node[type ="fact"]',
-        style: {
-          'shape': 'rectangle',
-          'background-color': '#666', // or '#333'
-          'color': '#fff',
-          'border-color': '#666',     // or slightly lighter for subtle border
-          'border-width': 2,
-          'border-style': 'solid'
-        }
-      },
-      // AND logic: diamond, thicker border, bigger
-      {
-        selector: 'node[type="and"]',
-        style: {
-          'shape': 'diamond',
-          'width': 80,
-          'height': 80
-        }
-      },
-      // OR logic: ellipse, thicker border, bigger
-      {
-        selector: 'node[type="or"]',
-        style: {
-          'shape': 'ellipse',
-          'width': 80,
-          'height': 80
-        }
-      },
-      // Edge base
-      {
-        selector: 'edge',
-        style: {
-          'curve-style': 'bezier',
-          'mid-target-arrow-shape': 'triangle',
-          'width': 'mapData(absWeight, 0, 1, 2, 8)',
-          'line-color': '#bbb',
-          'mid-target-arrow-color': '#bbb',
-          'opacity': 1
-        }
-      },
-      // Edge supports: dynamic grey scale, solid
-      {
-        selector : 'edge[type="supports"]',
-        style : {
-          'line-color': 'mapData(absWeight, 0, 1, #e0e0e0, #444)',
-          'mid-target-arrow-color': 'mapData(absWeight, 0, 1, #e0e0e0, #444)',
-          'line-style': 'solid',
-          'mid-target-arrow-shape': 'triangle'
-        }
-      },
-      // Edge opposes: dynamic grey scale, dotted
-      {
-        selector : 'edge[type ="opposes"], edge[opposes]',
-        style : {
-          'line-color': 'mapData(absWeight, 0, 1, #e0e0e0, #444)',
-          'mid-target-arrow-color': 'mapData(absWeight, 0, 1, #e0e0e0, #444)',
-          'line-style': 'dotted',
-          'mid-target-arrow-shape': 'bar'
-        }
-      },
-      // Virgin edges
-      {
-        selector: 'edge[isVirgin]',
-        style: {
-          'line-color': 'data(lineColor)', // Uses whatever is in JS
-          'mid-target-arrow-color': 'data(lineColor)',
-          'width': 4,
-          'opacity': 1
-        }
-      },
-      // Floret color override
-      {
-        selector: 'node[floretColor]',
-        style: {
-          'background-color': 'data(floretColor)',
-          'background-opacity': 0.18
-        }
-      }
-    ],
+  // Base node: ALL sizing, font, wrapping logic
+  {
+    selector: 'node',
+    style: {
+      'width': 'data(width)',
+      'height': 'data(height)',
+      'color': 'data(textColor)',
+      'shape': 'roundrectangle',
+      'background-color': '#eceff1',
+      'text-valign': 'center',
+      'text-halign': 'center',
+      'font-weight': 600,
+      'font-family': 'Segoe UI, Roboto, Arial, sans-serif',
+      'font-size': 'data(fontSize)',
+      'line-height': 1.4,
+      'text-wrap': 'wrap',
+      'text-max-width': 'data(textMaxWidth)',
+      'padding': '12px',
+      'border-style': 'solid',
+      'border-width': 'data(borderWidth)',
+      'border-color': 'data(borderColor)',
+      'min-width': 40,
+      'min-height': 28,
+      'content': 'data(label)'
+    }
+  },
+  // Fact nodes: rectangle, thicker/darker border
+  {
+    selector: 'node[type ="fact"]',
+    style: {
+      'shape': 'rectangle',
+      'background-color': '#666',
+      'color': '#fff',
+      'border-color': '#666',
+      'border-width': 2,
+      'border-style': 'solid'
+    }
+  },
+  // AND logic: diamond, thicker border, bigger
+  {
+    selector: 'node[type="and"]',
+    style: {
+      'shape': 'diamond',
+      'width': 80,
+      'height': 80
+    }
+  },
+  // OR logic: ellipse, thicker border, bigger
+  {
+    selector: 'node[type="or"]',
+    style: {
+      'shape': 'ellipse',
+      'width': 80,
+      'height': 80
+    }
+  },
+  // Edge base
+  
+  {
+    selector: 'edge',
+    style: {
+      'curve-style': 'bezier',
+      'mid-target-arrow-shape': 'triangle',
+      'width': 'mapData(absWeight, 0, 1, 2, 8)',
+      'line-color': '#bbb',
+      'mid-target-arrow-color': '#bbb',
+      'opacity': 1
+    }
+  },
+  // Edge supports: dynamic grey scale, solid
+  {
+    selector : 'edge[type="supports"]',
+    style : {
+      'line-color': 'mapData(absWeight, 0, 1, #e0e0e0, #444)',
+      'mid-target-arrow-color': 'mapData(absWeight, 0, 1, #e0e0e0, #444)',
+      'line-style': 'solid',
+      'mid-target-arrow-shape': 'triangle'
+    }
+  },
+  // Edge opposes: dynamic grey scale, dotted
+  {
+    selector : 'edge[type ="opposes"], edge[opposes]',
+    style : {
+      'line-color': 'mapData(absWeight, 0, 1, #e0e0e0, #444)',
+      'mid-target-arrow-color': 'mapData(absWeight, 0, 1, #e0e0e0, #444)',
+      'line-style': 'dotted',
+      'mid-target-arrow-shape': 'tee'
+    }
+  },
+  // Floret color override
+  {
+    selector: 'node[floretColor]',
+    style: {
+      'background-color': 'data(floretColor)',
+      'background-opacity': 0.18
+    }
+  },
+  // ---- VIRGIN EDGE STYLE: LAST ----
+  {
+    selector: 'edge[isVirgin]',
+    style: {
+      'line-color': '#ff9900', // orange, forced
+      'mid-target-arrow-color': '#ff9900',
+      'width': 4,
+      'opacity': 1
+    }
+  }
+],
+
+
     layout: { name: 'preset' }
   });
 
@@ -386,19 +385,5 @@ document.addEventListener('DOMContentLoaded', () => {
   // ====== Autosave Timer ======
   setInterval(autosave, 5 * 60 * 1000);
 
-  // ====== Quiet Mode: Suppress Known Warnings/Errors ======
-  (function(){
-    const origError = console.error;
-    const origWarn  = console.warn;
-    console.error = function(...args) {
-      const msg = args[0] + '';
-      if (msg.includes('layoutBase') || msg.includes('memoize')) return;
-      origError.apply(console, args);
-    };
-    console.warn = function(...args) {
-      const msg = args[0] + '';
-      if (msg.includes('The style value of `label` is deprecated')) return;
-      origWarn.apply(console, args);
-    };
-  })();
+
 });
