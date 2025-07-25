@@ -199,12 +199,21 @@ okBtn.addEventListener('click', () => {
       baseline,
       condTrue,
       condFalse,
-      inverse,
+      inverse
     });
-        window._currentBayesEdge.removeData('isVirgin');
+    
+    window._currentBayesEdge.removeData('isVirgin');
+    
+    // Trigger heavy mode propagation
+    if (window.propagateBayesHeavy && window.cy) {
+      window.propagateBayesHeavy(window.cy);
+    }
+    
+    // Update visuals
+    if (window.computeVisuals && window.cy) {
+      window.computeVisuals(window.cy);
+    }
   }
-  propagateBayesHeavy(window.cy)
-    computeVisuals(window.cy);
 });
 
 cancelBtn.addEventListener('click', () => {

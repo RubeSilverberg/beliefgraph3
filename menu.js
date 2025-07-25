@@ -141,20 +141,35 @@ window.cy.on('doubleTap', 'node', function(event) {
       startEdge.onclick = () => { pendingEdgeSource = node; hideMenu(); };
       list.appendChild(startEdge);
 
-      if (nodeType === NODE_TYPE_ASSERTION || nodeType === NODE_TYPE_FACT) {
-        const toggleFact = document.createElement('li');
-        toggleFact.textContent = nodeType === NODE_TYPE_FACT ? 'Swap to Assertion' : 'Swap to Fact';
-        toggleFact.style.cursor = 'pointer';
-        toggleFact.onclick = () => {
-          const newType = nodeType === NODE_TYPE_FACT ? NODE_TYPE_ASSERTION : NODE_TYPE_FACT;
-          node.data({ type: newType });
-          if (nodeType === NODE_TYPE_FACT && newType === NODE_TYPE_ASSERTION) node.removeData('prob');
-          convergeAll({ cy });
-          computeVisuals(cy);
-          hideMenu();
-        };
-        list.appendChild(toggleFact);
-      }
+if (nodeType === NODE_TYPE_ASSERTION || nodeType === NODE_TYPE_FACT) {
+  const toggleFact = document.createElement('li');
+  toggleFact.textContent = nodeType === NODE_TYPE_FACT ? 'Swap to Assertion' : 'Swap to Fact';
+  toggleFact.style.cursor = 'pointer';
+  toggleFact.onclick = () => {
+    const currentType = node.data('type'); // ← Get fresh type
+    const newType = currentType === NODE_TYPE_FACT ? NODE_TYPE_ASSERTION : NODE_TYPE_FACT;
+    node.data({ type: newType });
+
+    // Only adjust label if it's still default
+    const currentLabel = node.data('label');
+    if (newType === NODE_TYPE_FACT && currentLabel === 'New Belief') {
+      node.data('label', 'New Fact');
+      node.data('origLabel', 'New Fact');
+    } else if (newType === NODE_TYPE_ASSERTION && currentLabel === 'New Fact') {
+      node.data('label', 'New Belief');
+      node.data('origLabel', 'New Belief');
+    }
+
+    if (currentType === NODE_TYPE_FACT && newType === NODE_TYPE_ASSERTION) {
+      node.removeData('prob');
+    }
+
+    convergeAll({ cy });
+    computeVisuals(cy);
+    hideMenu();
+  };
+  list.appendChild(toggleFact);
+}
       if (nodeType === NODE_TYPE_AND || nodeType === NODE_TYPE_OR) {
         const toggleLogic = document.createElement('li');
         toggleLogic.textContent = nodeType === NODE_TYPE_AND ? 'Convert to OR Node' : 'Convert to AND Node';

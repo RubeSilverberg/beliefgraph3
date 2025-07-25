@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
       'line-color': 'mapData(absWeight, 0, 1, #e0e0e0, #444)',
       'mid-target-arrow-color': 'mapData(absWeight, 0, 1, #e0e0e0, #444)',
       'line-style': 'dotted',
-      'mid-target-arrow-shape': 'tee'
+      'mid-target-arrow-shape': 'triangle'
     }
   },
   // Floret color override

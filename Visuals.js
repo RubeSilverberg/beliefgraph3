@@ -41,7 +41,7 @@ export function computeVisuals(cy) {
     let shape = 'roundrectangle';
 
     if (nodeType === NODE_TYPE_FACT) {
-      label = `Fact: \n${displayLabel}`;
+      label = displayLabel;
       shape = 'rectangle';
       borderWidth = 2;
       borderColor = '#444';
@@ -190,6 +190,10 @@ export function computeVisuals(cy) {
           absWeight = Math.min(1, Math.abs(logRatio / 3)); // 3 is your scaler
           edgeType = logRatio < 0 ? 'opposes' : 'supports';
           edge.data('type', edgeType); // override for heavy
+        } else {
+          // Fallback for incomplete CPT data
+          absWeight = 0.5;
+          edgeType = 'supports';
         }
       }
     } else { // LITE MODE
@@ -199,20 +203,32 @@ export function computeVisuals(cy) {
       edge.data('isVirgin', isVirgin ? true : undefined);
 
       if (!isVirgin) {
-        edge.data('absWeight', Math.abs(edge.data('weight') ?? 0));
-        // edgeType is already set in Lite
+        // Use existing weight and type in lite mode
+        absWeight = Math.abs(edge.data('weight') ?? 0);
+        edgeType = edge.data('type') || 'supports';
       }
     }
 
     // Set color and absWeight for virgin/non-virgin
-if (isVirgin) {
-    edge.data('lineColor', bayesMode === 'heavy' ? '#A26DD2' : '#ff9900');
-    edge.data('absWeight', 0);
-} else if (bayesMode === 'lite') {
-    edge.data('absWeight', Math.abs(edge.data('weight') ?? 0));
-} else {
-    edge.data('absWeight', absWeight);
-}
+    if (isVirgin) {
+      edge.data('lineColor', bayesMode === 'heavy' ? '#A26DD2' : '#ff9900');
+      edge.data('absWeight', 0);
+    } else {
+      // Non-virgin: set color based on edge type and mode
+      if (bayesMode === 'lite') {
+        edge.data('absWeight', Math.abs(edge.data('weight') ?? 0));
+        // Set color based on weight magnitude for lite mode
+        const weight = Math.abs(edge.data('weight') ?? 0);
+        const grayLevel = Math.round(224 - (weight * 180)); // 224 (light) to 44 (dark)
+        edge.data('lineColor', `rgb(${grayLevel},${grayLevel},${grayLevel})`);
+      } else {
+        edge.data('absWeight', absWeight);
+        // Set color based on log ratio for heavy mode
+        const weight = absWeight;
+        const grayLevel = Math.round(224 - (weight * 180));
+        edge.data('lineColor', `rgb(${grayLevel},${grayLevel},${grayLevel})`);
+      }
+    }
   });
 
   cy.style().update();
