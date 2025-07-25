@@ -199,6 +199,94 @@ html, body {
   z-index: 1002;
   opacity: 1 !important;
 }
+
+/* Bayes Modal Step Styling */
+#bayes-modal .step {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+#bayes-modal .step:last-child {
+  border-bottom: none;
+  margin-bottom: 10px;
+}
+
+#bayes-modal .step-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+#bayes-modal .step-sub {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+#bayes-modal .slider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+#bayes-modal .region-label,
+#bayes-modal .ratio-label {
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 4px;
+}
+
+#bayes-modal .ratio-label {
+  font-weight: 500;
+}
+
+#bayes-modal .warning {
+  color: #d32f2f;
+  font-size: 13px;
+  margin-bottom: 8px;
+  min-height: 18px;
+}
+
+#bayes-modal .actions {
+  margin-top: 12px;
+}
+
+#bayes-modal .locked {
+  background: #f8f9fa;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  font-size: 14px;
+}
+
+/* Summary section specific styling */
+#bayes-modal .summary {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+#bayes-modal .summary b {
+  color: #333;
+}
+
+/* Modal header styling */
+#bayes-modal .modal-header {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f0f0f0;
+  cursor: move;
+}
 /* .hidden class for modal visibility control */
 .hidden {
   display: none !important;
