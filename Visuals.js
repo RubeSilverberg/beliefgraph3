@@ -36,6 +36,16 @@ export function computeVisuals(cy) {
     const nodeType = node.data('type');
     const displayLabel = node.data('displayLabel') || node.data('origLabel') || "";
     let label = displayLabel;
+    
+    // Provide default labels for nodes without meaningful labels
+    if (!label || label.trim() === "") {
+      if (nodeType === NODE_TYPE_FACT) {
+        label = "New Fact";
+      } else if (nodeType === NODE_TYPE_ASSERTION) {
+        label = "New Belief";
+      }
+    }
+    
     let borderWidth = 1;
     let borderColor = '#bbb';
     let shape = 'roundrectangle';
