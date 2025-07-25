@@ -193,8 +193,10 @@ setCondFalseBtn.onclick = () => {
     }
 okBtn.addEventListener('click', () => {
   document.getElementById('bayes-modal').classList.add('hidden');
-  // Save modal values to the edge
+  
+  // Save modal values to the edge - HEAVY MODE DATA ONLY
   if (window._currentBayesEdge) {
+    // Store CPT data in heavy-mode namespace
     window._currentBayesEdge.data('cpt', {
       baseline,
       condTrue,
@@ -202,17 +204,20 @@ okBtn.addEventListener('click', () => {
       inverse
     });
     
-    window._currentBayesEdge.removeData('isVirgin');
+    // Mark as non-virgin for heavy mode only (don't touch lite mode data)
+    // Note: We don't use 'isVirgin' since that conflicts with lite mode
     
-    // Trigger heavy mode propagation
+    // Trigger heavy mode propagation only
     if (window.propagateBayesHeavy && window.cy) {
       window.propagateBayesHeavy(window.cy);
     }
     
-    // Update visuals
+    // Update visuals to reflect heavy mode changes
     if (window.computeVisuals && window.cy) {
       window.computeVisuals(window.cy);
     }
+    
+    console.log('Heavy mode CPT data saved:', {baseline, condTrue, condFalse, inverse});
   }
 });
 

@@ -52,9 +52,25 @@ export function computeVisuals(cy) {
 
       // HEAVY MODE: use only heavy fields
       if (bayesMode === 'heavy') {
+        // Check if node has any non-virgin incoming edges in heavy mode
+        const incomingEdges = node.incomers('edge');
+        const validHeavyEdges = incomingEdges.filter(e => {
+          const cpt = e.data('cpt');
+          return cpt && typeof cpt.baseline === 'number';
+        });
+
         const heavyProb = node.data('heavyProb');
-        let pPct = typeof heavyProb === "number" ? Math.round(heavyProb * 100) : null;
-        label += pPct !== null ? `\n${pPct}%` : `\n—`;
+        let pPct;
+        
+        if (validHeavyEdges.length === 0) {
+          // No valid heavy edges - show as virgin
+          pPct = null;
+          label += `\n—`;
+        } else {
+          pPct = typeof heavyProb === "number" ? Math.round(heavyProb * 100) : null;
+          label += pPct !== null ? `\n${pPct}%` : `\n—`;
+        }
+        
         borderWidth = 2;
         borderColor = '#333';
         node.data({
@@ -70,12 +86,14 @@ export function computeVisuals(cy) {
 
       // LITE MODE
       const incomingEdges = node.incomers('edge');
-      const validEdges = incomingEdges.filter(e =>
-        !e.data('isVirgin') && !e.source().data('isVirgin')
-      );
+      const validEdges = incomingEdges.filter(e => {
+        // Edge is valid if parent has a probability (non-virgin)
+        const parentProb = e.source().data('prob');
+        return typeof parentProb === "number";
+      });
 
-      // EARLY VIRGIN CASE (no valid parents)
-      if (bayesMode === 'lite' && validEdges.length === 0) {
+      // EARLY VIRGIN CASE (no valid parents) - always show dash
+      if (validEdges.length === 0) {
         label += `\n—`;
         node.data({
           isVirgin: true,
@@ -169,66 +187,56 @@ export function computeVisuals(cy) {
 
   // === EDGE STYLING & VIRGIN LOGIC ===
   cy.edges().forEach(edge => {
-    // Always reference mode ONCE per cycle
     const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
     let isVirgin = false;
     let absWeight = 0;
-    let edgeType = edge.data('type');
+    let edgeType = 'supports';
 
     if (bayesMode === 'heavy') {
+      // HEAVY MODE: Use completely separate data namespace
       const cpt = edge.data('cpt');
-      isVirgin = !cpt || typeof cpt.baseline !== 'number';
-      edge.data('isVirgin', isVirgin ? true : undefined);
-
-      if (!isVirgin) {
-        if (
-          typeof cpt.condTrue === 'number' &&
-          typeof cpt.condFalse === 'number' &&
-          cpt.condFalse > 0
-        ) {
-          const logRatio = Math.log(cpt.condTrue / cpt.condFalse);
-          absWeight = Math.min(1, Math.abs(logRatio / 3)); // 3 is your scaler
-          edgeType = logRatio < 0 ? 'opposes' : 'supports';
-          edge.data('type', edgeType); // override for heavy
-        } else {
-          // Fallback for incomplete CPT data
-          absWeight = 0.5;
-          edgeType = 'supports';
-        }
+      // Edge is virgin if no CPT or incomplete CPT data
+      isVirgin = !cpt || 
+                 typeof cpt.baseline !== 'number' || 
+                 typeof cpt.condTrue !== 'number' || 
+                 typeof cpt.condFalse !== 'number';
+      
+      if (!isVirgin && cpt.condFalse > 0) {
+        const logRatio = Math.log(cpt.condTrue / cpt.condFalse);
+        absWeight = Math.min(1, Math.abs(logRatio / 3));
+        edgeType = logRatio < 0 ? 'opposes' : 'supports';
+        // Store heavy-specific type without polluting lite mode
+        edge.data('heavyType', edgeType);
+      } else if (!isVirgin) {
+        // Non-virgin but incomplete CPT data (condFalse = 0)
+        absWeight = 0.5;
+        edge.data('heavyType', 'supports');
       }
-    } else { // LITE MODE
-      // Lite mode virginity: parent has no prob
+    } else {
+      // LITE MODE: Use completely separate data namespace
       const parentProb = edge.source().data('prob');
       isVirgin = typeof parentProb !== "number";
-      edge.data('isVirgin', isVirgin ? true : undefined);
-
+      
       if (!isVirgin) {
-        // Use existing weight and type in lite mode
         absWeight = Math.abs(edge.data('weight') ?? 0);
         edgeType = edge.data('type') || 'supports';
       }
     }
 
-    // Set color and absWeight for virgin/non-virgin
+    // Set visual properties based on current mode only
     if (isVirgin) {
+      // Virgin edges: Purple in heavy, Orange in lite
       edge.data('lineColor', bayesMode === 'heavy' ? '#A26DD2' : '#ff9900');
       edge.data('absWeight', 0);
     } else {
-      // Non-virgin: set color based on edge type and mode
-      if (bayesMode === 'lite') {
-        edge.data('absWeight', Math.abs(edge.data('weight') ?? 0));
-        // Set color based on weight magnitude for lite mode
-        const weight = Math.abs(edge.data('weight') ?? 0);
-        const grayLevel = Math.round(224 - (weight * 180)); // 224 (light) to 44 (dark)
-        edge.data('lineColor', `rgb(${grayLevel},${grayLevel},${grayLevel})`);
-      } else {
-        edge.data('absWeight', absWeight);
-        // Set color based on log ratio for heavy mode
-        const weight = absWeight;
-        const grayLevel = Math.round(224 - (weight * 180));
-        edge.data('lineColor', `rgb(${grayLevel},${grayLevel},${grayLevel})`);
-      }
+      // Non-virgin edges: Gray scale based on weight
+      edge.data('absWeight', absWeight);
+      const grayLevel = Math.round(224 - (absWeight * 180));
+      edge.data('lineColor', `rgb(${grayLevel},${grayLevel},${grayLevel})`);
     }
+    
+    // Store current display type without cross-mode pollution
+    edge.data('displayType', edgeType);
   });
 
   cy.style().update();
@@ -413,7 +421,19 @@ export function showModifierBox(cy, edge) {
   box.style.zIndex = 20;
   box.style.boxShadow = '0 2px 8px #1565c066';
 
-  if (edge.data('isVirgin')) {
+  // Check if edge is virgin based on current mode
+  const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
+  let isVirgin = false;
+  
+  if (bayesMode === 'heavy') {
+    const cpt = edge.data('cpt');
+    isVirgin = !cpt || typeof cpt.baseline !== 'number';
+  } else {
+    const parentProb = edge.source().data('prob');
+    isVirgin = typeof parentProb !== "number";
+  }
+
+  if (isVirgin) {
     box.innerHTML = `<i>Weight not set.</i>`;
     container.parentElement.appendChild(box);
     return;

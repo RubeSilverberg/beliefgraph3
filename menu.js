@@ -103,8 +103,15 @@ window.cy.on('doubleTap', 'node', function(event) {
               },
               position: evt.position
             });
-            convergeAll({ cy });
-            computeVisuals(cy);
+            // Ensure clean state for new assertion nodes
+            setTimeout(() => {
+              const newNode = cy.nodes().last();
+              newNode.removeData('prob');
+              newNode.removeData('robustness');
+              newNode.removeData('robustnessLabel');
+              convergeAll({ cy });
+              computeVisuals(cy);
+            }, 0);
           }
         },
         {
@@ -162,6 +169,9 @@ if (nodeType === NODE_TYPE_ASSERTION || nodeType === NODE_TYPE_FACT) {
 
     if (currentType === NODE_TYPE_FACT && newType === NODE_TYPE_ASSERTION) {
       node.removeData('prob');
+      node.removeData('robustness');
+      node.removeData('robustnessLabel');
+      node.data('isVirgin', true);
     }
 
     convergeAll({ cy });
@@ -237,7 +247,17 @@ if (nodeType === NODE_TYPE_ASSERTION || nodeType === NODE_TYPE_FACT) {
         edge.remove();
         convergeAll({ cy });
         cy.nodes().forEach(node => {
-          const inc = node.incomers('edge').filter(e => !e.data('isVirgin'));
+          const inc = node.incomers('edge').filter(e => {
+            // Check if edge is virgin based on current mode
+            const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
+            if (bayesMode === 'heavy') {
+              const cpt = e.data('cpt');
+              return cpt && typeof cpt.baseline === 'number';
+            } else {
+              const parentProb = e.source().data('prob');
+              return typeof parentProb === "number";
+            }
+          });
           if (node.data('type') === NODE_TYPE_ASSERTION && inc.length === 0) {
             node.removeData('prob');
             node.removeData('robustness');
@@ -297,7 +317,6 @@ if (nodeType === NODE_TYPE_ASSERTION || nodeType === NODE_TYPE_FACT) {
     };
     if (targetType === NODE_TYPE_ASSERTION) {
       edgeData.weight = 0.01; // or WEIGHT_MIN if imported
-      edgeData.isVirgin = true;
       edgeData.type = "supports";
     }
 
@@ -405,10 +424,10 @@ cy.on('dblclick', 'edge', evt => {
 
 
       if (prevWeight !== val) {
-        edge.removeData('isVirgin');
+        // Weight changed, trigger recomputation
       }
     } else {
-      edge.removeData('isVirgin');
+      // Non-assertion edge logic
     }
 
     if (opposes) {

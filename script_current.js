@@ -58,18 +58,54 @@ import { setupMenuAndEdgeModals } from './menu.js';
 let mode = 'lite'; // Tracks current Bayes mode globally
 window.getBayesMode = () => mode;
 
-// === Bayes Mode Switch Logic (purge logic removed) ===
+// === Bayes Mode Switch Logic - Complete Isolation ===
 function setBayesMode(newMode) {
   if (newMode !== 'lite' && newMode !== 'heavy') return;
-  mode = newMode;
-  console.log(`Bayes mode set to: ${mode}`);
-  // No data purging! Only update state/visuals/propagation.
-  if (newMode === 'lite' && typeof convergeAll === 'function') {
-    convergeAll({ cy: window.cy });
+  
+  console.log(`Switching from ${mode} to ${newMode} mode`);
+  
+  // Clean up current mode's temporary display data
+  if (window.cy) {
+    window.cy.edges().forEach(edge => {
+      edge.removeData('lineColor');
+      edge.removeData('absWeight'); 
+      edge.removeData('displayType');
+      edge.removeData('isVirgin'); // Remove old virgin attribute
+    });
+    
+    // Also clean up any stale visual data on nodes
+    window.cy.nodes().forEach(node => {
+      node.removeData('label'); // Force label recomputation
+    });
   }
+  
+  mode = newMode;
+  
+  // Mode-specific initialization
+  if (newMode === 'lite') {
+    // Ensure lite mode propagation is current
+    if (typeof convergeAll === 'function') {
+      convergeAll({ cy: window.cy });
+    }
+  } else if (newMode === 'heavy') {
+    // Ensure heavy mode propagation is current  
+    if (window.propagateBayesHeavy && window.cy) {
+      window.propagateBayesHeavy(window.cy);
+    }
+  }
+  
+  // Update UI and visuals for new mode
   handleModeProcesses(newMode);
   updateModeIndicator(newMode);
-  if (window.computeVisuals) window.computeVisuals(window.cy);
+  
+  // Recompute visuals with clean slate (small delay to ensure cleanup completes)
+  setTimeout(() => {
+    if (window.computeVisuals && window.cy) {
+      window.computeVisuals(window.cy);
+    }
+  }, 50);
+  
+  console.log(`Mode switch to ${newMode} complete`);
 }
 window.setBayesMode = setBayesMode;
 
@@ -222,35 +258,30 @@ document.addEventListener('DOMContentLoaded', () => {
       'height': 80
     }
   },
-  // Edge base
-  
+  // Edge base - use computed values from mode-specific logic
   {
     selector: 'edge',
     style: {
       'curve-style': 'bezier',
       'mid-target-arrow-shape': 'triangle',
       'width': 'mapData(absWeight, 0, 1, 2, 8)',
-      'line-color': '#bbb',
-      'mid-target-arrow-color': '#bbb',
+      'line-color': 'data(lineColor)',
+      'mid-target-arrow-color': 'data(lineColor)',
       'opacity': 1
     }
   },
-  // Edge supports: dynamic grey scale, solid
+  // Edge supports: use displayType to avoid cross-mode conflicts
   {
-    selector : 'edge[type="supports"]',
-    style : {
-      'line-color': 'mapData(absWeight, 0, 1, #e0e0e0, #444)',
-      'mid-target-arrow-color': 'mapData(absWeight, 0, 1, #e0e0e0, #444)',
+    selector: 'edge[displayType="supports"]',
+    style: {
       'line-style': 'solid',
       'mid-target-arrow-shape': 'triangle'
     }
   },
-  // Edge opposes: dynamic grey scale, dotted
+  // Edge opposes: use displayType to avoid cross-mode conflicts  
   {
-    selector : 'edge[type ="opposes"], edge[opposes]',
-    style : {
-      'line-color': 'mapData(absWeight, 0, 1, #e0e0e0, #444)',
-      'mid-target-arrow-color': 'mapData(absWeight, 0, 1, #e0e0e0, #444)',
+    selector: 'edge[displayType="opposes"]',
+    style: {
       'line-style': 'dotted',
       'mid-target-arrow-shape': 'triangle'
     }
@@ -263,16 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
       'background-opacity': 0.18
     }
   },
-  // ---- VIRGIN EDGE STYLE: LAST ----
-  {
-    selector: 'edge[isVirgin]',
-    style: {
-      'line-color': '#ff9900', // orange, forced
-      'mid-target-arrow-color': '#ff9900',
-      'width': 4,
-      'opacity': 1
-    }
-  }
+  // ---- VIRGIN EDGE STYLE: REMOVED - now using computed lineColor ----
 ],
 
 
