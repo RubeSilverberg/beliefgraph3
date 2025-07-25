@@ -386,6 +386,8 @@ cy.on('dblclick', 'edge', evt => {
       const prevWeight = edge.data('weight');
       const val = parseFloat(select.value);
       edge.data('weight', val);
+      edge.data('absWeight', Math.abs(val));
+
 
       if (prevWeight !== val) {
         edge.removeData('isVirgin');

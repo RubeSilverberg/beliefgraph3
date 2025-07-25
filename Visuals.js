@@ -30,6 +30,8 @@ export function robustnessToLabel(robust) {
  * Should be called after any probability or weight update.
  */
 export function computeVisuals(cy) {
+  const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
+
   cy.nodes().forEach(node => {
     const nodeType = node.data('type');
     const displayLabel = node.data('displayLabel') || node.data('origLabel') || "";
@@ -46,9 +48,9 @@ export function computeVisuals(cy) {
       node.data('textColor', '#fff');
     }
     else if (nodeType === NODE_TYPE_ASSERTION) {
-      const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
       node.data('textColor', '#000');
-      // === HEAVY MODE SHORT-CIRCUIT ===
+
+      // HEAVY MODE: use only heavy fields
       if (bayesMode === 'heavy') {
         const heavyProb = node.data('heavyProb');
         let pPct = typeof heavyProb === "number" ? Math.round(heavyProb * 100) : null;
@@ -65,12 +67,14 @@ export function computeVisuals(cy) {
         });
         return;
       }
+
+      // LITE MODE
       const incomingEdges = node.incomers('edge');
       const validEdges = incomingEdges.filter(e =>
         !e.data('isVirgin') && !e.source().data('isVirgin')
       );
 
-      // === EARLY VIRGIN CASE (Lite only) ===
+      // EARLY VIRGIN CASE (no valid parents)
       if (bayesMode === 'lite' && validEdges.length === 0) {
         label += `\n—`;
         node.data({
@@ -89,16 +93,14 @@ export function computeVisuals(cy) {
       let p = node.data('prob');
       let pPct = typeof p === "number" ? Math.round(p * 100) : null;
 
-      // --- Shared baseline label logic ---
       label += pPct !== null
         ? `\n${Math.min(Math.max(pPct, 1), 99)}%`
         : `\n—`;
 
-      // --- Shared defaults ---
       borderWidth = 2;
       borderColor = '#333';
 
-      // --- Mode-specific overrides ---
+      // LITE: robustness for assertion nodes if valid parents
       if (bayesMode !== 'heavy' && typeof p === "number" && validEdges.length > 0) {
         const aei = validEdges.reduce((sum, e) => {
           const sourceType = e.source().data('type');
@@ -121,10 +123,9 @@ export function computeVisuals(cy) {
 
       node.data({ borderWidth, borderColor });
 
-    } 
-    // --- AND/OR nodes (mode-dependent) ---
+    }
+    // AND/OR nodes
     else if (nodeType === NODE_TYPE_AND || nodeType === NODE_TYPE_OR) {
-      const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
       let pct;
       if (bayesMode === 'heavy') {
         pct = typeof node.data('heavyProb') === "number" ? Math.round(node.data('heavyProb') * 100) : null;
@@ -147,8 +148,8 @@ export function computeVisuals(cy) {
       if (!node.data('hoverLabel') && displayLabel !== typeLabel) {
         node.data('hoverLabel', displayLabel);
       }
-    } 
-    // --- Unknown type ---
+    }
+    // Unknown type
     else {
       label = `[Unknown Type] ${displayLabel}`;
       borderColor = '#bbb';
@@ -166,12 +167,10 @@ export function computeVisuals(cy) {
     if (DEBUG) logMath(node.id(), `Visual: ${label.replace(/\n/g, ' | ')}`);
   });
 
+  // === EDGE STYLING & VIRGIN LOGIC ===
   cy.edges().forEach(edge => {
+    // Always reference mode ONCE per cycle
     const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
-
-    // ====== DO NOT purge any edge fields ======
-
-    // ====== Now recalc/set the fields for the current mode ======
     let isVirgin = false;
     let absWeight = 0;
     let edgeType = edge.data('type');
@@ -193,31 +192,31 @@ export function computeVisuals(cy) {
           edge.data('type', edgeType); // override for heavy
         }
       }
-    } else { // Lite mode
+    } else { // LITE MODE
       // Lite mode virginity: parent has no prob
       const parentProb = edge.source().data('prob');
       isVirgin = typeof parentProb !== "number";
       edge.data('isVirgin', isVirgin ? true : undefined);
 
       if (!isVirgin) {
-        absWeight = edge.data('absWeight') ?? 0;
+        edge.data('absWeight', Math.abs(edge.data('weight') ?? 0));
         // edgeType is already set in Lite
       }
     }
 
-    // ====== Set color and absWeight for virgin/non-virgin ======
-    if (isVirgin) {
-      edge.data('lineColor', bayesMode === 'heavy' ? '#A26DD2' : '#ffb300');
-      edge.data('absWeight', 0);
-    } else {
-      edge.data('absWeight', absWeight);
-      // Color and dash handled by Cytoscape style array via type and absWeight
-    }
+    // Set color and absWeight for virgin/non-virgin
+if (isVirgin) {
+    edge.data('lineColor', bayesMode === 'heavy' ? '#A26DD2' : '#ff9900');
+    edge.data('absWeight', 0);
+} else if (bayesMode === 'lite') {
+    edge.data('absWeight', Math.abs(edge.data('weight') ?? 0));
+} else {
+    edge.data('absWeight', absWeight);
+}
   });
 
   cy.style().update();
 }
-
 /**
  * Draw floating modifier boxes only for assertion node edges.
  */
@@ -292,7 +291,6 @@ export function showNodeHoverBox(cy, node) {
   const nodeType = node.data('type');
   const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
 
-  // Helper for robust display
   function formatProb(p) {
     return (typeof p === "number") ? `<b>${Math.round(100 * p)}%</b>` : "<b>—</b>";
   }
@@ -310,7 +308,6 @@ export function showNodeHoverBox(cy, node) {
       const hp = node.data('heavyProb');
       box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br>
         <span>Current: ${formatProb(hp)}</span>`;
-      // No robustness shown for heavy unless you implement it
       container.parentElement.appendChild(box);
       return;
     }
@@ -319,7 +316,6 @@ export function showNodeHoverBox(cy, node) {
       const hp = node.data('heavyProb');
       let typeLabel = nodeType === NODE_TYPE_AND ? 'AND' : 'OR';
       box.innerHTML = `<b>${typeLabel}</b><br>Current: ${formatProb(hp)}`;
-      // Optionally, brief logic explanation
       if (nodeType === NODE_TYPE_AND)
         box.innerHTML += "<br><i>AND logic node (product of heavy parent probs)</i>";
       else
@@ -339,7 +335,6 @@ export function showNodeHoverBox(cy, node) {
       }
       const rlabel = node.data('robustnessLabel');
       if (rlabel) {
-        // Compute grayscale for the robustness label
         const robust = node.data('robustness');
         const grayscale = robust !== undefined
           ? `rgb(${Math.round(180 - 60 * robust)}, ${Math.round(180 - 60 * robust)}, ${Math.round(180 - 60 * robust)})`
@@ -361,7 +356,6 @@ export function showNodeHoverBox(cy, node) {
       return;
     }
   }
-  // Default fallback
   box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><i>Unknown node type</i>`;
   container.parentElement.appendChild(box);
 }
@@ -418,7 +412,6 @@ export function showModifierBox(cy, edge) {
       if (mod.likert < 0) color = '#c62828';
       const val = mod.likert > 0 ? '+' + mod.likert : '' + mod.likert;
       box.innerHTML += `<div style="color:${color};margin:2px 0;">
-       
         ${val}: ${mod.label}
       </div>`;
     });
