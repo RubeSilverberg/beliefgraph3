@@ -255,7 +255,8 @@ if (nodeType === NODE_TYPE_ASSERTION || nodeType === NODE_TYPE_FACT) {
               return cpt && typeof cpt.baseline === 'number';
             } else {
               const parentProb = e.source().data('prob');
-              return typeof parentProb === "number";
+              const edgeWeight = e.data('weight');
+              return typeof parentProb === "number" && edgeWeight && edgeWeight !== 0;
             }
           });
           if (node.data('type') === NODE_TYPE_ASSERTION && inc.length === 0) {
@@ -316,7 +317,7 @@ if (nodeType === NODE_TYPE_ASSERTION || nodeType === NODE_TYPE_FACT) {
       rationale: ""
     };
     if (targetType === NODE_TYPE_ASSERTION) {
-      edgeData.weight = 0.01; // or WEIGHT_MIN if imported
+      edgeData.weight = 0; // Virgin edge - no influence until user sets weight
       edgeData.type = "supports";
     }
 

@@ -182,10 +182,12 @@ export function convergeNodes({ cy, epsilon = 0.01, maxIters = 30 }) {
   }
 } else if (nodeType === 'assertion') {
   const incomingEdges = node.incomers('edge');
-  // Filter for parent edges where the source has a defined prob
-  const validEdges = incomingEdges.filter(e =>
-    typeof e.source().data('prob') === "number"
-  );
+  // Filter for parent edges where the source has a defined prob AND edge has non-zero weight
+  const validEdges = incomingEdges.filter(e => {
+    const parentProb = e.source().data('prob');
+    const edgeWeight = e.data('weight');
+    return typeof parentProb === "number" && edgeWeight && edgeWeight !== 0;
+  });
 
   if (validEdges.length === 0) {
     newProb = undefined;

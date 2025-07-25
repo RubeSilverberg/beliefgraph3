@@ -87,9 +87,10 @@ export function computeVisuals(cy) {
       // LITE MODE
       const incomingEdges = node.incomers('edge');
       const validEdges = incomingEdges.filter(e => {
-        // Edge is valid if parent has a probability (non-virgin)
+        // Edge is valid if parent has a probability AND weight is set (not 0)
         const parentProb = e.source().data('prob');
-        return typeof parentProb === "number";
+        const edgeWeight = e.data('weight');
+        return typeof parentProb === "number" && edgeWeight && edgeWeight !== 0;
       });
 
       // EARLY VIRGIN CASE (no valid parents) - always show dash
@@ -215,10 +216,12 @@ export function computeVisuals(cy) {
     } else {
       // LITE MODE: Use completely separate data namespace
       const parentProb = edge.source().data('prob');
-      isVirgin = typeof parentProb !== "number";
+      const edgeWeight = edge.data('weight');
+      // Edge is virgin if parent has no prob OR weight is 0/unset
+      isVirgin = typeof parentProb !== "number" || !edgeWeight || edgeWeight === 0;
       
       if (!isVirgin) {
-        absWeight = Math.abs(edge.data('weight') ?? 0);
+        absWeight = Math.abs(edgeWeight);
         edgeType = edge.data('type') || 'supports';
       }
     }
@@ -430,7 +433,8 @@ export function showModifierBox(cy, edge) {
     isVirgin = !cpt || typeof cpt.baseline !== 'number';
   } else {
     const parentProb = edge.source().data('prob');
-    isVirgin = typeof parentProb !== "number";
+    const edgeWeight = edge.data('weight');
+    isVirgin = typeof parentProb !== "number" || !edgeWeight || edgeWeight === 0;
   }
 
   if (isVirgin) {
