@@ -157,22 +157,19 @@ if (nodeType === NODE_TYPE_ASSERTION || nodeType === NODE_TYPE_FACT) {
     const newType = currentType === NODE_TYPE_FACT ? NODE_TYPE_ASSERTION : NODE_TYPE_FACT;
     node.data({ type: newType });
 
-    // Adjust label when converting types
-    const currentLabel = node.data('label') || "";
-    const currentOrigLabel = node.data('origLabel') || "";
+    // Adjust label when converting types - only change default labels
+    const currentLabel = node.data('label');
+    // Strip visual additions (like "\n—") to get the base label
+    const baseLabel = currentLabel ? currentLabel.split('\n')[0] : '';
     
-    if (newType === NODE_TYPE_FACT) {
-      // Converting to fact: if label is empty or "New Belief", make it "New Fact"
-      if (!currentLabel || currentLabel.trim() === "" || currentLabel === 'New Belief') {
-        node.data('label', 'New Fact');
-        node.data('origLabel', 'New Fact');
-      }
-    } else if (newType === NODE_TYPE_ASSERTION) {
-      // Converting to assertion: if label is empty or "New Fact", make it "New Belief"  
-      if (!currentLabel || currentLabel.trim() === "" || currentLabel === 'New Fact') {
-        node.data('label', 'New Belief');
-        node.data('origLabel', 'New Belief');
-      }
+    if (newType === NODE_TYPE_FACT && baseLabel === 'New Belief') {
+      // Converting assertion with default label to fact
+      node.data('label', 'New Fact');
+      node.data('origLabel', 'New Fact');
+    } else if (newType === NODE_TYPE_ASSERTION && baseLabel === 'New Fact') {
+      // Converting fact with default label to assertion
+      node.data('label', 'New Belief');
+      node.data('origLabel', 'New Belief');
     }
 
     if (currentType === NODE_TYPE_FACT && newType === NODE_TYPE_ASSERTION) {

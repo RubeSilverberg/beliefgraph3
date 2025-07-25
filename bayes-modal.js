@@ -186,8 +186,8 @@ setCondFalseBtn.onclick = () => {
       let msg = `<b>Baseline:</b> ${baseline}%<br>
       <b>P([Child] | [Parent] is ${posTxt}):</b> ${pos}%<br>
       <b>P([Child] | [Parent] is ${negTxt}):</b> ${neg}%<br><br>`;
-      let ratio = baseline === 0 ? 1 : pos / baseline;
-      msg += `Conditional likelihood ratio: <b>${ratio.toFixed(2)}×</b> baseline<br>`;
+      let ratio = neg === 0 ? (pos === 0 ? 1 : 99) : pos / neg;
+      msg += `Conditional likelihood ratio: <b>${ratio.toFixed(2)}×</b><br>`;
       msg += qualitativeRatio(ratio);
       summaryText.innerHTML = msg;
     }
