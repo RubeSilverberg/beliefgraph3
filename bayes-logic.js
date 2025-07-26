@@ -36,7 +36,7 @@ export function propagateBayesHeavy(cy, maxIterations = 10, tolerance = 0.001) {
         }, 1);
         newProb = 1 - prod;
       } else if (type === 'assertion') {
-        // Naive Bayes with CPT: only count edges with valid CPT data
+        // Proper Bayesian inference with CPT
         const validEdges = parentEdges.toArray().filter(edge => {
           const cpt = edge.data('cpt');
           return cpt && 
@@ -49,18 +49,40 @@ export function propagateBayesHeavy(cy, maxIterations = 10, tolerance = 0.001) {
           return;
         }
         
-        // Naive Bayes: 1 - product of (1 - parent's influence)
-        let pFalse = 1;
-        validEdges.forEach(edge => {
+        if (validEdges.length === 1) {
+          // Single parent: direct conditional probability
+          const edge = validEdges[0];
           const cpt = edge.data('cpt');
           const parentProb = edge.source().data('heavyProb') ?? 0.5;
           const { parentTrue, parentFalse } = getConditionalProbs(edge);
-          const a = (parentTrue / 100);
-          const b = (parentFalse / 100);
-          const influence = a * parentProb + b * (1 - parentProb);
-          pFalse *= (1 - influence);
-        });
-        newProb = 1 - pFalse;
+          
+          // P(Child | Parent) = P(Child | Parent=true) * P(Parent=true) + P(Child | Parent=false) * P(Parent=false)
+          newProb = (parentTrue / 100) * parentProb + (parentFalse / 100) * (1 - parentProb);
+        } else {
+          // Multiple parents: assume independence (Naive Bayes)
+          // Use likelihood ratios for proper Bayesian updating
+          let logOdds = 0; // Start with neutral odds (log(1) = 0)
+          
+          validEdges.forEach(edge => {
+            const cpt = edge.data('cpt');
+            const parentProb = edge.source().data('heavyProb') ?? 0.5;
+            const { parentTrue, parentFalse } = getConditionalProbs(edge);
+            
+            // Calculate likelihood ratio for this parent
+            const pTrueGivenParent = (parentTrue / 100) * parentProb + (parentFalse / 100) * (1 - parentProb);
+            const pFalseGivenParent = 1 - pTrueGivenParent;
+            
+            // Avoid division by zero
+            if (pFalseGivenParent > 0.001) {
+              const likelihoodRatio = pTrueGivenParent / pFalseGivenParent;
+              logOdds += Math.log(likelihoodRatio);
+            }
+          });
+          
+          // Convert log odds back to probability
+          const odds = Math.exp(logOdds);
+          newProb = odds / (1 + odds);
+        }
       }
 
       const oldProb = node.data('heavyProb');

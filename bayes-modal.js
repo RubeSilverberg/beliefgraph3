@@ -315,6 +315,13 @@ function updateModalLabels() {
     
   document.querySelector('#step-cond-false .step-sub').textContent = 
     `Chance ${childLabel} is true if ${parentLabel} is false.`;
+    
+  // Update the inverse checkbox label
+  const inverseLabel = document.querySelector('#step-baseline label');
+  if (inverseLabel) {
+    inverseLabel.innerHTML = `<input type="checkbox" id="inverse-checkbox">
+      Inverse relationship: ${childLabel} more likely if ${parentLabel} is <b>false</b>`;
+  }
 }
 function renderStep() {
   // Step visibility
