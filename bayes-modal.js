@@ -17,25 +17,47 @@ let isDragging = false, dragOffsetX = 0, dragOffsetY = 0;
 
 header.style.cursor = 'move';
 
-header.onmousedown = function(e) {
+header.addEventListener('mousedown', function(e) {
+  e.preventDefault();
   isDragging = true;
-  dragOffsetX = e.clientX - modal.offsetLeft;
-  dragOffsetY = e.clientY - modal.offsetTop;
+  
+  // Get the current computed position of the modal
+  const rect = modal.getBoundingClientRect();
+  dragOffsetX = e.clientX - rect.left;
+  dragOffsetY = e.clientY - rect.top;
+  
+  // Convert to pixel-based positioning immediately
+  modal.style.left = rect.left + 'px';
+  modal.style.top = rect.top + 'px';
+  modal.style.transform = 'none';
+  modal.style.position = 'fixed';
+  
   document.body.style.userSelect = 'none';
-};
+  document.body.style.cursor = 'move';
+});
 
-document.onmouseup = function() {
-  isDragging = false;
-  document.body.style.userSelect = '';
-};
-
-document.onmousemove = function(e) {
+document.addEventListener('mouseup', function() {
   if (isDragging) {
-    modal.style.left = (e.clientX - dragOffsetX) + 'px';
-    modal.style.top = (e.clientY - dragOffsetY) + 'px';
-    modal.style.position = 'fixed'; // Required
+    isDragging = false;
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
   }
-};
+});
+
+document.addEventListener('mousemove', function(e) {
+  if (isDragging) {
+    e.preventDefault();
+    const newLeft = e.clientX - dragOffsetX;
+    const newTop = e.clientY - dragOffsetY;
+    
+    // Keep modal within viewport bounds
+    const maxLeft = window.innerWidth - modal.offsetWidth;
+    const maxTop = window.innerHeight - modal.offsetHeight;
+    
+    modal.style.left = Math.max(0, Math.min(maxLeft, newLeft)) + 'px';
+    modal.style.top = Math.max(0, Math.min(maxTop, newTop)) + 'px';
+  }
+});
 
 
     // Baseline
@@ -179,13 +201,16 @@ setCondFalseBtn.onclick = () => {
 
     // --- Summary ---
     function updateSummary() {
+      const parentLabel = window._modalParentLabel || 'Parent';
+      const childLabel = window._modalChildLabel || 'Child';
+      
       let pos = inverse ? condFalse : condTrue;
       let neg = inverse ? condTrue : condFalse;
       let posTxt = inverse ? parentFalseWord.textContent : parentTrueWord.textContent;
       let negTxt = inverse ? parentTrueWord.textContent : parentFalseWord.textContent;
       let msg = `<b>Baseline:</b> ${baseline}%<br>
-      <b>P([Child] | [Parent] is ${posTxt}):</b> ${pos}%<br>
-      <b>P([Child] | [Parent] is ${negTxt}):</b> ${neg}%<br><br>`;
+      <b>P(${childLabel} | ${parentLabel} is ${posTxt}):</b> ${pos}%<br>
+      <b>P(${childLabel} | ${parentLabel} is ${negTxt}):</b> ${neg}%<br><br>`;
       let ratio = neg === 0 ? (pos === 0 ? 1 : 99) : pos / neg;
       msg += `Conditional likelihood ratio: <b>${ratio.toFixed(2)}×</b><br>`;
       msg += qualitativeRatio(ratio);
@@ -239,6 +264,25 @@ window.openBayesModalForEdge = function(edge) {
     console.log('openBayesModalForEdge called with:', edge);
   window._currentBayesEdge = edge;
 
+  // Get actual node labels and clean them
+  const sourceNode = edge.source();
+  const targetNode = edge.target();
+  
+  // Extract clean labels by removing probability indicators
+  function cleanLabel(rawLabel) {
+    if (!rawLabel) return 'Node';
+    // Remove everything from the last newline onward (probability display)
+    const cleanedLabel = rawLabel.split('\n')[0].trim();
+    return cleanedLabel || 'Node';
+  }
+  
+  const parentLabel = cleanLabel(sourceNode.data('label'));
+  const childLabel = cleanLabel(targetNode.data('label'));
+  
+  // Store labels for use in modal text
+  window._modalParentLabel = parentLabel;
+  window._modalChildLabel = childLabel;
+
   // If you want to prefill, set the modal's fields here from edge.data('cpt'):
   const cpt = edge.data('cpt') || {};
   document.getElementById('baseline-slider').value = cpt.baseline !== undefined ? cpt.baseline : 50;
@@ -249,10 +293,29 @@ window.openBayesModalForEdge = function(edge) {
   document.getElementById('cond-false-value').textContent = (cpt.condFalse !== undefined ? cpt.condFalse : 30) + '%';
   document.getElementById('inverse-checkbox').checked = !!cpt.inverse;
 
+  // Update the modal text with actual labels
+  updateModalLabels();
+
   document.getElementById('bayes-modal').classList.remove('hidden');
   stepIndex = 0;
   renderStep();
 };
+
+// Function to update all the modal text with actual node labels
+function updateModalLabels() {
+  const parentLabel = window._modalParentLabel || 'Parent';
+  const childLabel = window._modalChildLabel || 'Child';
+  
+  // Update step descriptions
+  document.querySelector('#step-baseline .step-sub').textContent = 
+    `Chance ${childLabel} is true if nothing is known about ${parentLabel}.`;
+  
+  document.querySelector('#step-cond-true .step-sub').textContent = 
+    `Chance ${childLabel} is true if ${parentLabel} is true.`;
+    
+  document.querySelector('#step-cond-false .step-sub').textContent = 
+    `Chance ${childLabel} is true if ${parentLabel} is false.`;
+}
 function renderStep() {
   // Step visibility
   stepBaseline.classList.remove('hidden');
