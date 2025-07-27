@@ -2,7 +2,7 @@ console.log("Loaded logic.js");
 
 // --- Helper Functions ---
 
-export function propagateFromParents({ baseProb, parents, getProb, getWeight, saturationK, epsilon }) {
+export function propagateFromParents({ baseProb, parents, getProb, getWeight, saturationK }) {
   // Legacy, no longer used: for reference only
   let total = 0, totalWeight = 0;
   parents.forEach(e => {
@@ -52,7 +52,7 @@ export function highlightBayesNodeFocus(node) {
 // FACT_PROB: Never exactly 1 to avoid logit infinity (move to config if needed)
 export const FACT_PROB = 0.99;
 
-function propagateFromParentsRobust({ baseProb, parents, getProb, getWeight, epsilon = 0.01, saturationK = 1 }) {
+function propagateFromParentsRobust({ baseProb, parents, getProb, getWeight, saturationK = 1 }) {
   if (!parents || parents.length === 0) return baseProb;
 
   // Filter to valid parents (exclude edges whose parent prob is null/undefined/virgin)
@@ -72,14 +72,13 @@ function propagateFromParentsRobust({ baseProb, parents, getProb, getWeight, eps
   }
 
   // Standard propagation for blended/ambiguous/multiple edges
-  const clampedBase = Math.min(Math.max(baseProb, epsilon), 1 - epsilon);
-  const priorOdds = Math.log(clampedBase / (1 - clampedBase));
+  const priorOdds = baseProb > 0 && baseProb < 1 ? Math.log(baseProb / (1 - baseProb)) : 0;
   const infos = parents.map(edge => {
-    const prob = Math.min(Math.max(getProb(edge), epsilon), 1 - epsilon);
+    const prob = getProb(edge);
     const sign = edge.data('opposes') || edge.data('type') === 'opposes' ? -1 : 1;
     return {
       parent: edge,
-      odds: Math.log(prob / (1 - prob)),
+      odds: prob > 0 && prob < 1 ? Math.log(prob / (1 - prob)) : 0,
       weight: getWeight(edge) * sign
     };
   });
@@ -96,7 +95,7 @@ function propagateFromParentsRobust({ baseProb, parents, getProb, getWeight, eps
   return 1 / (1 + Math.exp(-updatedOdds));
 }
 
-export function convergeEdges({ cy, epsilon = 0.01, maxIters = 30 }) {
+export function convergeEdges({ cy, tolerance = 0.001, maxIters = 30 }) {
   cy.batch(() => {
     cy.edges().forEach(edge => edge.data('computedWeight', edge.data('weight')));
   });
@@ -129,7 +128,7 @@ export function convergeEdges({ cy, epsilon = 0.01, maxIters = 30 }) {
     });
 
     finalDelta = maxDelta;
-    if (finalDelta < epsilon) {
+    if (finalDelta < tolerance) {
       converged = true;
       break;
     }
@@ -142,7 +141,7 @@ export function convergeEdges({ cy, epsilon = 0.01, maxIters = 30 }) {
   return { converged, iterations, finalDelta };
 }
 
-export function convergeNodes({ cy, epsilon = 0.01, maxIters = 30 }) {
+export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
   let converged = false, finalDelta = 0, iterations = 0;
 
   for (let iter = 0; iter < maxIters; iter++) {
@@ -203,8 +202,7 @@ export function convergeNodes({ cy, epsilon = 0.01, maxIters = 30 }) {
         return parent.data('prob');
       },
       getWeight: e => e.data('computedWeight') || 0,
-      saturationK: 1,
-      epsilon
+      saturationK: 1
     });
     console.log(
   'assertion node:', node.id(),
@@ -233,7 +231,7 @@ export function convergeNodes({ cy, epsilon = 0.01, maxIters = 30 }) {
     });
 
     finalDelta = maxDelta;
-    if (!changed || finalDelta < epsilon) {
+    if (!changed || finalDelta < tolerance) {
       converged = true;
       break;
     }
@@ -248,17 +246,17 @@ export function convergeNodes({ cy, epsilon = 0.01, maxIters = 30 }) {
 
 
 // Main convergence controller
-export function convergeAll({ cy, epsilon = 0.01, maxIters = 30 } = {}) {
+export function convergeAll({ cy, tolerance = 0.001, maxIters = 30 } = {}) {
   let edgeResult, nodeResult;
   try {
-    edgeResult = convergeEdges({ cy, epsilon, maxIters });
+    edgeResult = convergeEdges({ cy, tolerance, maxIters });
     if (!edgeResult.converged) console.warn('convergeAll: Edge stage failed to converge');
   } catch (err) {
     console.error('convergeAll: Error during edge convergence:', err);
     edgeResult = { converged: false, error: err };
   }
   try {
-    nodeResult = convergeNodes({ cy, epsilon, maxIters });
+    nodeResult = convergeNodes({ cy, tolerance, maxIters });
     if (!nodeResult.converged) console.warn('convergeAll: Node stage failed to converge');
   } catch (err) {
     console.error('convergeAll: Error during node convergence:', err);

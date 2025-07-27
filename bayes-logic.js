@@ -2,7 +2,7 @@
 
 export function propagateBayesHeavy(cy, maxIterations = 10, tolerance = 0.001) {
   const nodes = cy.nodes().filter(n =>
-    ['assertion', 'and', 'or'].includes((n.data('type') || '').toLowerCase())
+    ['assertion', 'and', 'or', 'fact'].includes((n.data('type') || '').toLowerCase())
   );
 
   // Initialize heavyProb if not already set
@@ -18,7 +18,21 @@ export function propagateBayesHeavy(cy, maxIterations = 10, tolerance = 0.001) {
     nodes.forEach(node => {
       const type = (node.data('type') || '').toLowerCase();
       const parentEdges = node.incomers('edge');
-      if (parentEdges.length === 0) return;
+      
+      // Handle Facts (nodes with no parents) - set explicit probability
+      if (parentEdges.length === 0) {
+        if (type === 'fact') {
+          // Facts are assumed to be 100% true in Heavy mode
+          // Unless they have explicit probability data
+          const explicitProb = node.data('explicitHeavyProb');
+          if (explicitProb !== undefined) {
+            node.data('heavyProb', explicitProb);
+          } else {
+            node.data('heavyProb', 1.0); // Default Facts to 100% true
+          }
+        }
+        return;
+      }
 
       let newProb = 0.5; // default if logic fails
 
@@ -50,44 +64,29 @@ export function propagateBayesHeavy(cy, maxIterations = 10, tolerance = 0.001) {
         }
         
         if (validEdges.length === 1) {
-          // Single parent: Evidential reasoning - update PARENT belief based on observing CHILD
+          // Single parent: Always update target using source (A → B)
           const edge = validEdges[0];
           const cpt = edge.data('cpt');
-          const parentNode = edge.source();
-          const parentProb = parentNode.data('heavyProb') ?? 0.5;
-          const { parentTrue, parentFalse } = getConditionalProbs(edge);
+          const sourceNode = edge.source(); // A
+          const targetNode = edge.target(); // B (this node)
+          const sourceProb = sourceNode.data('heavyProb') ?? 0.5;
           
-          // We observe the child (effect) and update belief in parent (cause)
-          // Use Bayes: P(Parent=true | Child=true) = P(Child=true | Parent=true) * P(Parent=true) / P(Child=true)
+          // Get the raw CPT values - these represent P(target=true | source=state)
+          const pTargetGivenSourceTrue = cpt.condTrue / 100;   // P(B=true | A=true)
+          const pTargetGivenSourceFalse = cpt.condFalse / 100; // P(B=true | A=false)
           
-          // Calculate P(Child=true) using law of total probability
-          const pChildTrue = (parentTrue / 100) * parentProb + (parentFalse / 100) * (1 - parentProb);
-          
-          // Calculate updated belief in parent using Bayes' theorem
-          let newParentProb = parentProb; // default to current if calculation fails
-          if (pChildTrue > 0.001) {
-            newParentProb = ((parentTrue / 100) * parentProb) / pChildTrue;
+          // Handle inverse logic if needed
+          let pTrue, pFalse;
+          if (cpt.inverse) {
+            pTrue = pTargetGivenSourceFalse;  // If inverse, swap the logic
+            pFalse = pTargetGivenSourceTrue;
+          } else {
+            pTrue = pTargetGivenSourceTrue;   // Normal case
+            pFalse = pTargetGivenSourceFalse;
           }
           
-          // Update the PARENT node, not the child
-          parentNode.data('heavyProb', newParentProb);
-          
-          // Child probability should be calculated based on updated parent
-          // P(Child=true) = P(Child=true | Parent=true) * P(Parent=true) + P(Child=true | Parent=false) * P(Parent=false)
-          newProb = (parentTrue / 100) * newParentProb + (parentFalse / 100) * (1 - newParentProb);
-          
-          const likelihoodRatio = (parentTrue / 100) / (parentFalse / 100);
-          
-          console.log(`=== Evidential Reasoning ===`);
-          console.log(`OBSERVED Effect: ${node.data('label')} (calculated: ${(newProb * 100).toFixed(1)}%)`);
-          console.log(`Cause: ${parentNode.data('label')}`);
-          console.log(`Prior belief in cause: ${(parentProb * 100).toFixed(1)}%`);
-          console.log(`P(Effect=true | Cause=true): ${parentTrue}%`);
-          console.log(`P(Effect=true | Cause=false): ${parentFalse}%`);
-          console.log(`Likelihood Ratio: ${likelihoodRatio.toFixed(2)}×`);
-          console.log(`Updated belief in cause: ${(newParentProb * 100).toFixed(1)}%`);
-          console.log(`Updated effect probability: ${(newProb * 100).toFixed(1)}%`);
-          console.log(`============================`);
+          // Calculate target probability: P(B=true) = P(B=true|A=true)*P(A=true) + P(B=true|A=false)*P(A=false)
+          newProb = pTrue * sourceProb + pFalse * (1 - sourceProb);
         } else {
           // Multiple parents: assume independence (Naive Bayes)
           // Use likelihood ratios for proper Bayesian updating
@@ -102,11 +101,18 @@ export function propagateBayesHeavy(cy, maxIterations = 10, tolerance = 0.001) {
             const pTrueGivenParent = (parentTrue / 100) * parentProb + (parentFalse / 100) * (1 - parentProb);
             const pFalseGivenParent = 1 - pTrueGivenParent;
             
-            // Avoid division by zero
-            if (pFalseGivenParent > 0.001) {
+            // Handle the likelihood ratio properly
+            if (pFalseGivenParent > 0 && pTrueGivenParent > 0) {
               const likelihoodRatio = pTrueGivenParent / pFalseGivenParent;
               logOdds += Math.log(likelihoodRatio);
+            } else if (pTrueGivenParent > 0) {
+              // pFalseGivenParent = 0, evidence strongly supports true
+              logOdds += 10; // Large positive value instead of infinity
+            } else if (pFalseGivenParent > 0) {
+              // pTrueGivenParent = 0, evidence strongly supports false  
+              logOdds -= 10; // Large negative value instead of negative infinity
             }
+            // If both are 0, skip this evidence (shouldn't happen with valid CPT)
           });
           
           // Convert log odds back to probability
@@ -121,7 +127,6 @@ export function propagateBayesHeavy(cy, maxIterations = 10, tolerance = 0.001) {
     });
 
     if (maxChange < tolerance) {
-      console.log(`Converged after ${iter + 1} iterations`);
       break;
     }
   }

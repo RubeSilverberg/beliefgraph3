@@ -122,6 +122,5 @@ export function saturation(aei, k = 1) {
 }
 export const config = {
   bayesHeavyMode: false,
-  epsilon: 0.01,
   // add more config fields as needed
 };
