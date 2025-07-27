@@ -334,8 +334,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const pTrue = cpt.condTrue !== undefined ? cpt.condTrue : '—';
     const pFalse = cpt.condFalse !== undefined ? cpt.condFalse : '—';
     let lr = '—';
-    if (typeof pTrue === 'number' && typeof pFalse === 'number' && pFalse !== 0) {
-      lr = (pTrue / pFalse).toFixed(2) + '×';
+    if (typeof pTrue === 'number' && typeof pFalse === 'number') {
+      // Apply epsilon clamping for ratio calculation to match our math
+      const clampedTrue = Math.min(Math.max(pTrue, 0.1), 99.9);
+      const clampedFalse = Math.min(Math.max(pFalse, 0.1), 99.9);
+      lr = (clampedTrue / clampedFalse).toFixed(2) + '×';
     }
 
     // Remove any existing tooltip

@@ -69,9 +69,9 @@ export function propagateBayesHeavy(cy) {
           const targetNode = edge.target(); // B (this node)
           const sourceProb = sourceNode.data('heavyProb') ?? 0.5;
           
-          // Get the CPT values - these represent P(target=true | source=state)
-          const pTargetGivenSourceTrue = cpt.condTrue / 100;   // P(B=true | A=true)
-          const pTargetGivenSourceFalse = cpt.condFalse / 100; // P(B=true | A=false)
+          // Get the CPT values with epsilon clamping
+          const pTargetGivenSourceTrue = Math.min(Math.max(cpt.condTrue / 100, 0.001), 0.999);   // P(B=true | A=true)
+          const pTargetGivenSourceFalse = Math.min(Math.max(cpt.condFalse / 100, 0.001), 0.999); // P(B=true | A=false)
           
           // No need to handle inverse logic here - the UI already set the correct values
           // when inverse was checked, so condTrue/condFalse are already correct
@@ -88,36 +88,21 @@ export function propagateBayesHeavy(cy) {
             const parentProb = edge.source().data('heavyProb') ?? 0.5;
             
             // Use same logic as single parent case - no inverse handling needed
-            const pTargetGivenSourceTrue = cpt.condTrue / 100;
-            const pTargetGivenSourceFalse = cpt.condFalse / 100;
+            const pTargetGivenSourceTrue = Math.min(Math.max(cpt.condTrue / 100, 0.001), 0.999);
+            const pTargetGivenSourceFalse = Math.min(Math.max(cpt.condFalse / 100, 0.001), 0.999);
             
             // Calculate likelihood ratio for this parent
             const pTrueGivenParent = pTargetGivenSourceTrue * parentProb + pTargetGivenSourceFalse * (1 - parentProb);
             const pFalseGivenParent = 1 - pTrueGivenParent;
             
-            // Handle the likelihood ratio properly
-            if (pFalseGivenParent > 0 && pTrueGivenParent > 0) {
-              const likelihoodRatio = pTrueGivenParent / pFalseGivenParent;
-              logOdds += Math.log(likelihoodRatio);
-            } else if (pTrueGivenParent > 0) {
-              // pFalseGivenParent = 0, evidence strongly supports true
-              logOdds += 10; // Large positive value instead of infinity
-            } else if (pFalseGivenParent > 0) {
-              // pTrueGivenParent = 0, evidence strongly supports false  
-              logOdds -= 10; // Large negative value instead of negative infinity
-            }
-            // If both are 0, skip this evidence (shouldn't happen with valid CPT)
+            // Calculate likelihood ratio with epsilon-protected values
+            const likelihoodRatio = pTrueGivenParent / pFalseGivenParent;
+            logOdds += Math.log(likelihoodRatio);
           });
           
-          // Convert log odds back to probability with overflow protection
-          if (logOdds > 10) {
-            newProb = 1.0; // Very strong evidence for true
-          } else if (logOdds < -10) {
-            newProb = 0.0; // Very strong evidence for false
-          } else {
-            const odds = Math.exp(logOdds);
-            newProb = odds / (1 + odds);
-          }
+          // Convert log odds back to probability
+          const odds = Math.exp(logOdds);
+          newProb = odds / (1 + odds);
         }
       }
 

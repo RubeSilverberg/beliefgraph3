@@ -52,7 +52,7 @@ export function highlightBayesNodeFocus(node) {
 // FACT_PROB: Never exactly 1 to avoid logit infinity (move to config if needed)
 export const FACT_PROB = 0.99;
 
-function propagateFromParentsRobust({ baseProb, parents, getProb, getWeight, saturationK = 1 }) {
+function propagateFromParentsRobust({ baseProb, parents, getProb, getWeight, epsilon = 0.01, saturationK = 1 }) {
   if (!parents || parents.length === 0) return baseProb;
 
   // Filter to valid parents (exclude edges whose parent prob is null/undefined/virgin)
@@ -72,13 +72,14 @@ function propagateFromParentsRobust({ baseProb, parents, getProb, getWeight, sat
   }
 
   // Standard propagation for blended/ambiguous/multiple edges
-  const priorOdds = baseProb > 0 && baseProb < 1 ? Math.log(baseProb / (1 - baseProb)) : 0;
+  const clampedBase = Math.min(Math.max(baseProb, epsilon), 1 - epsilon);
+  const priorOdds = Math.log(clampedBase / (1 - clampedBase));
   const infos = parents.map(edge => {
-    const prob = getProb(edge);
+    const prob = Math.min(Math.max(getProb(edge), epsilon), 1 - epsilon);
     const sign = edge.data('opposes') || edge.data('type') === 'opposes' ? -1 : 1;
     return {
       parent: edge,
-      odds: prob > 0 && prob < 1 ? Math.log(prob / (1 - prob)) : 0,
+      odds: Math.log(prob / (1 - prob)),
       weight: getWeight(edge) * sign
     };
   });
@@ -202,6 +203,7 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
         return parent.data('prob');
       },
       getWeight: e => e.data('computedWeight') || 0,
+      epsilon: 0.01,
       saturationK: 1
     });
     console.log(
