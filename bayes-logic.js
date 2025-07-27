@@ -1,6 +1,6 @@
 // bayes-logic.js
 
-export function propagateBayesHeavy(cy, maxIterations = 10, tolerance = 0.001) {
+export function propagateBayesHeavy(cy) {
   const nodes = cy.nodes().filter(n =>
     ['assertion', 'and', 'or', 'fact'].includes((n.data('type') || '').toLowerCase())
   );
@@ -12,18 +12,15 @@ export function propagateBayesHeavy(cy, maxIterations = 10, tolerance = 0.001) {
     }
   });
 
-  for (let iter = 0; iter < maxIterations; iter++) {
-    let maxChange = 0;
-
-    nodes.forEach(node => {
+  // Single pass calculation - all operations are deterministic
+  nodes.forEach(node => {
       const type = (node.data('type') || '').toLowerCase();
       const parentEdges = node.incomers('edge');
       
-      // Handle Facts (nodes with no parents) - set explicit probability
+      // Handle root nodes (nodes with no parents)
       if (parentEdges.length === 0) {
         if (type === 'fact') {
           // Facts are assumed to be 100% true in Heavy mode
-          // Unless they have explicit probability data
           const explicitProb = node.data('explicitHeavyProb');
           if (explicitProb !== undefined) {
             node.data('heavyProb', explicitProb);
@@ -31,6 +28,7 @@ export function propagateBayesHeavy(cy, maxIterations = 10, tolerance = 0.001) {
             node.data('heavyProb', 1.0); // Default Facts to 100% true
           }
         }
+        // Note: AND/OR/ASSERTION nodes with no parents keep their initialized 0.5 probability
         return;
       }
 
@@ -95,10 +93,22 @@ export function propagateBayesHeavy(cy, maxIterations = 10, tolerance = 0.001) {
           validEdges.forEach(edge => {
             const cpt = edge.data('cpt');
             const parentProb = edge.source().data('heavyProb') ?? 0.5;
-            const { parentTrue, parentFalse } = getConditionalProbs(edge);
+            
+            // Use same logic as single parent case for consistency
+            const pTargetGivenSourceTrue = cpt.condTrue / 100;
+            const pTargetGivenSourceFalse = cpt.condFalse / 100;
+            
+            let pTrue, pFalse;
+            if (cpt.inverse) {
+              pTrue = pTargetGivenSourceFalse;
+              pFalse = pTargetGivenSourceTrue;
+            } else {
+              pTrue = pTargetGivenSourceTrue;
+              pFalse = pTargetGivenSourceFalse;
+            }
             
             // Calculate likelihood ratio for this parent
-            const pTrueGivenParent = (parentTrue / 100) * parentProb + (parentFalse / 100) * (1 - parentProb);
+            const pTrueGivenParent = pTrue * parentProb + pFalse * (1 - parentProb);
             const pFalseGivenParent = 1 - pTrueGivenParent;
             
             // Handle the likelihood ratio properly
@@ -115,21 +125,25 @@ export function propagateBayesHeavy(cy, maxIterations = 10, tolerance = 0.001) {
             // If both are 0, skip this evidence (shouldn't happen with valid CPT)
           });
           
-          // Convert log odds back to probability
-          const odds = Math.exp(logOdds);
-          newProb = odds / (1 + odds);
+          // Convert log odds back to probability with overflow protection
+          if (logOdds > 10) {
+            newProb = 1.0; // Very strong evidence for true
+          } else if (logOdds < -10) {
+            newProb = 0.0; // Very strong evidence for false
+          } else {
+            const odds = Math.exp(logOdds);
+            newProb = odds / (1 + odds);
+          }
         }
       }
 
       const oldProb = node.data('heavyProb');
+      
+      // Clamp probability to valid range [0, 1]
+      newProb = Math.max(0, Math.min(1, newProb));
+      
       node.data('heavyProb', newProb);
-      maxChange = Math.max(maxChange, Math.abs(newProb - oldProb));
     });
-
-    if (maxChange < tolerance) {
-      break;
-    }
-  }
 }
 
 // Helper unchanged, just reprinted for clarity:
