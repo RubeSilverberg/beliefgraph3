@@ -129,14 +129,27 @@ document.getElementById('cancel-btn').addEventListener('click', function() {
       parentTrueWord2.textContent = inverse ? "false" : "true";
       parentFalseWord.textContent = inverse ? "true" : "false";
       parentFalseWord2.textContent = inverse ? "true" : "false";
+      
+      console.log('Inverse checkbox changed to:', inverse);
+      // Note: Constraints will update when user clicks "Set Baseline"
     });
 setBaselineBtn.onclick = () => {
+  console.log('Set Baseline clicked, inverse =', inverse);
   baselineInputRow.classList.add('hidden');
   baselineLockedRow.classList.remove('hidden');
   baselineLockedValue.textContent = baseline + "%";
   stepIndex = 1;
   renderStep();
-  condTrueSlider.value = Math.max(baseline, 50);
+  
+  // Set initial slider values based on inverse mode
+  if (inverse) {
+    // Inverse mode: True should be <= baseline, False should be >= baseline
+    condTrueSlider.value = Math.min(baseline, 50);
+  } else {
+    // Normal mode: True should be >= baseline, False should be <= baseline  
+    condTrueSlider.value = Math.max(baseline, 50);
+  }
+  
   condTrueValue.textContent = condTrueSlider.value + "%";
   updateCondTrue();
 };
@@ -150,13 +163,27 @@ renderStep();
     function updateCondTrue() {
       condTrue = Number(condTrueSlider.value);
       condTrueValue.textContent = condTrue + "%";
-      regionTrueLabel.textContent = `Allowed: ${baseline}%–100%`;
+      
+      console.log('updateCondTrue called, inverse =', inverse, 'baseline =', baseline);
+      
+      // Flip constraints based on inverse setting
+      if (inverse) {
+        regionTrueLabel.textContent = `Allowed: 0%–${baseline}%`;
+        const legal = condTrue >= 0 && condTrue <= baseline;
+        setCondTrueBtn.disabled = !legal;
+        condTrueWarning.textContent = legal ? "" : `Value must be between 0% and baseline (${baseline}%)`;
+        console.log('True conditional: INVERSE mode, allowed 0%-' + baseline + '%');
+      } else {
+        regionTrueLabel.textContent = `Allowed: ${baseline}%–100%`;
+        const legal = condTrue >= baseline && condTrue <= 100;
+        setCondTrueBtn.disabled = !legal;
+        condTrueWarning.textContent = legal ? "" : `Value must be between baseline (${baseline}%) and 100%`;
+        console.log('True conditional: NORMAL mode, allowed ' + baseline + '%-100%');
+      }
+      
       let ratio = baseline === 0 ? 99 : condTrue / baseline;
       if (baseline === 0 && condTrue === 0) ratio = 1;
       ratioTrueLabel.textContent = `(${ratio.toFixed(2)}× baseline) — ${qualitativeRatio(ratio)}`;
-      const legal = condTrue >= baseline && condTrue <= 100;
-      setCondTrueBtn.disabled = !legal;
-      condTrueWarning.textContent = legal ? "" : `Value must be between baseline (${baseline}%) and 100%`;
     }
     condTrueSlider.addEventListener('input', updateCondTrue);
 setCondTrueBtn.onclick = () => {
@@ -165,7 +192,16 @@ setCondTrueBtn.onclick = () => {
   condTrueLockedValue.textContent = condTrue + "%";
   stepIndex = 2;
   renderStep();
-  condFalseSlider.value = Math.min(baseline, 50);
+  
+  // Set initial slider value for false conditional based on inverse mode
+  if (inverse) {
+    // Inverse mode: False should be >= baseline
+    condFalseSlider.value = Math.max(baseline, 50);
+  } else {
+    // Normal mode: False should be <= baseline
+    condFalseSlider.value = Math.min(baseline, 50);
+  }
+  
   condFalseValue.textContent = condFalseSlider.value + "%";
   updateCondFalse();
 };
@@ -179,12 +215,22 @@ setCondTrueBtn.onclick = () => {
     function updateCondFalse() {
       condFalse = Number(condFalseSlider.value);
       condFalseValue.textContent = condFalse + "%";
-      regionFalseLabel.textContent = `Allowed: 0%–${baseline}%`;
+      
+      // Flip constraints based on inverse setting
+      if (inverse) {
+        regionFalseLabel.textContent = `Allowed: ${baseline}%–100%`;
+        const legal = condFalse >= baseline && condFalse <= 100;
+        setCondFalseBtn.disabled = !legal;
+        condFalseWarning.textContent = legal ? "" : `Value must be between baseline (${baseline}%) and 100%`;
+      } else {
+        regionFalseLabel.textContent = `Allowed: 0%–${baseline}%`;
+        const legal = condFalse >= 0 && condFalse <= baseline;
+        setCondFalseBtn.disabled = !legal;
+        condFalseWarning.textContent = legal ? "" : `Value must be between 0% and baseline (${baseline}%)`;
+      }
+      
       let ratio = baseline === 0 ? 1 : condFalse / baseline;
       ratioFalseLabel.textContent = `(${ratio.toFixed(2)}× baseline) — ${qualitativeRatio(ratio)}`;
-      const legal = condFalse >= 0 && condFalse <= baseline;
-      setCondFalseBtn.disabled = !legal;
-      condFalseWarning.textContent = legal ? "" : `Value must be between 0% and baseline (${baseline}%)`;
     }
     condFalseSlider.addEventListener('input', updateCondFalse);
 setCondFalseBtn.onclick = () => {
@@ -285,16 +331,30 @@ window.openBayesModalForEdge = function(edge) {
 
   // If you want to prefill, set the modal's fields here from edge.data('cpt'):
   const cpt = edge.data('cpt') || {};
-  document.getElementById('baseline-slider').value = cpt.baseline !== undefined ? cpt.baseline : 50;
-  document.getElementById('baseline-value').textContent = (cpt.baseline !== undefined ? cpt.baseline : 50) + '%';
-  document.getElementById('cond-true-slider').value = cpt.condTrue !== undefined ? cpt.condTrue : 70;
-  document.getElementById('cond-true-value').textContent = (cpt.condTrue !== undefined ? cpt.condTrue : 70) + '%';
-  document.getElementById('cond-false-slider').value = cpt.condFalse !== undefined ? cpt.condFalse : 30;
-  document.getElementById('cond-false-value').textContent = (cpt.condFalse !== undefined ? cpt.condFalse : 30) + '%';
-  document.getElementById('inverse-checkbox').checked = !!cpt.inverse;
+  
+  // Update local variables first
+  baseline = cpt.baseline !== undefined ? cpt.baseline : 50;
+  condTrue = cpt.condTrue !== undefined ? cpt.condTrue : 70;
+  condFalse = cpt.condFalse !== undefined ? cpt.condFalse : 30;
+  inverse = !!cpt.inverse;
+  
+  // Then update the DOM elements
+  document.getElementById('baseline-slider').value = baseline;
+  document.getElementById('baseline-value').textContent = baseline + '%';
+  document.getElementById('cond-true-slider').value = condTrue;
+  document.getElementById('cond-true-value').textContent = condTrue + '%';
+  document.getElementById('cond-false-slider').value = condFalse;
+  document.getElementById('cond-false-value').textContent = condFalse + '%';
+  document.getElementById('inverse-checkbox').checked = inverse;
 
   // Update the modal text with actual labels
   updateModalLabels();
+  
+  // Update the true/false word displays (but don't call update functions yet to avoid loops)
+  parentTrueWord.textContent = inverse ? "false" : "true";
+  parentTrueWord2.textContent = inverse ? "false" : "true";
+  parentFalseWord.textContent = inverse ? "true" : "false";
+  parentFalseWord2.textContent = inverse ? "true" : "false";
 
   document.getElementById('bayes-modal').classList.remove('hidden');
   stepIndex = 0;
@@ -322,11 +382,29 @@ function updateModalLabels() {
   document.querySelector('#step-cond-false .step-sub').innerHTML = 
     `Chance <b>${childLabel}</b> is true if <b>${parentLabel}</b> is <span id="parent-false-word2">false</span>.`;
     
-  // Update the inverse checkbox label
+  // Update the inverse checkbox label (preserve the existing checkbox element)
   const inverseLabel = document.querySelector('#step-baseline label');
   if (inverseLabel) {
-    inverseLabel.innerHTML = `<input type="checkbox" id="inverse-checkbox">
+    // Find the existing checkbox and preserve it
+    const existingCheckbox = inverseLabel.querySelector('#inverse-checkbox');
+    const checkboxChecked = existingCheckbox ? existingCheckbox.checked : false;
+    
+    // Update the label text while preserving the checkbox
+    inverseLabel.innerHTML = `<input type="checkbox" id="inverse-checkbox" ${checkboxChecked ? 'checked' : ''}>
       Inverse relationship: ${childLabel} more likely if ${parentLabel} is <b>false</b>`;
+    
+    // Re-attach the event listener since we recreated the element
+    const newCheckbox = document.getElementById('inverse-checkbox');
+    newCheckbox.addEventListener('change', () => {
+      inverse = newCheckbox.checked;
+      parentTrueWord.textContent = inverse ? "false" : "true";
+      parentTrueWord2.textContent = inverse ? "false" : "true";
+      parentFalseWord.textContent = inverse ? "true" : "false";
+      parentFalseWord2.textContent = inverse ? "true" : "false";
+      
+      console.log('Inverse checkbox changed to:', inverse);
+      // Note: Constraints will update when user clicks "Set Baseline"
+    });
   }
 }
 function renderStep() {

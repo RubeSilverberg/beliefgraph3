@@ -69,22 +69,15 @@ export function propagateBayesHeavy(cy) {
           const targetNode = edge.target(); // B (this node)
           const sourceProb = sourceNode.data('heavyProb') ?? 0.5;
           
-          // Get the raw CPT values - these represent P(target=true | source=state)
+          // Get the CPT values - these represent P(target=true | source=state)
           const pTargetGivenSourceTrue = cpt.condTrue / 100;   // P(B=true | A=true)
           const pTargetGivenSourceFalse = cpt.condFalse / 100; // P(B=true | A=false)
           
-          // Handle inverse logic if needed
-          let pTrue, pFalse;
-          if (cpt.inverse) {
-            pTrue = pTargetGivenSourceFalse;  // If inverse, swap the logic
-            pFalse = pTargetGivenSourceTrue;
-          } else {
-            pTrue = pTargetGivenSourceTrue;   // Normal case
-            pFalse = pTargetGivenSourceFalse;
-          }
+          // No need to handle inverse logic here - the UI already set the correct values
+          // when inverse was checked, so condTrue/condFalse are already correct
           
           // Calculate target probability: P(B=true) = P(B=true|A=true)*P(A=true) + P(B=true|A=false)*P(A=false)
-          newProb = pTrue * sourceProb + pFalse * (1 - sourceProb);
+          newProb = pTargetGivenSourceTrue * sourceProb + pTargetGivenSourceFalse * (1 - sourceProb);
         } else {
           // Multiple parents: assume independence (Naive Bayes)
           // Use likelihood ratios for proper Bayesian updating
@@ -94,21 +87,12 @@ export function propagateBayesHeavy(cy) {
             const cpt = edge.data('cpt');
             const parentProb = edge.source().data('heavyProb') ?? 0.5;
             
-            // Use same logic as single parent case for consistency
+            // Use same logic as single parent case - no inverse handling needed
             const pTargetGivenSourceTrue = cpt.condTrue / 100;
             const pTargetGivenSourceFalse = cpt.condFalse / 100;
             
-            let pTrue, pFalse;
-            if (cpt.inverse) {
-              pTrue = pTargetGivenSourceFalse;
-              pFalse = pTargetGivenSourceTrue;
-            } else {
-              pTrue = pTargetGivenSourceTrue;
-              pFalse = pTargetGivenSourceFalse;
-            }
-            
             // Calculate likelihood ratio for this parent
-            const pTrueGivenParent = pTrue * parentProb + pFalse * (1 - parentProb);
+            const pTrueGivenParent = pTargetGivenSourceTrue * parentProb + pTargetGivenSourceFalse * (1 - parentProb);
             const pFalseGivenParent = 1 - pTrueGivenParent;
             
             // Handle the likelihood ratio properly
