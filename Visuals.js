@@ -5,6 +5,7 @@ import {
   NODE_TYPE_ASSERTION,
   NODE_TYPE_AND,
   NODE_TYPE_OR,
+  NODE_TYPE_NOTE,
   DEBUG,
   logMath,
   weightToLikert,
@@ -31,6 +32,15 @@ export function robustnessToLabel(robust) {
  */
 export function computeVisuals(cy) {
   const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
+
+  // Clean up any edges connected to note nodes (notes should not have connections)
+  cy.nodes(`[type = "${NODE_TYPE_NOTE}"]`).forEach(noteNode => {
+    const connectedEdges = noteNode.connectedEdges();
+    if (connectedEdges.length > 0) {
+      console.log(`Removing ${connectedEdges.length} edges from note node`);
+      connectedEdges.remove();
+    }
+  });
 
   cy.nodes().forEach(node => {
     const nodeType = node.data('type');
@@ -177,6 +187,18 @@ export function computeVisuals(cy) {
       if (!node.data('hoverLabel') && displayLabel !== typeLabel) {
         node.data('hoverLabel', displayLabel);
       }
+    }
+    // Note nodes: simple text display, no probability or logic
+    else if (nodeType === NODE_TYPE_NOTE) {
+      // For notes, use the display label (what the user edited) or fall back to defaults
+      label = node.data('displayLabel') || node.data('origLabel') || node.data('label') || 'Note';
+      borderColor = '#ddd';
+      borderWidth = 1;
+      node.removeData('robustness');
+      node.removeData('robustnessLabel');
+      node.removeData('hoverLabel'); // No hover label distinction
+      node.removeData('prob');
+      node.removeData('heavyProb');
     }
     // Unknown type
     else {
@@ -480,7 +502,10 @@ export function removeModifierBox() {
  */
 export function registerVisualEventHandlers(cy) {
   cy.on('mouseover', 'node', evt => {
-    showNodeHoverBox(cy, evt.target);
+    const node = evt.target;
+    // Skip hover for note nodes
+    if (node.data('type') === NODE_TYPE_NOTE) return;
+    showNodeHoverBox(cy, node);
   });
   cy.on('mouseout', 'node', evt => {
     removeNodeHoverBox();

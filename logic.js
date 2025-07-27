@@ -508,3 +508,42 @@ export function clearGraph() {
   setTimeout(() => { window.computeVisuals?.(cy); }, 0);
   console.log('Graph cleared');
 }
+
+export function addNote() {
+  const cy = window.cy;
+  if (typeof cy === 'undefined') {
+    alert('Graph not loaded.');
+    return;
+  }
+  
+  // Add note node to center of current viewport
+  const viewport = cy.extent();
+  const centerX = (viewport.x1 + viewport.x2) / 2;
+  const centerY = (viewport.y1 + viewport.y2) / 2;
+  
+  const newNode = cy.add({
+    group: 'nodes',
+    data: {
+      id: 'note' + Date.now(),
+      label: 'New Note',
+      origLabel: 'New Note',
+      type: 'note',
+      width: 120,
+      height: 40
+    },
+    position: { x: centerX, y: centerY }
+  });
+  
+  console.log(`Created note node with type: ${newNode.data('type')}`);
+  
+  // Trigger visuals update and automatically open edit dialog
+  setTimeout(() => { 
+    window.computeVisuals?.(cy);
+    console.log('Note added');
+    
+    // Auto-open edit dialog for immediate editing
+    if (window.openEditNodeLabelModal) {
+      window.openEditNodeLabelModal(newNode);
+    }
+  }, 0);
+}

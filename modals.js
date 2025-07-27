@@ -1,5 +1,6 @@
 // modals.js
 import { adjustNodeSize } from './script_current.js'; // or wherever it's defined
+import { NODE_TYPE_NOTE } from './config.js';
 
 // All modal popup creation and event handling logic
 console.log("Loaded modals.js");
@@ -23,6 +24,114 @@ export function hideModal(modalId) {
 
 // --- Edit Node Label Modal ---
 export function openEditNodeLabelModal(node) {
+  const nodeType = node.data('type');
+  
+  // Use simplified note editor for note nodes
+  if (nodeType === NODE_TYPE_NOTE) {
+    openEditNoteModal(node);
+    return;
+  }
+  
+  // Regular editor for other nodes
+  openEditRegularNodeModal(node);
+}
+
+// Simplified editor for note nodes - just text, no hover
+function openEditNoteModal(node) {
+  // Remove any existing modal
+  hideModal('edit-note-modal');
+
+  const modal = document.createElement('div');
+  modal.id = 'edit-note-modal';
+  modal.className = 'hidden';
+  modal.style.position = 'fixed';
+  modal.style.background = '#fff';
+  modal.style.padding = '24px 24px 18px 24px';
+  modal.style.border = '2px solid #1976d2';
+  modal.style.borderRadius = '8px';
+  modal.style.zIndex = 10001;
+  modal.style.boxShadow = '0 6px 30px #1976d255';
+  modal.style.minWidth = '350px';
+
+  // Title
+  const title = document.createElement('div');
+  title.textContent = 'Edit Note';
+  title.className = 'modal-title';
+  title.style.fontWeight = 'bold';
+  title.style.marginBottom = '14px';
+  modal.appendChild(title);
+  makeDraggable(modal, ".modal-title");
+
+  // Note text input
+  const textLabel = document.createElement('label');
+  textLabel.textContent = 'Note text:';
+  textLabel.style.display = 'block';
+  textLabel.style.marginBottom = '3px';
+  modal.appendChild(textLabel);
+
+  const textInput = document.createElement('textarea');
+  textInput.style.width = '100%';
+  textInput.style.height = '80px';
+  textInput.style.marginBottom = '18px';
+  textInput.style.resize = 'vertical';
+  textInput.value = node.data('displayLabel') || node.data('origLabel') || '';
+  modal.appendChild(textInput);
+
+  // Save and Cancel buttons
+  const saveBtn = document.createElement('button');
+  saveBtn.textContent = 'Save';
+  saveBtn.disabled = !textInput.value.trim();
+  saveBtn.style.margin = '0 12px 0 0';
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.textContent = 'Cancel';
+
+  modal.appendChild(saveBtn);
+  modal.appendChild(cancelBtn);
+
+  // Validation
+  textInput.addEventListener('input', () => {
+    saveBtn.disabled = !textInput.value.trim();
+  });
+
+  // Save logic
+  saveBtn.onclick = function() {
+    const textVal = textInput.value.trim();
+    if (!textVal) return;
+
+    node.data('displayLabel', textVal);
+    node.removeData('hoverLabel'); // Notes don't have hover labels
+    node.removeData('isVirgin');
+    adjustNodeSize(node);
+    computeVisuals(window.cy);
+
+    hideModal(modal.id);
+    setTimeout(() => {
+      if (window.convergeAll) window.convergeAll({ cy: window.cy });
+      if (window.computeVisuals) window.computeVisuals(window.cy);
+    }, 0);
+  };
+
+  cancelBtn.onclick = function() {
+    hideModal(modal.id);
+  };
+
+  // ESC key closes modal
+  document.addEventListener('keydown', function escHandler(e) {
+    if (e.key === 'Escape') {
+      hideModal(modal.id);
+      document.removeEventListener('keydown', escHandler);
+    }
+  });
+
+  // Show modal
+  showModal(modal);
+  textInput.focus();
+  textInput.select();
+}
+
+// Regular editor for non-note nodes
+function openEditRegularNodeModal(node) {
   // Remove any existing modal
   hideModal('edit-label-modal');
 
@@ -95,12 +204,14 @@ export function openEditNodeLabelModal(node) {
 
   // Save logic
   saveBtn.onclick = function() {
-    const displayVal = displayInput.value.trim().slice(0, 25);
+    const displayVal = displayInput.value.trim();
     const hoverVal = hoverInput.value.trim();
     if (!displayVal) return;
 
+    // For notes, don't limit the length; for other nodes, limit to 25 chars
+    const finalDisplayVal = node.data('type') === NODE_TYPE_NOTE ? displayVal : displayVal.slice(0, 25);
 
-    node.data('displayLabel', displayVal);
+    node.data('displayLabel', finalDisplayVal);
     node.data('hoverLabel', hoverVal);
     node.removeData('isVirgin');
     adjustNodeSize(node);

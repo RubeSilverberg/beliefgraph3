@@ -306,15 +306,21 @@ function updateModalLabels() {
   const parentLabel = window._modalParentLabel || 'Parent';
   const childLabel = window._modalChildLabel || 'Child';
   
+  // Update step titles
+  document.querySelector('#step-cond-true .step-title').innerHTML = 
+    `2. If <b>${parentLabel}</b> is <span id="parent-true-word">true</span>`;
+  document.querySelector('#step-cond-false .step-title').innerHTML = 
+    `3. If <b>${parentLabel}</b> is <span id="parent-false-word">false</span>`;
+  
   // Update step descriptions
   document.querySelector('#step-baseline .step-sub').textContent = 
     `Chance ${childLabel} is true if nothing is known about ${parentLabel}.`;
   
-  document.querySelector('#step-cond-true .step-sub').textContent = 
-    `Chance ${childLabel} is true if ${parentLabel} is true.`;
+  document.querySelector('#step-cond-true .step-sub').innerHTML = 
+    `Chance <b>${childLabel}</b> is true if <b>${parentLabel}</b> is <span id="parent-true-word2">true</span>.`;
     
-  document.querySelector('#step-cond-false .step-sub').textContent = 
-    `Chance ${childLabel} is true if ${parentLabel} is false.`;
+  document.querySelector('#step-cond-false .step-sub').innerHTML = 
+    `Chance <b>${childLabel}</b> is true if <b>${parentLabel}</b> is <span id="parent-false-word2">false</span>.`;
     
   // Update the inverse checkbox label
   const inverseLabel = document.querySelector('#step-baseline label');

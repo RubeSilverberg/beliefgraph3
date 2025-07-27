@@ -50,14 +50,44 @@ export function propagateBayesHeavy(cy, maxIterations = 10, tolerance = 0.001) {
         }
         
         if (validEdges.length === 1) {
-          // Single parent: direct conditional probability
+          // Single parent: Evidential reasoning - update PARENT belief based on observing CHILD
           const edge = validEdges[0];
           const cpt = edge.data('cpt');
-          const parentProb = edge.source().data('heavyProb') ?? 0.5;
+          const parentNode = edge.source();
+          const parentProb = parentNode.data('heavyProb') ?? 0.5;
           const { parentTrue, parentFalse } = getConditionalProbs(edge);
           
-          // P(Child | Parent) = P(Child | Parent=true) * P(Parent=true) + P(Child | Parent=false) * P(Parent=false)
-          newProb = (parentTrue / 100) * parentProb + (parentFalse / 100) * (1 - parentProb);
+          // We observe the child (effect) and update belief in parent (cause)
+          // Use Bayes: P(Parent=true | Child=true) = P(Child=true | Parent=true) * P(Parent=true) / P(Child=true)
+          
+          // Calculate P(Child=true) using law of total probability
+          const pChildTrue = (parentTrue / 100) * parentProb + (parentFalse / 100) * (1 - parentProb);
+          
+          // Calculate updated belief in parent using Bayes' theorem
+          let newParentProb = parentProb; // default to current if calculation fails
+          if (pChildTrue > 0.001) {
+            newParentProb = ((parentTrue / 100) * parentProb) / pChildTrue;
+          }
+          
+          // Update the PARENT node, not the child
+          parentNode.data('heavyProb', newParentProb);
+          
+          // Child probability should be calculated based on updated parent
+          // P(Child=true) = P(Child=true | Parent=true) * P(Parent=true) + P(Child=true | Parent=false) * P(Parent=false)
+          newProb = (parentTrue / 100) * newParentProb + (parentFalse / 100) * (1 - newParentProb);
+          
+          const likelihoodRatio = (parentTrue / 100) / (parentFalse / 100);
+          
+          console.log(`=== Evidential Reasoning ===`);
+          console.log(`OBSERVED Effect: ${node.data('label')} (calculated: ${(newProb * 100).toFixed(1)}%)`);
+          console.log(`Cause: ${parentNode.data('label')}`);
+          console.log(`Prior belief in cause: ${(parentProb * 100).toFixed(1)}%`);
+          console.log(`P(Effect=true | Cause=true): ${parentTrue}%`);
+          console.log(`P(Effect=true | Cause=false): ${parentFalse}%`);
+          console.log(`Likelihood Ratio: ${likelihoodRatio.toFixed(2)}×`);
+          console.log(`Updated belief in cause: ${(newParentProb * 100).toFixed(1)}%`);
+          console.log(`Updated effect probability: ${(newProb * 100).toFixed(1)}%`);
+          console.log(`============================`);
         } else {
           // Multiple parents: assume independence (Naive Bayes)
           // Use likelihood ratios for proper Bayesian updating

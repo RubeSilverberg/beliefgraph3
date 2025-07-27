@@ -65,11 +65,12 @@ export const NODE_TYPE_FACT = "fact";
 export const NODE_TYPE_ASSERTION = "assertion";
 export const NODE_TYPE_AND = "and";
 export const NODE_TYPE_OR = "or";
+export const NODE_TYPE_NOTE = "note";
 export const EDGE_TYPE_SUPPORTS = "supports";
 export const EDGE_TYPE_OPPOSES = "opposes";
 
 export const ALLOWED_NODE_TYPES = [
-  NODE_TYPE_FACT, NODE_TYPE_ASSERTION, NODE_TYPE_AND, NODE_TYPE_OR
+  NODE_TYPE_FACT, NODE_TYPE_ASSERTION, NODE_TYPE_AND, NODE_TYPE_OR, NODE_TYPE_NOTE
 ];
 export const ALLOWED_EDGE_TYPES = [EDGE_TYPE_SUPPORTS, EDGE_TYPE_OPPOSES];
 

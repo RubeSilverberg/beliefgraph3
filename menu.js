@@ -10,7 +10,8 @@ export function setupMenuAndEdgeModals({
   NODE_TYPE_ASSERTION,
   NODE_TYPE_FACT,
   NODE_TYPE_AND,
-  NODE_TYPE_OR
+  NODE_TYPE_OR,
+  NODE_TYPE_NOTE
 }) {
     cy.container().addEventListener('contextmenu', function(e) {
   e.stopPropagation();
@@ -73,7 +74,13 @@ window.cy.on('doubleTap', 'node', function(event) {
   let lastEdgeTapTime = 0;
 
   cy.on('cxttap', evt => {
-    if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
+    // Allow context menu in heavy mode for note nodes, but restrict other functionality
+    const isHeavyMode = window.getBayesMode && window.getBayesMode() === 'heavy';
+    const isNoteNode = evt.target.isNode && evt.target.isNode() && evt.target.data('type') === NODE_TYPE_NOTE;
+    
+    // In heavy mode, only allow menu for note nodes
+    if (isHeavyMode && !isNoteNode) return;
+    
     console.log('cxttap fired');
     evt.originalEvent.preventDefault();
     evt.originalEvent.stopPropagation();
@@ -142,13 +149,66 @@ window.cy.on('doubleTap', 'node', function(event) {
       const node = evt.target;
       const nodeType = node.data('type');
 
+      // Special case for note nodes: simplified menu
+      if (nodeType === NODE_TYPE_NOTE) {
+        const editItem = document.createElement('li');
+        editItem.textContent = 'Edit Note...';
+        editItem.style.cursor = 'pointer';
+        editItem.onclick = () => {
+          openEditNodeLabelModal(node);
+          hideMenu();
+        };
+        list.appendChild(editItem);
+
+        const visualItem = document.createElement('li');
+        visualItem.textContent = 'Visual Signals...';
+        visualItem.style.cursor = 'pointer';
+        visualItem.onclick = () => {
+          openVisualSignalsModal(node);
+          hideMenu();
+        };
+        list.appendChild(visualItem);
+
+        const deleteItem = document.createElement('li');
+        deleteItem.textContent = 'Delete Note';
+        deleteItem.style.cursor = 'pointer';
+        deleteItem.onclick = () => {
+          node.remove();
+          setTimeout(() => { computeVisuals(cy); }, 0);
+          hideMenu();
+        };
+        list.appendChild(deleteItem);
+        
+        // Position and show the menu
+        menu.style.left = `${x}px`;
+        menu.style.top = `${y}px`;
+        menu.style.display = 'block';
+
+        // Set up outside-click handler to hide menu
+        setTimeout(() => {
+          closeListener = (e) => {
+            if (!menu.contains(e.target)) hideMenu();
+          };
+          document.addEventListener('click', closeListener, true);
+          document.addEventListener('contextmenu', closeListener, true);
+        }, 0);
+        
+        // Exit early - no other options for note nodes  
+        return;
+      }
+
+      // === Regular node menu items (non-notes) ===
+
+      // === Regular node menu items (non-notes) ===
+
+      // Only allow connections for non-note nodes
       const startEdge = document.createElement('li');
       startEdge.textContent = 'Connect to...';
       startEdge.style.cursor = 'pointer';
       startEdge.onclick = () => { pendingEdgeSource = node; hideMenu(); };
       list.appendChild(startEdge);
 
-if (nodeType === NODE_TYPE_ASSERTION || nodeType === NODE_TYPE_FACT) {
+      if (nodeType === NODE_TYPE_ASSERTION || nodeType === NODE_TYPE_FACT) {
   const toggleFact = document.createElement('li');
   toggleFact.textContent = nodeType === NODE_TYPE_FACT ? 'Swap to Assertion' : 'Swap to Fact';
   toggleFact.style.cursor = 'pointer';
@@ -299,8 +359,8 @@ if (nodeType === NODE_TYPE_ASSERTION || nodeType === NODE_TYPE_FACT) {
     if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
     if (!pendingEdgeSource) return;
     const target = evt.target;
-    // Must click a node, and not the same node
-    if (!target.isNode() || target.id() === pendingEdgeSource.id()) {
+    // Must click a node, and not the same node, and not a note node
+    if (!target.isNode() || target.id() === pendingEdgeSource.id() || target.data('type') === NODE_TYPE_NOTE) {
       pendingEdgeSource = null;
       return;
     }

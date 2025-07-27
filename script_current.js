@@ -16,6 +16,7 @@ import {
   NODE_TYPE_ASSERTION,
   NODE_TYPE_AND,
   NODE_TYPE_OR,
+  NODE_TYPE_NOTE,
   EDGE_TYPE_SUPPORTS,
   EDGE_TYPE_OPPOSES,
   ALLOWED_NODE_TYPES,
@@ -34,6 +35,7 @@ import {
   restoreAutosave,
   saveGraph,
   loadGraph,
+  addNote,
   finalizeBayesTimeCPT,
   getParentStateCombos,
   startBayesTimeSequence,
@@ -258,6 +260,19 @@ document.addEventListener('DOMContentLoaded', () => {
       'height': 80
     }
   },
+  // Note nodes: simple text style, light yellow background
+  {
+    selector: 'node[type="note"]',
+    style: {
+      'shape': 'roundrectangle',
+      'background-color': '#fffacd',
+      'border-color': '#ddd',
+      'border-width': 1,
+      'border-style': 'dashed',
+      'color': '#333',
+      'font-style': 'italic'
+    }
+  },
   // Edge base - use computed values from mode-specific logic
   {
     selector: 'edge',
@@ -391,7 +406,8 @@ document.addEventListener('DOMContentLoaded', () => {
     NODE_TYPE_ASSERTION,
     NODE_TYPE_FACT,
     NODE_TYPE_AND,
-    NODE_TYPE_OR
+    NODE_TYPE_OR,
+    NODE_TYPE_NOTE
   });
 
   // ====== Button Event Hookup ======
@@ -403,6 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnClearGraph').addEventListener('click', clearGraph);
   document.getElementById('btnSaveGraph').addEventListener('click', saveGraph);
   document.getElementById('btnLoadGraph').addEventListener('click', loadGraph);
+  document.getElementById('btnAddNote').addEventListener('click', addNote);
 
   // ====== Autosave Timer ======
   setInterval(autosave, 5 * 60 * 1000);
