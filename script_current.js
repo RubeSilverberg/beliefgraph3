@@ -323,6 +323,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Ensure only one tooltip at a time
   let edgeTooltipDiv = null;
+  let edgeTooltipTimeout = null;
+  
   cy.on('mouseover', 'edge', function(evt) {
     if (!window.getBayesMode || window.getBayesMode() !== 'heavy') return; // Only show in heavy mode
     const edge = evt.target;
@@ -334,65 +336,79 @@ document.addEventListener('DOMContentLoaded', () => {
                      cpt.condTrue === undefined || 
                      cpt.condFalse === undefined;
 
-    // Remove any existing tooltip
-    if (edgeTooltipDiv) edgeTooltipDiv.remove();
-
-    // Create tooltip div
-    edgeTooltipDiv = document.createElement('div');
-    edgeTooltipDiv.className = 'edge-tooltip';
-    
-    if (isVirgin) {
-      // Show virgin edge message
-      edgeTooltipDiv.innerHTML = `
-        <div><b>Conditional relationship not yet configured</b></div>
-        <div>Double-click edge to set up conditional probabilities</div>
-      `;
-    } else {
-      // Extract values for configured edges
-      const baseline = cpt.baseline;
-      const pTrue = cpt.condTrue;
-      const pFalse = cpt.condFalse;
-      let lr = '—';
-      if (typeof pTrue === 'number' && typeof pFalse === 'number' && pFalse > 0) {
-        // Apply epsilon clamping for ratio calculation to match our math
-        const clampedTrue = Math.min(Math.max(pTrue, 0.1), 99.9);
-        const clampedFalse = Math.min(Math.max(pFalse, 0.1), 99.9);
-        lr = (clampedTrue / clampedFalse).toFixed(2) + '×';
-      }
-
-      edgeTooltipDiv.innerHTML = `
-        <div><b>Likelihood Ratio:</b> <span class="lr-value">${lr}</span></div>
-        <div>Baseline: <b>${baseline}%</b></div>
-        <div>P(child | parent = true): <b>${pTrue}%</b></div>
-        <div>P(child | parent = false): <b>${pFalse}%</b></div>
-      `;
+    // Clear any existing timeout
+    if (edgeTooltipTimeout) {
+      clearTimeout(edgeTooltipTimeout);
     }
-    
-    document.body.appendChild(edgeTooltipDiv);
 
-    // ---- Set initial position immediately ----
-    let clientX = 0, clientY = 0;
-    if (evt.originalEvent) {
-      clientX = evt.originalEvent.clientX;
-      clientY = evt.originalEvent.clientY;
-    } else if (window.event) { // fallback (rarely needed)
-      clientX = window.event.clientX;
-      clientY = window.event.clientY;
-    }
-    edgeTooltipDiv.style.left = (clientX + 18) + 'px';
-    edgeTooltipDiv.style.top = (clientY + 8) + 'px';
+    // Set delay before showing tooltip
+    edgeTooltipTimeout = setTimeout(() => {
+      // Remove any existing tooltip
+      if (edgeTooltipDiv) edgeTooltipDiv.remove();
 
-    // Keep tooltip following mouse
-    document.body.onmousemove = function(e) {
-      if (edgeTooltipDiv) {
-        edgeTooltipDiv.style.left = (e.clientX + 18) + 'px';
-        edgeTooltipDiv.style.top = (e.clientY + 8) + 'px';
+      // Create tooltip div
+      edgeTooltipDiv = document.createElement('div');
+      edgeTooltipDiv.className = 'edge-tooltip';
+      
+      if (isVirgin) {
+        // Show virgin edge message
+        edgeTooltipDiv.innerHTML = `
+          <div><b>Conditional relationship not yet configured</b></div>
+          <div>Double-click edge to set up conditional probabilities</div>
+        `;
+      } else {
+        // Extract values for configured edges
+        const baseline = cpt.baseline;
+        const pTrue = cpt.condTrue;
+        const pFalse = cpt.condFalse;
+        let lr = '—';
+        if (typeof pTrue === 'number' && typeof pFalse === 'number' && pFalse > 0) {
+          // Apply epsilon clamping for ratio calculation to match our math
+          const clampedTrue = Math.min(Math.max(pTrue, 0.1), 99.9);
+          const clampedFalse = Math.min(Math.max(pFalse, 0.1), 99.9);
+          lr = (clampedTrue / clampedFalse).toFixed(2) + '×';
+        }
+
+        edgeTooltipDiv.innerHTML = `
+          <div><b>Likelihood Ratio:</b> <span class="lr-value">${lr}</span></div>
+          <div>Baseline: <b>${baseline}%</b></div>
+          <div>P(child | parent = true): <b>${pTrue}%</b></div>
+          <div>P(child | parent = false): <b>${pFalse}%</b></div>
+        `;
       }
-    };
+      
+      document.body.appendChild(edgeTooltipDiv);
+
+      // ---- Set initial position immediately ----
+      let clientX = 0, clientY = 0;
+      if (evt.originalEvent) {
+        clientX = evt.originalEvent.clientX;
+        clientY = evt.originalEvent.clientY;
+      } else if (window.event) { // fallback (rarely needed)
+        clientX = window.event.clientX;
+        clientY = window.event.clientY;
+      }
+      edgeTooltipDiv.style.left = (clientX + 18) + 'px';
+      edgeTooltipDiv.style.top = (clientY + 8) + 'px';
+
+      // Keep tooltip following mouse
+      document.body.onmousemove = function(e) {
+        if (edgeTooltipDiv) {
+          edgeTooltipDiv.style.left = (e.clientX + 18) + 'px';
+          edgeTooltipDiv.style.top = (e.clientY + 8) + 'px';
+        }
+      };
+    }, 300); // 0.3 second delay
   });
 
   // Remove tooltip on mouseout
   cy.on('mouseout', 'edge', function(evt) {
+    // Clear any pending timeout
+    if (edgeTooltipTimeout) {
+      clearTimeout(edgeTooltipTimeout);
+      edgeTooltipTimeout = null;
+    }
+    
     if (edgeTooltipDiv) {
       edgeTooltipDiv.remove();
       edgeTooltipDiv = null;

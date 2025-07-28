@@ -23,7 +23,7 @@
     </button>
     <button id="btnSaveGraph">Save</button>
     <button id="btnLoadGraph">Load</button>
-    <button id="btnBayesTime">Bayes Time</button>
+    <button id="btnBayesTime">Toggle Bayes</button>
     <button id="btnRestoreAutosave">Restore</button>
     <button id="btnAddNote">Add Note</button>
   </div>
@@ -41,7 +41,15 @@
   <div id="bayes-modal-header" class="modal-header">Bayes Heavy Editor</div>
   <!-- Step 1: Baseline -->
   <div id="step-baseline" class="step">
-      <div class="step-title">1. Baseline Probability</div>
+      <div class="step-title">
+  1. Baseline Probability
+  <span id="baseline-info-icon" style="cursor:pointer; margin-left:6px; display:inline-block;">
+    <svg width="16" height="16" style="vertical-align:middle;" viewBox="0 0 20 20">
+      <circle cx="10" cy="10" r="9" fill="#0074D9"/>
+      <text x="10" y="15" text-anchor="middle" font-size="14" fill="white" font-family="Arial" font-weight="bold">?</text>
+    </svg>
+  </span>
+</div>
       <div class="step-sub">Chance <b>[Child]</b> is true if nothing is known about <b>[Parent]</b>.</div>
       <div id="baseline-input-row">
         <div class="slider-row">

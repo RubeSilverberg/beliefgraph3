@@ -573,22 +573,55 @@ export function removeModifierBox() {
  * Should be called once after cy init.
  */
 export function registerVisualEventHandlers(cy) {
+  let nodeHoverTimeout = null;
+  let edgeHoverTimeout = null;
+
   cy.on('mouseover', 'node', evt => {
     const node = evt.target;
     // Skip hover for note nodes
     if (node.data('type') === NODE_TYPE_NOTE) return;
-    showNodeHoverBox(cy, node);
+    
+    // Clear any existing timeout
+    if (nodeHoverTimeout) {
+      clearTimeout(nodeHoverTimeout);
+    }
+    
+    // Set delay before showing hover box
+    nodeHoverTimeout = setTimeout(() => {
+      showNodeHoverBox(cy, node);
+    }, 300); // 0.3 second delay
   });
+  
   cy.on('mouseout', 'node', evt => {
+    // Clear pending timeout
+    if (nodeHoverTimeout) {
+      clearTimeout(nodeHoverTimeout);
+      nodeHoverTimeout = null;
+    }
     removeNodeHoverBox();
   });
 
   cy.on('mouseover', 'edge', evt => {
     // Only show in Lite mode (or when NOT heavy)
     if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
-    showModifierBox(cy, evt.target);
+    
+    // Clear any existing timeout
+    if (edgeHoverTimeout) {
+      clearTimeout(edgeHoverTimeout);
+    }
+    
+    // Set delay before showing edge hover box
+    edgeHoverTimeout = setTimeout(() => {
+      showModifierBox(cy, evt.target);
+    }, 300); // 0.3 second delay
   });
+  
   cy.on('mouseout', 'edge', evt => {
+    // Clear pending timeout
+    if (edgeHoverTimeout) {
+      clearTimeout(edgeHoverTimeout);
+      edgeHoverTimeout = null;
+    }
     removeModifierBox();
   });
 

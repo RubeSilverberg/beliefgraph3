@@ -1,5 +1,6 @@
 
 import { propagateBayesHeavy } from './bayes-logic.js';
+import { TOOLTIP_TEXTS, attachTooltip } from './config.js';
 
 let stepIndex = 0; // 0 = baseline, 1 = condTrue, 2 = condFalse, 3 = summary
 
@@ -107,7 +108,9 @@ document.addEventListener('mousemove', function(e) {
     // Summary
     const summaryText = document.getElementById('summary-text');
     const okBtn = document.getElementById('ok-btn');
+  
     const cancelBtn = document.getElementById('cancel-btn');
+attachTooltip(document.getElementById('baseline-info-icon'), TOOLTIP_TEXTS.baseline);
 
     // Qualitative labels
     function qualitativeRatio(ratio) {

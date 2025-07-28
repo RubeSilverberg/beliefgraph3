@@ -313,5 +313,20 @@ html, body {
   font-weight: bold;
   font-size: 1.13em;
 }
+.custom-tooltip {
+  display: none;
+  position: absolute;
+  z-index: 10000;
+  background: #222;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 0.97em;
+  max-width: 340px;
+  white-space: normal;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  line-height: 1.4;
+}
 
 
