@@ -5,6 +5,15 @@ let stepIndex = 0; // 0 = baseline, 1 = condTrue, 2 = condFalse, 3 = summary
 
     // State
     let baseline = 50, condTrue = 70, condFalse = 30, inverse = false;
+    let isUpdating = false; // Flag to prevent infinite loops
+    
+    // Helper function to safely update slider values without triggering events
+    function safeSetSliderValue(slider, value, updateFunction) {
+      isUpdating = true;
+      slider.value = value;
+      updateFunction();
+      isUpdating = false;
+    }
 
     // DOM refs
     const stepBaseline = document.getElementById('step-baseline');
@@ -119,8 +128,13 @@ document.getElementById('cancel-btn').addEventListener('click', function() {
 
     // --- Baseline ---
     function updateBaseline() {
+      if (isUpdating) return; // Prevent infinite loops
+      isUpdating = true;
+      
       baseline = Number(baselineSlider.value);
       baselineValue.textContent = baseline + "%";
+      
+      isUpdating = false; // Reset flag
     }
     baselineSlider.addEventListener('input', updateBaseline);
     inverseCheckbox.addEventListener('change', () => {
@@ -144,14 +158,11 @@ setBaselineBtn.onclick = () => {
   // Set initial slider values based on inverse mode
   if (inverse) {
     // Inverse mode: True should be <= baseline, False should be >= baseline
-    condTrueSlider.value = Math.min(baseline, 50);
+    safeSetSliderValue(condTrueSlider, Math.min(baseline, 50), updateCondTrue);
   } else {
     // Normal mode: True should be >= baseline, False should be <= baseline  
-    condTrueSlider.value = Math.max(baseline, 50);
+    safeSetSliderValue(condTrueSlider, Math.max(baseline, 50), updateCondTrue);
   }
-  
-  condTrueValue.textContent = condTrueSlider.value + "%";
-  updateCondTrue();
 };
 
     document.getElementById('edit-baseline-btn').addEventListener('click', () => {
@@ -161,6 +172,9 @@ renderStep();
 
     // --- Cond True ---
     function updateCondTrue() {
+      if (isUpdating) return; // Prevent infinite loops
+      isUpdating = true;
+      
       condTrue = Number(condTrueSlider.value);
       condTrueValue.textContent = condTrue + "%";
       
@@ -184,6 +198,8 @@ renderStep();
       let ratio = baseline === 0 ? 99 : condTrue / baseline;
       if (baseline === 0 && condTrue === 0) ratio = 1;
       ratioTrueLabel.textContent = `(${ratio.toFixed(2)}× baseline) — ${qualitativeRatio(ratio)}`;
+      
+      isUpdating = false; // Reset flag
     }
     condTrueSlider.addEventListener('input', updateCondTrue);
 setCondTrueBtn.onclick = () => {
@@ -196,14 +212,11 @@ setCondTrueBtn.onclick = () => {
   // Set initial slider value for false conditional based on inverse mode
   if (inverse) {
     // Inverse mode: False should be >= baseline
-    condFalseSlider.value = Math.max(baseline, 50);
+    safeSetSliderValue(condFalseSlider, Math.max(baseline, 50), updateCondFalse);
   } else {
     // Normal mode: False should be <= baseline
-    condFalseSlider.value = Math.min(baseline, 50);
+    safeSetSliderValue(condFalseSlider, Math.min(baseline, 50), updateCondFalse);
   }
-  
-  condFalseValue.textContent = condFalseSlider.value + "%";
-  updateCondFalse();
 };
 
     document.getElementById('edit-cond-true-btn').addEventListener('click', () => {
@@ -213,6 +226,9 @@ setCondTrueBtn.onclick = () => {
 
     // --- Cond False ---
     function updateCondFalse() {
+      if (isUpdating) return; // Prevent infinite loops
+      isUpdating = true;
+      
       condFalse = Number(condFalseSlider.value);
       condFalseValue.textContent = condFalse + "%";
       
@@ -231,6 +247,8 @@ setCondTrueBtn.onclick = () => {
       
       let ratio = baseline === 0 ? 1 : condFalse / baseline;
       ratioFalseLabel.textContent = `(${ratio.toFixed(2)}× baseline) — ${qualitativeRatio(ratio)}`;
+      
+      isUpdating = false; // Reset flag
     }
     condFalseSlider.addEventListener('input', updateCondFalse);
 setCondFalseBtn.onclick = () => {
@@ -299,11 +317,13 @@ cancelBtn.addEventListener('click', () => {
   }
 });
 
-    // Initial render
+    // Initial render - safely initialize
+    isUpdating = true;
     updateBaseline();
     updateCondTrue();
     updateCondFalse();
     updateSummary();
+    isUpdating = false;
 
 
 window.openBayesModalForEdge = function(edge) {
@@ -338,7 +358,8 @@ window.openBayesModalForEdge = function(edge) {
   condFalse = cpt.condFalse !== undefined ? cpt.condFalse : 30;
   inverse = !!cpt.inverse;
   
-  // Then update the DOM elements
+  // Then update the DOM elements safely
+  isUpdating = true;
   document.getElementById('baseline-slider').value = baseline;
   document.getElementById('baseline-value').textContent = baseline + '%';
   document.getElementById('cond-true-slider').value = condTrue;
@@ -346,6 +367,7 @@ window.openBayesModalForEdge = function(edge) {
   document.getElementById('cond-false-slider').value = condFalse;
   document.getElementById('cond-false-value').textContent = condFalse + '%';
   document.getElementById('inverse-checkbox').checked = inverse;
+  isUpdating = false;
 
   // Update the modal text with actual labels
   updateModalLabels();
