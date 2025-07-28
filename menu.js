@@ -151,15 +151,6 @@ window.cy.on('doubleTap', 'node', function(event) {
 
       // Special case for note nodes: simplified menu
       if (nodeType === NODE_TYPE_NOTE) {
-        const editItem = document.createElement('li');
-        editItem.textContent = 'Edit Note...';
-        editItem.style.cursor = 'pointer';
-        editItem.onclick = () => {
-          openEditNodeLabelModal(node);
-          hideMenu();
-        };
-        list.appendChild(editItem);
-
         const visualItem = document.createElement('li');
         visualItem.textContent = 'Visual Signals...';
         visualItem.style.cursor = 'pointer';
