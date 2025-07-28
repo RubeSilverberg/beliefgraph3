@@ -445,33 +445,170 @@ export function loadGraph() {
   input.click();
 }
 
-export function autosave() {
+// --- Smart Multi-Interval Backup System ---
+
+// Backup storage: three tiers of snapshots
+let recentSnapshots = [];     // Last 6 snapshots (10s intervals, 1 minute total)
+let mediumSnapshots = [];     // Last 10 snapshots (1min intervals, 10 minutes total)  
+let longTermSnapshots = [];   // Last 6 snapshots (10min intervals, 1 hour total)
+
+let lastMediumSnapshot = 0;   // Timestamp of last medium snapshot
+let lastLongTermSnapshot = 0; // Timestamp of last long-term snapshot
+
+export function createSnapshot() {
   const cy = window.cy;
+  if (!cy) return null;
+  
   try {
     const elements = cy.elements().jsons();
-    localStorage.setItem('beliefGraphAutosave', JSON.stringify(elements));
-    console.log('Autosaved graph to localStorage');
+    return {
+      data: JSON.stringify(elements),
+      timestamp: Date.now()
+    };
   } catch (err) {
-    console.error('Autosave failed:', err);
+    console.error('Failed to create snapshot:', err);
+    return null;
   }
 }
 
-export function restoreAutosave() {
+export function smartAutosave() {
+  const snapshot = createSnapshot();
+  if (!snapshot) return;
+  
+  const now = Date.now();
+  
+  // Always add to recent snapshots (10-second interval)
+  recentSnapshots.push(snapshot);
+  if (recentSnapshots.length > 6) {
+    recentSnapshots.shift(); // Keep only last 6 (1 minute)
+  }
+  
+  // Add to medium snapshots every minute
+  if (now - lastMediumSnapshot >= 60 * 1000) {
+    mediumSnapshots.push(snapshot);
+    if (mediumSnapshots.length > 10) {
+      mediumSnapshots.shift(); // Keep only last 10 (10 minutes)
+    }
+    lastMediumSnapshot = now;
+  }
+  
+  // Add to long-term snapshots every 10 minutes
+  if (now - lastLongTermSnapshot >= 10 * 60 * 1000) {
+    longTermSnapshots.push(snapshot);
+    if (longTermSnapshots.length > 6) {
+      longTermSnapshots.shift(); // Keep only last 6 (1 hour)
+    }
+    lastLongTermSnapshot = now;
+  }
+}
+
+export function getAvailableRestorePoints() {
+  const now = Date.now();
+  const points = [];
+  
+  // Add recent snapshots with cleaner labels
+  recentSnapshots.forEach((snapshot, index) => {
+    const secondsAgo = Math.round((now - snapshot.timestamp) / 1000);
+    if (secondsAgo >= 10) { // Don't show very recent ones
+      // Round to nearest 10 seconds for cleaner display
+      const roundedSeconds = Math.round(secondsAgo / 10) * 10;
+      points.push({
+        label: `${roundedSeconds} seconds ago`,
+        data: snapshot.data,
+        timestamp: snapshot.timestamp,
+        type: 'recent'
+      });
+    }
+  });
+  
+  // Add medium snapshots
+  mediumSnapshots.forEach(snapshot => {
+    const minutesAgo = Math.round((now - snapshot.timestamp) / (60 * 1000));
+    if (minutesAgo >= 2) { // Don't overlap with recent
+      points.push({
+        label: `${minutesAgo} minute${minutesAgo > 1 ? 's' : ''} ago`,
+        data: snapshot.data,
+        timestamp: snapshot.timestamp,
+        type: 'medium'
+      });
+    }
+  });
+  
+  // Add long-term snapshots
+  longTermSnapshots.forEach(snapshot => {
+    const minutesAgo = Math.round((now - snapshot.timestamp) / (60 * 1000));
+    if (minutesAgo >= 15) { // Don't overlap with medium
+      points.push({
+        label: `${minutesAgo} minutes ago`,
+        data: snapshot.data,
+        timestamp: snapshot.timestamp,
+        type: 'long-term'
+      });
+    }
+  });
+  
+  // Sort by timestamp (most recent first) and remove duplicates
+  const uniquePoints = [];
+  const seenLabels = new Set();
+  
+  points.sort((a, b) => b.timestamp - a.timestamp).forEach(point => {
+    if (!seenLabels.has(point.label)) {
+      seenLabels.add(point.label);
+      uniquePoints.push(point);
+    }
+  });
+  
+  return uniquePoints;
+}
+
+export function showRestoreMenu() {
+  const points = getAvailableRestorePoints();
+  
+  if (points.length === 0) {
+    alert('No restore points available yet. The system needs to run for at least 10 seconds to create restore points.');
+    return;
+  }
+  
+  // Create a simple menu with better formatting
+  let message = 'Choose a restore point:\n\n';
+  points.forEach((point, index) => {
+    message += `${index + 1}. ${point.label}\n`;
+  });
+  message += '\nEnter a number (1-' + points.length + ') or 0 to cancel:';
+  
+  const choice = prompt(message);
+  if (choice === null) { // User clicked Cancel
+    console.log('Restore cancelled by user');
+    return;
+  }
+  
+  const choiceNum = parseInt(choice.trim());
+  
+  if (choiceNum === 0) {
+    console.log('Restore cancelled by user');
+    return;
+  }
+  
+  if (isNaN(choiceNum) || choiceNum < 1 || choiceNum > points.length) {
+    alert(`Invalid choice "${choice}". Please enter a number between 1 and ${points.length}.`);
+    return;
+  }
+  
+  const selectedPoint = points[choiceNum - 1];
+  
+  if (!confirm(`This will restore your graph to ${selectedPoint.label}. Current work will be lost. Continue?`)) {
+    console.log('Restore cancelled by user');
+    return;
+  }
+  
+  restoreFromSnapshot(selectedPoint.data);
+}
+
+function restoreFromSnapshot(snapshotData) {
   const cy = window.cy;
-  console.log('restoreAutosave called');
-  const data = localStorage.getItem('beliefGraphAutosave');
-  if (!data) {
-    alert('No autosaved graph found.');
-    console.log('restoreAutosave: No autosave data in localStorage');
-    return;
-  }
-  if (!confirm('This will overwrite your current graph with the last autosaved version. Continue?')) {
-    console.log('restoreAutosave: User cancelled restore');
-    return;
-  }
   try {
     cy.elements().remove();
-    cy.add(JSON.parse(data));
+    cy.add(JSON.parse(snapshotData));
     cy.nodes().forEach(n => {
       if (n.data('type') !== 'fact') {
         n.data('prob', n.data('initialProb'));
@@ -480,11 +617,23 @@ export function restoreAutosave() {
     convergeAll({ cy });
     window.computeVisuals?.(cy);
     window.resetLayout?.();
-    console.log('restoreAutosave: Success, graph restored');
+    console.log('Graph successfully restored from snapshot');
+    alert('Graph restored successfully!');
   } catch (err) {
-    alert('Failed to restore autosave.');
-    console.error('restoreAutosave: Failed to restore autosave:', err);
+    alert('Failed to restore from snapshot.');
+    console.error('Failed to restore from snapshot:', err);
   }
+}
+
+// Legacy functions for compatibility
+export function autosave() {
+  // Keep the old function but redirect to new system
+  smartAutosave();
+}
+
+export function restoreAutosave() {
+  // Replace old restore with new menu system
+  showRestoreMenu();
 }
 
 // --- Layout and Clear ---

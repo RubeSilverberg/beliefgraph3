@@ -186,7 +186,7 @@ html, body {
 }
 #bayes-modal.modal {
   position: fixed;
-  top: 15vh;         /* Set starting position (optional, adjust as needed) */
+  top: 10vh;         /* Start higher on screen */
   left: 50vw;
   transform: none;   /* REMOVE the translate(-50%, -50%) for draggability */
   min-width: 410px;
@@ -194,7 +194,7 @@ html, body {
   max-height: 85vh;  /* Prevent modal from exceeding screen height */
   background: #fff;
   color: #111;
-  padding: 28px 28px 20px 28px;
+  padding: 18px 24px 16px 24px;  /* Reduced from 28px 28px 20px 28px */
   border-radius: 10px;
   box-shadow: 0 4px 40px #0007, 0 0 0 1.5px #ddd;
   z-index: 1002;
@@ -205,27 +205,37 @@ html, body {
 
 /* Bayes Modal Step Styling */
 #bayes-modal .step {
-  margin-bottom: 15px;
-  padding-bottom: 10px;
+  margin-bottom: 12px;    /* Reduced from 15px */
+  padding-bottom: 8px;    /* Reduced from 10px */
   border-bottom: 1px solid #eee;
 }
 
 #bayes-modal .step:last-child {
   border-bottom: none;
-  margin-bottom: 8px;
+  margin-bottom: 6px;     /* Reduced from 8px */
 }
 
 #bayes-modal .step-title {
   font-size: 15px;
   font-weight: 600;
   color: #333;
-  margin-bottom: 6px;
+  margin-bottom: 5px;     /* Reduced from 6px */
+}
+
+/* Make the first step title look more like a header */
+#bayes-modal #step-baseline .step-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2c5aa0;
+  padding: 4px 0;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 8px;
 }
 
 #bayes-modal .step-sub {
   font-size: 13px;
   color: #666;
-  margin-bottom: 8px;
+  margin-bottom: 6px;     /* Reduced from 8px */
   line-height: 1.3;
 }
 
@@ -233,7 +243,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 6px;
+  margin-bottom: 5px;     /* Reduced from 6px */
 }
 
 #bayes-modal .region-label,

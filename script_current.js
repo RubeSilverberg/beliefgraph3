@@ -24,6 +24,8 @@ import {
   DEBUG,
   config,
   WEIGHT_MIN,
+  TOOLTIP_TEXTS,
+  attachTooltip,
   // ...any other needed config exports
 } from './config.js';
 
@@ -455,8 +457,12 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnLoadGraph').addEventListener('click', loadGraph);
   document.getElementById('btnAddNote').addEventListener('click', addNote);
 
-  // ====== Autosave Timer ======
-  setInterval(autosave, 5 * 60 * 1000);
+  // ====== Tooltip Setup ======
+  // Simple placeholder tooltip for Toggle Bayes button
+  attachTooltip(document.getElementById('btnBayesTime'), TOOLTIP_TEXTS.toggleBayes);
+
+  // ====== Smart Auto-Backup Timer ======
+  setInterval(autosave, 10 * 1000); // Every 10 seconds
 
 
 });

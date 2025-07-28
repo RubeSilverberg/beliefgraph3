@@ -22,12 +22,14 @@ let stepIndex = 0; // 0 = baseline, 1 = condTrue, 2 = condFalse, 3 = summary
     const stepCondFalse = document.getElementById('step-cond-false');
     const stepSummary = document.getElementById('step-summary');
     const modal = document.getElementById('bayes-modal');
-const header = document.getElementById('bayes-modal-header');
 let isDragging = false, dragOffsetX = 0, dragOffsetY = 0;
 
-header.style.cursor = 'move';
+// Make the first step title draggable
+const firstStepTitle = document.querySelector('#step-baseline .step-title');
+firstStepTitle.style.cursor = 'move';
+firstStepTitle.style.userSelect = 'none';
 
-header.addEventListener('mousedown', function(e) {
+firstStepTitle.addEventListener('mousedown', function(e) {
   e.preventDefault();
   isDragging = true;
   
