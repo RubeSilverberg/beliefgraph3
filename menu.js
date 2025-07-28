@@ -95,7 +95,7 @@ window.cy.on('doubleTap', 'node', function(event) {
     if (evt.target === cy) {
       [
         {
-          label: 'Add Assertion or Fact Node Here', action: () => {
+          label: 'Add Node Here', action: () => {
             if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
             cy.add({
               group: 'nodes',
@@ -103,7 +103,7 @@ window.cy.on('doubleTap', 'node', function(event) {
                 id: 'node' + Date.now(),
                 origLabel: 'New Belief',
                 label: 'New Belief',
-                type: NODE_TYPE_ASSERTION,
+                type: NODE_TYPE_ASSERTION, // Will be auto-updated by autoUpdateNodeTypes
                 isVirgin: true,
                  width: 60,       // <<-- add this
                  height: 36       // <<-- add this (60 * 0.6)
@@ -208,43 +208,7 @@ window.cy.on('doubleTap', 'node', function(event) {
       startEdge.onclick = () => { pendingEdgeSource = node; hideMenu(); };
       list.appendChild(startEdge);
 
-      if (nodeType === NODE_TYPE_ASSERTION || nodeType === NODE_TYPE_FACT) {
-  const toggleFact = document.createElement('li');
-  toggleFact.textContent = nodeType === NODE_TYPE_FACT ? 'Swap to Assertion' : 'Swap to Fact';
-  toggleFact.style.cursor = 'pointer';
-  toggleFact.onclick = () => {
-    const currentType = node.data('type'); // ← Get fresh type
-    const newType = currentType === NODE_TYPE_FACT ? NODE_TYPE_ASSERTION : NODE_TYPE_FACT;
-    node.data({ type: newType });
-
-    // Adjust label when converting types - only change default labels
-    const currentLabel = node.data('label');
-    // Strip visual additions (like "\n—") to get the base label
-    const baseLabel = currentLabel ? currentLabel.split('\n')[0] : '';
-    
-    if (newType === NODE_TYPE_FACT && baseLabel === 'New Belief') {
-      // Converting assertion with default label to fact
-      node.data('label', 'New Fact');
-      node.data('origLabel', 'New Fact');
-    } else if (newType === NODE_TYPE_ASSERTION && baseLabel === 'New Fact') {
-      // Converting fact with default label to assertion
-      node.data('label', 'New Belief');
-      node.data('origLabel', 'New Belief');
-    }
-
-    if (currentType === NODE_TYPE_FACT && newType === NODE_TYPE_ASSERTION) {
-      node.removeData('prob');
-      node.removeData('robustness');
-      node.removeData('robustnessLabel');
-      node.data('isVirgin', true);
-    }
-
-    convergeAll({ cy });
-    computeVisuals(cy);
-    hideMenu();
-  };
-  list.appendChild(toggleFact);
-}
+      // Logic node type conversion (AND/OR)
       if (nodeType === NODE_TYPE_AND || nodeType === NODE_TYPE_OR) {
         const toggleLogic = document.createElement('li');
         toggleLogic.textContent = nodeType === NODE_TYPE_AND ? 'Convert to OR Node' : 'Convert to AND Node';

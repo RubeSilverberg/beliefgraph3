@@ -329,17 +329,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const edge = evt.target;
     const cpt = edge.data('cpt') || {};
 
-    // Extract values (provide fallback dashes if missing)
-    const baseline = cpt.baseline !== undefined ? cpt.baseline : '—';
-    const pTrue = cpt.condTrue !== undefined ? cpt.condTrue : '—';
-    const pFalse = cpt.condFalse !== undefined ? cpt.condFalse : '—';
-    let lr = '—';
-    if (typeof pTrue === 'number' && typeof pFalse === 'number') {
-      // Apply epsilon clamping for ratio calculation to match our math
-      const clampedTrue = Math.min(Math.max(pTrue, 0.1), 99.9);
-      const clampedFalse = Math.min(Math.max(pFalse, 0.1), 99.9);
-      lr = (clampedTrue / clampedFalse).toFixed(2) + '×';
-    }
+    // Check if this is a virgin edge (no CPT data configured)
+    const isVirgin = !cpt || 
+                     cpt.baseline === undefined || 
+                     cpt.condTrue === undefined || 
+                     cpt.condFalse === undefined;
 
     // Remove any existing tooltip
     if (edgeTooltipDiv) edgeTooltipDiv.remove();
@@ -347,12 +341,34 @@ document.addEventListener('DOMContentLoaded', () => {
     // Create tooltip div
     edgeTooltipDiv = document.createElement('div');
     edgeTooltipDiv.className = 'edge-tooltip';
-    edgeTooltipDiv.innerHTML = `
-      <div><b>Likelihood Ratio:</b> <span class="lr-value">${lr}</span></div>
-      <div>Baseline: <b>${baseline}%</b></div>
-      <div>P(child | parent = true): <b>${pTrue}%</b></div>
-      <div>P(child | parent = false): <b>${pFalse}%</b></div>
-    `;
+    
+    if (isVirgin) {
+      // Show virgin edge message
+      edgeTooltipDiv.innerHTML = `
+        <div><b>Conditional relationship not yet configured</b></div>
+        <div>Double-click edge to set up conditional probabilities</div>
+      `;
+    } else {
+      // Extract values for configured edges
+      const baseline = cpt.baseline;
+      const pTrue = cpt.condTrue;
+      const pFalse = cpt.condFalse;
+      let lr = '—';
+      if (typeof pTrue === 'number' && typeof pFalse === 'number' && pFalse > 0) {
+        // Apply epsilon clamping for ratio calculation to match our math
+        const clampedTrue = Math.min(Math.max(pTrue, 0.1), 99.9);
+        const clampedFalse = Math.min(Math.max(pFalse, 0.1), 99.9);
+        lr = (clampedTrue / clampedFalse).toFixed(2) + '×';
+      }
+
+      edgeTooltipDiv.innerHTML = `
+        <div><b>Likelihood Ratio:</b> <span class="lr-value">${lr}</span></div>
+        <div>Baseline: <b>${baseline}%</b></div>
+        <div>P(child | parent = true): <b>${pTrue}%</b></div>
+        <div>P(child | parent = false): <b>${pFalse}%</b></div>
+      `;
+    }
+    
     document.body.appendChild(edgeTooltipDiv);
 
     // ---- Set initial position immediately ----

@@ -27,11 +27,70 @@ export function robustnessToLabel(robust) {
 }
 
 /**
+ * Automatically assign node types based on graph topology:
+ * - Nodes with no incoming edges = facts
+ * - Nodes with incoming edges = assertions
+ * - Logic nodes (and, or) and notes remain unchanged
+ */
+export function autoUpdateNodeTypes(cy) {
+  cy.nodes().forEach(node => {
+    const currentType = node.data('type');
+    
+    // Skip logic nodes and notes - only auto-type fact/assertion nodes
+    if (currentType === NODE_TYPE_AND || currentType === NODE_TYPE_OR || currentType === NODE_TYPE_NOTE) {
+      return;
+    }
+    
+    const incomingEdges = node.incomers('edge');
+    const newType = incomingEdges.length === 0 ? NODE_TYPE_FACT : NODE_TYPE_ASSERTION;
+    
+    // Only update if type actually changed (avoid unnecessary re-renders)
+    if (currentType !== newType) {
+      node.data('type', newType);
+      
+      // Update default labels for nodes that still have generic labels
+      const currentLabel = node.data('label') || '';
+      const baseLabel = currentLabel.split('\n')[0]; // Remove probability displays
+      
+      if (newType === NODE_TYPE_FACT && baseLabel === 'New Belief') {
+        node.data('label', 'New Fact');
+        node.data('origLabel', 'New Fact');
+      } else if (newType === NODE_TYPE_ASSERTION && baseLabel === 'New Fact') {
+        node.data('label', 'New Belief');
+        node.data('origLabel', 'New Belief');
+      }
+      
+      // Set appropriate default probabilities
+      if (newType === NODE_TYPE_FACT) {
+        // Facts should have high probability in both modes
+        node.data('heavyProb', 1.0); // 100%
+        // Note: lite mode prob will be set by propagation logic
+      } else if (newType === NODE_TYPE_ASSERTION) {
+        // Assertions should start virgin in lite mode, with 50% latent prior in heavy mode
+        node.removeData('prob'); // Clear any existing lite mode probability to make it virgin
+        node.data('isVirgin', true); // Mark as virgin for lite mode
+        // Only set heavy mode default if not already calculated
+        if (typeof node.data('heavyProb') !== 'number') {
+          node.data('heavyProb', 0.5); // 50%
+        }
+      }
+      
+      console.log(`Auto-updated node ${node.id()} from ${currentType} to ${newType}`);
+    }
+  });
+}
+
+/**
  * Main function to update node/edge visuals based on graph state.
  * Should be called after any probability or weight update.
  */
 export function computeVisuals(cy) {
   const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
+
+  // Auto-update node types based on topology (only in lite mode when graph can be modified)
+  if (bayesMode === 'lite') {
+    autoUpdateNodeTypes(cy);
+  }
 
   // Clean up any edges connected to note nodes (notes should not have connections)
   cy.nodes(`[type = "${NODE_TYPE_NOTE}"]`).forEach(noteNode => {
@@ -364,9 +423,23 @@ export function showNodeHoverBox(cy, node) {
   if (bayesMode === 'heavy') {
     // --- Assertion node, Heavy Mode ---
     if (nodeType === NODE_TYPE_ASSERTION) {
-      const hp = node.data('heavyProb');
-      box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br>
-        <span>Current: ${formatProb(hp)}</span>`;
+      // Check if this is a virgin node (no configured incoming edges)
+      const incomingEdges = node.incomers('edge');
+      const hasValidEdges = incomingEdges.some(edge => {
+        const cpt = edge.data('cpt');
+        return cpt && 
+               cpt.baseline !== undefined && 
+               cpt.condTrue !== undefined && 
+               cpt.condFalse !== undefined;
+      });
+      
+      if (!hasValidEdges) {
+        box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><span>Current: <b>—</b></span><br><i>No incoming conditional relationships configured.</i>`;
+      } else {
+        const hp = node.data('heavyProb');
+        box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br>
+          <span>Current: ${formatProb(hp)}</span>`;
+      }
       container.parentElement.appendChild(box);
       return;
     }
