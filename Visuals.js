@@ -11,7 +11,6 @@ import {
   weightToLikert,
   likertDescriptor,
   saturation,
-  getModifiedEdgeWeight,
   WEIGHT_MIN
 } from './config.js';
 
@@ -203,7 +202,7 @@ export function computeVisuals(cy) {
         const aei = validEdges.reduce((sum, e) => {
           const sourceType = e.source().data('type');
           if (sourceType !== NODE_TYPE_ASSERTION && sourceType !== NODE_TYPE_FACT) return sum;
-          const w = getModifiedEdgeWeight(cy, e);
+          const w = e.data('weight');
           return sum + (typeof w === "number" ? Math.abs(w) : 0);
         }, 0);
 

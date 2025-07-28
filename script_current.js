@@ -24,7 +24,6 @@ import {
   DEBUG,
   config,
   WEIGHT_MIN,
-  getModifiedEdgeWeight,
   // ...any other needed config exports
 } from './config.js';
 

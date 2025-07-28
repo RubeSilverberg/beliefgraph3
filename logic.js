@@ -115,9 +115,7 @@ export function convergeEdges({ cy, tolerance = 0.001, maxIters = 30 }) {
       const targetNode = edge.target();
       let nw = prev;
       if (targetNode.data('type') === 'assertion') {
-        nw = window.getModifiedEdgeWeight
-          ? window.getModifiedEdgeWeight(cy, edge)
-          : edge.data('weight');
+        nw = edge.data('weight');
       }
       deltas.push({ edge, prev, nw });
       const delta = Math.abs(nw - prev);
