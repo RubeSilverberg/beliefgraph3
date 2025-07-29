@@ -157,27 +157,56 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
         newProb = FACT_PROB;
         node.removeData('isVirgin');
       } else if (nodeType === 'and') {
-        const parents = node.incomers('edge').map(e => e.source());
-        if (parents.length === 0 || parents.some(parent => typeof parent.data('prob') !== "number")) {
+        const incomingEdges = node.incomers('edge');
+        if (incomingEdges.length === 0 || incomingEdges.some(edge => typeof edge.source().data('prob') !== "number")) {
           newProb = undefined;
           node.data('isVirgin', true);
         } else {
-          newProb = parents.reduce((acc, parent) => acc * parent.data('prob'), 1);
+          console.log('AND node calculation for:', node.id());
+          newProb = incomingEdges.reduce((acc, edge) => {
+            const parent = edge.source();
+            let parentProb = parent.data('prob');
+            
+            // Check if edge has inverse relationship (NOT) - check both lite mode (opposes) and heavy mode (cpt.inverse)
+            const cpt = edge.data('cpt') || {};
+            const opposes = edge.data('opposes');
+            const isInverse = !!cpt.inverse || !!opposes;
+            console.log(`  Edge ${edge.id()}: parent=${parent.id()}, parentProb=${parentProb}, inverse=${isInverse} (cpt.inverse=${!!cpt.inverse}, opposes=${!!opposes})`);
+            if (isInverse) {
+              parentProb = 1 - parentProb;
+              console.log(`    After inverse: ${parentProb}`);
+            }
+            
+            console.log(`    Multiplying ${acc} * ${parentProb} = ${acc * parentProb}`);
+            return acc * parentProb;
+          }, 1);
+          console.log(`  Final AND result: ${newProb}`);
           node.removeData('isVirgin');
         }
       } else if (nodeType === 'or') {
-        const parents = node.incomers('edge').map(e => e.source());
-        if (parents.length === 0 || parents.some(parent => typeof parent.data('prob') !== "number")) {
+        const incomingEdges = node.incomers('edge');
+        if (incomingEdges.length === 0 || incomingEdges.some(edge => typeof edge.source().data('prob') !== "number")) {
           newProb = undefined;
           node.data('isVirgin', true);
         } else {
           let prod = 1;
-          parents.forEach(parent => {
-            prod *= (1 - parent.data('prob'));
+          incomingEdges.forEach(edge => {
+            const parent = edge.source();
+            let parentProb = parent.data('prob');
+            
+            // Check if edge has inverse relationship (NOT) - check both lite mode (opposes) and heavy mode (cpt.inverse)
+            const cpt = edge.data('cpt') || {};
+            const opposes = edge.data('opposes');
+            const isInverse = !!cpt.inverse || !!opposes;
+            if (isInverse) {
+              parentProb = 1 - parentProb;
+            }
+            
+            prod *= (1 - parentProb);
           });
           newProb = 1 - prod;
-    node.removeData('isVirgin');
-  }
+          node.removeData('isVirgin');
+        }
 } else if (nodeType === 'assertion') {
   const incomingEdges = node.incomers('edge');
   // Filter for parent edges where the source has a defined prob AND edge has non-zero weight

@@ -270,13 +270,21 @@ window.cy.on('doubleTap', 'node', function(event) {
           const inc = node.incomers('edge').filter(e => {
             // Check if edge is virgin based on current mode
             const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
+            const nodeType = node.data('type');
+            
             if (bayesMode === 'heavy') {
               const cpt = e.data('cpt');
               return cpt && typeof cpt.baseline === 'number';
             } else {
               const parentProb = e.source().data('prob');
               const edgeWeight = e.data('weight');
-              return typeof parentProb === "number" && edgeWeight && edgeWeight !== 0;
+              
+              // Special case: edges TO and/or nodes are never virgin if parent has probability
+              if (nodeType === NODE_TYPE_AND || nodeType === NODE_TYPE_OR) {
+                return typeof parentProb === "number";
+              } else {
+                return typeof parentProb === "number" && edgeWeight && edgeWeight !== 0;
+              }
             }
           });
           if (node.data('type') === NODE_TYPE_ASSERTION && inc.length === 0) {
@@ -338,6 +346,10 @@ window.cy.on('doubleTap', 'node', function(event) {
     };
     if (targetType === NODE_TYPE_ASSERTION) {
       edgeData.weight = 0; // Virgin edge - no influence until user sets weight
+      edgeData.type = "supports";
+    } else if (targetType === NODE_TYPE_AND || targetType === NODE_TYPE_OR) {
+      // Logic nodes don't use weights - they use deterministic logic
+      // No weight needed, edge is automatically non-virgin if parent has probability
       edgeData.type = "supports";
     }
 

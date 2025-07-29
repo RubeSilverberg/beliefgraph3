@@ -338,7 +338,16 @@ window.openBayesModalForEdge = function(edge) {
   // Get actual node labels and clean them
   const sourceNode = edge.source();
   const targetNode = edge.target();
+  const targetType = targetNode.data('type');
   
+  // Check if this is an edge to a logic node (AND/OR)
+  if (targetType === 'and' || targetType === 'or') {
+    // Show simplified modal for logic nodes
+    openLogicEdgeModal(edge, sourceNode, targetNode);
+    return;
+  }
+  
+  // Continue with regular CPT modal for assertion nodes
   // Extract clean labels by removing probability indicators
   function cleanLabel(rawLabel) {
     if (!rawLabel) return 'Node';
@@ -455,4 +464,98 @@ function renderStep() {
 
   // Summary
   if (stepIndex === 3) updateSummary();
+}
+
+// Simplified modal for logic node edges (AND/OR) - only shows inverse checkbox
+function openLogicEdgeModal(edge, sourceNode, targetNode) {
+  // Clean labels
+  function cleanLabel(rawLabel) {
+    if (!rawLabel) return 'Node';
+    const cleanedLabel = rawLabel.split('\n')[0].trim();
+    return cleanedLabel || 'Node';
+  }
+  
+  const parentLabel = cleanLabel(sourceNode.data('label'));
+  const childLabel = cleanLabel(targetNode.data('label'));
+  
+  // Create modal (same styling as lite mode)
+  const modal = document.createElement('div');
+  modal.id = 'logic-edge-modal';
+  modal.className = 'modifier-modal';
+  modal.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border: 2px solid #444;
+    border-radius: 8px;
+    padding: 20px;
+    z-index: 1000;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    min-width: 300px;
+  `;
+  
+  // Title (same format as lite mode)
+  const label = document.createElement('div');
+  label.textContent = `${parentLabel} → ${childLabel}`;
+  label.className = "modifier-modal-title";
+  label.style.fontWeight = 'bold';
+  label.style.marginBottom = '10px';
+  modal.appendChild(label);
+  
+  // Opposing checkbox (exactly same as lite mode)
+  const opposesContainer = document.createElement('div');
+  opposesContainer.style.marginBottom = '8px';
+  const opposesCheckbox = document.createElement('input');
+  opposesCheckbox.type = 'checkbox';
+  opposesCheckbox.id = 'opposes-checkbox';
+  
+  // Get current value from cpt.inverse (heavy mode storage)
+  const cpt = edge.data('cpt') || {};
+  opposesCheckbox.checked = !!cpt.inverse;
+  
+  const opposesLabel = document.createElement('label');
+  opposesLabel.textContent = "Opposing ('not') influence";
+  opposesLabel.htmlFor = 'opposes-checkbox';
+  opposesContainer.appendChild(opposesCheckbox);
+  opposesContainer.appendChild(opposesLabel);
+  modal.appendChild(opposesContainer);
+  
+  // Buttons (same as lite mode)
+  const btn = document.createElement('button');
+  btn.textContent = 'OK';
+  btn.style.margin = '10px 5px 0 0';
+  btn.onclick = function () {
+    const opposes = opposesCheckbox.checked;
+    
+    // Save to cpt.inverse (heavy mode storage)
+    const newCpt = { ...cpt, inverse: opposes };
+    edge.data('cpt', newCpt);
+    
+    document.body.removeChild(modal);
+    setTimeout(() => {
+      // Trigger heavy mode propagation
+      if (window.propagateBayesHeavy && window.cy) {
+        window.propagateBayesHeavy(window.cy);
+      }
+      
+      // Update visuals
+      if (window.computeVisuals && window.cy) {
+        window.computeVisuals(window.cy);
+      }
+    }, 10);
+  };
+  
+  const cancelBtn = document.createElement('button');
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.style.margin = '10px 5px 0 5px';
+  cancelBtn.onclick = function () {
+    document.body.removeChild(modal);
+  };
+  
+  modal.appendChild(btn);
+  modal.appendChild(cancelBtn);
+  
+  document.body.appendChild(modal);
 }

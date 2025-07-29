@@ -286,33 +286,68 @@ export function computeVisuals(cy) {
     if (bayesMode === 'heavy') {
       // HEAVY MODE: Use completely separate data namespace
       const cpt = edge.data('cpt');
-      // Edge is virgin if no CPT or incomplete CPT data
-      isVirgin = !cpt || 
-                 typeof cpt.baseline !== 'number' || 
-                 typeof cpt.condTrue !== 'number' || 
-                 typeof cpt.condFalse !== 'number';
+      const targetType = edge.target().data('type');
       
-      if (!isVirgin && cpt.condFalse > 0) {
-        const logRatio = Math.log(cpt.condTrue / cpt.condFalse);
-        absWeight = Math.min(1, Math.abs(logRatio / 3));
-        edgeType = logRatio < 0 ? 'opposes' : 'supports';
-        // Store heavy-specific type without polluting lite mode
-        edge.data('heavyType', edgeType);
-      } else if (!isVirgin) {
-        // Non-virgin but incomplete CPT data (condFalse = 0)
-        absWeight = 0.5;
-        edge.data('heavyType', 'supports');
+      // Special handling for edges to AND/OR nodes
+      if (targetType === NODE_TYPE_AND || targetType === NODE_TYPE_OR) {
+        // For logic nodes, virginity is based on parent having probability, not CPT completeness
+        // Logic nodes don't need full CPT - just the inverse flag
+        const parentProb = edge.source().data('heavyProb');
+        isVirgin = typeof parentProb !== "number";
+        
+        if (!isVirgin) {
+          absWeight = 1; // Full weight since logic is deterministic
+          // Check for inverse relationship (NOT) for visual styling - heavy mode only uses cpt.inverse
+          const isInverse = !!(cpt && cpt.inverse);
+          edgeType = isInverse ? 'opposes' : 'supports';
+          edge.data('heavyType', edgeType);
+        }
+      } else {
+        // Standard assertion node logic - requires full CPT
+        // Edge is virgin if no CPT or incomplete CPT data
+        isVirgin = !cpt || 
+                   typeof cpt.baseline !== 'number' || 
+                   typeof cpt.condTrue !== 'number' || 
+                   typeof cpt.condFalse !== 'number';
+        
+        if (!isVirgin && cpt.condFalse > 0) {
+          const logRatio = Math.log(cpt.condTrue / cpt.condFalse);
+          absWeight = Math.min(1, Math.abs(logRatio / 3));
+          edgeType = logRatio < 0 ? 'opposes' : 'supports';
+          // Store heavy-specific type without polluting lite mode
+          edge.data('heavyType', edgeType);
+        } else if (!isVirgin) {
+          // Non-virgin but incomplete CPT data (condFalse = 0)
+          absWeight = 0.5;
+          edge.data('heavyType', 'supports');
+        }
       }
     } else {
       // LITE MODE: Use completely separate data namespace
       const parentProb = edge.source().data('prob');
       const edgeWeight = edge.data('weight');
-      // Edge is virgin if parent has no prob OR weight is 0/unset
-      isVirgin = typeof parentProb !== "number" || !edgeWeight || edgeWeight === 0;
+      const targetType = edge.target().data('type');
       
-      if (!isVirgin) {
-        absWeight = Math.abs(edgeWeight);
-        edgeType = edge.data('type') || 'supports';
+      // Special case: edges TO and/or nodes are never virgin (they use deterministic logic)
+      if (targetType === NODE_TYPE_AND || targetType === NODE_TYPE_OR) {
+        // Edge is virgin only if parent has no probability
+        isVirgin = typeof parentProb !== "number";
+        if (!isVirgin) {
+          absWeight = 1; // Full weight since logic is deterministic
+          // Check for inverse relationship (NOT) for visual styling
+          const opposes = edge.data('opposes');
+          const cpt = edge.data('cpt') || {};
+          const isInverse = !!cpt.inverse || !!opposes;
+          edgeType = isInverse ? 'opposes' : 'supports';
+        }
+      } else {
+        // Standard assertion nodes: virgin if parent has no prob OR weight is 0/unset
+        isVirgin = typeof parentProb !== "number" || !edgeWeight || edgeWeight === 0;
+        
+        if (!isVirgin) {
+          absWeight = Math.abs(edgeWeight);
+          edgeType = edge.data('type') || 'supports';
+        }
       }
     }
 
@@ -496,17 +531,30 @@ export function removeNodeHoverBox() {
 }
 
 /**
- * Edge hover: only show for assertion node targets.
+ * Edge hover: show for assertion, and, and or node targets.
  */
 export function showModifierBox(cy, edge) {
   removeModifierBox();
   const targetNode = edge.target();
-  if (targetNode.data('type') !== NODE_TYPE_ASSERTION) {
+  const targetType = targetNode.data('type');
+  
+  // Only show for specific target types
+  if (targetType !== NODE_TYPE_ASSERTION && targetType !== NODE_TYPE_AND && targetType !== NODE_TYPE_OR) {
     return;
   }
+  
   const mods = edge.data('modifiers') ?? [];
-  const baseLikert = weightToLikert(edge.data('weight'));
-  const baseLabel = likertDescriptor(baseLikert);
+  let baseLikert, baseLabel;
+  
+  // Handle different edge types differently
+  if (targetType === NODE_TYPE_AND || targetType === NODE_TYPE_OR) {
+    // Logic nodes don't use weights
+    baseLabel = `${targetType.toUpperCase()} logic`;
+  } else {
+    // Assertion nodes use weights
+    baseLikert = weightToLikert(edge.data('weight'));
+    baseLabel = likertDescriptor(baseLikert);
+  }
 
   const mid = edge.midpoint();
   const pan = cy.pan();
@@ -530,6 +578,7 @@ export function showModifierBox(cy, edge) {
 
   // Check if edge is virgin based on current mode
   const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
+  const edgeTargetType = edge.target().data('type');
   let isVirgin = false;
   
   if (bayesMode === 'heavy') {
@@ -538,27 +587,49 @@ export function showModifierBox(cy, edge) {
   } else {
     const parentProb = edge.source().data('prob');
     const edgeWeight = edge.data('weight');
-    isVirgin = typeof parentProb !== "number" || !edgeWeight || edgeWeight === 0;
+    
+    // Special case: edges TO and/or nodes are never virgin (they use deterministic logic)
+    if (edgeTargetType === NODE_TYPE_AND || edgeTargetType === NODE_TYPE_OR) {
+      isVirgin = typeof parentProb !== "number";
+    } else {
+      isVirgin = typeof parentProb !== "number" || !edgeWeight || edgeWeight === 0;
+    }
   }
 
   if (isVirgin) {
-    box.innerHTML = `<i>Weight not set.</i>`;
+    if (edgeTargetType === NODE_TYPE_AND || edgeTargetType === NODE_TYPE_OR) {
+      box.innerHTML = `<i>Parent node has no probability.</i>`;
+    } else {
+      box.innerHTML = `<i>Weight not set.</i>`;
+    }
     container.parentElement.appendChild(box);
     return;
   }
-  box.innerHTML = `<div><b>Base influence:</b> ${baseLabel}</div>`;
+  
+  // Display different content based on target type
+  if (targetType === NODE_TYPE_AND || targetType === NODE_TYPE_OR) {
+    const parentProb = edge.source().data('prob');
+    const pct = typeof parentProb === "number" ? Math.round(parentProb * 100) : null;
+    box.innerHTML = `<div><b>Logic:</b> ${baseLabel}</div>`;
+    if (pct !== null) {
+      box.innerHTML += `<div>Parent probability: <b>${pct}%</b></div>`;
+    }
+  } else {
+    // Standard assertion edge display
+    box.innerHTML = `<div><b>Base influence:</b> ${baseLabel}</div>`;
 
-  if (mods.length) {
-    box.innerHTML += `<hr style="margin:6px 0 3px 0">`;
-    mods.forEach(mod => {
-      let color = '#616161';
-      if (mod.likert > 0) color = '#2e7d32';
-      if (mod.likert < 0) color = '#c62828';
-      const val = mod.likert > 0 ? '+' + mod.likert : '' + mod.likert;
-      box.innerHTML += `<div style="color:${color};margin:2px 0;">
-        ${val}: ${mod.label}
-      </div>`;
-    });
+    if (mods.length) {
+      box.innerHTML += `<hr style="margin:6px 0 3px 0">`;
+      mods.forEach(mod => {
+        let color = '#616161';
+        if (mod.likert > 0) color = '#2e7d32';
+        if (mod.likert < 0) color = '#c62828';
+        const val = mod.likert > 0 ? '+' + mod.likert : '' + mod.likert;
+        box.innerHTML += `<div style="color:${color};margin:2px 0;">
+          ${val}: ${mod.label}
+        </div>`;
+      });
+    }
   }
 
   container.parentElement.appendChild(box);

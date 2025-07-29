@@ -37,13 +37,27 @@ export function propagateBayesHeavy(cy) {
       if (type === 'and') {
         // AND node: product of parent probabilities
         newProb = parentEdges.toArray().reduce((acc, edge) => {
-          const parentProb = edge.source().data('heavyProb') ?? 0.5;
+          let parentProb = edge.source().data('heavyProb') ?? 0.5;
+          
+          // Check for inverse relationship (NOT) - heavy mode uses cpt.inverse
+          const cpt = edge.data('cpt') || {};
+          if (cpt.inverse) {
+            parentProb = 1 - parentProb;
+          }
+          
           return acc * parentProb;
         }, 1);
       } else if (type === 'or') {
         // OR node: 1 - product of (1 - parentProb)
         const prod = parentEdges.toArray().reduce((acc, edge) => {
-          const parentProb = edge.source().data('heavyProb') ?? 0.5;
+          let parentProb = edge.source().data('heavyProb') ?? 0.5;
+          
+          // Check for inverse relationship (NOT) - heavy mode uses cpt.inverse
+          const cpt = edge.data('cpt') || {};
+          if (cpt.inverse) {
+            parentProb = 1 - parentProb;
+          }
+          
           return acc * (1 - parentProb);
         }, 1);
         newProb = 1 - prod;
