@@ -299,7 +299,8 @@ document.addEventListener('DOMContentLoaded', () => {
     selector: 'edge[displayType="opposes"]',
     style: {
       'line-style': 'dotted',
-      'mid-target-arrow-shape': 'triangle'
+      'mid-target-arrow-shape': 'triangle',
+      'mid-target-arrow-color': '#d32f2f'  // Red triangle for NOT relationships
     }
   },
   // Floret color override

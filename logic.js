@@ -49,8 +49,9 @@ export function highlightBayesNodeFocus(node) {
 
 // --- Robust Belief Propagation Logic ---
 
-// FACT_PROB: Never exactly 1 to avoid logit infinity (move to config if needed)
-export const FACT_PROB = 0.99;
+// FACT_PROB: Set high enough to avoid compounding precision loss in AND nodes
+// 0.995² = 0.990 = 99% displayed vs 0.99² = 0.9801 = 98% displayed  
+export const FACT_PROB = 0.995;
 
 function propagateFromParentsRobust({ baseProb, parents, getProb, getWeight, epsilon = 0.01, saturationK = 1 }) {
   if (!parents || parents.length === 0) return baseProb;

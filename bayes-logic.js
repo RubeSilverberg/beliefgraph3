@@ -20,12 +20,12 @@ export function propagateBayesHeavy(cy) {
       // Handle root nodes (nodes with no parents)
       if (parentEdges.length === 0) {
         if (type === 'fact') {
-          // Facts are assumed to be 100% true in Heavy mode
+          // Facts use same high probability as lite mode for consistency
           const explicitProb = node.data('explicitHeavyProb');
           if (explicitProb !== undefined) {
             node.data('heavyProb', explicitProb);
           } else {
-            node.data('heavyProb', 1.0); // Default Facts to 100% true
+            node.data('heavyProb', 0.995); // Match lite mode FACT_PROB
           }
         }
         // Note: AND/OR/ASSERTION nodes with no parents keep their initialized 0.5 probability
