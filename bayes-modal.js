@@ -2,10 +2,21 @@
 import { propagateBayesHeavy } from './bayes-logic.js';
 import { TOOLTIP_TEXTS, attachTooltip } from './config.js';
 
+let clickOutHandler = null;
+
+// Centralized modal close function
+function closeModal() {
+  document.getElementById('bayes-modal').classList.add('hidden');
+  if (clickOutHandler) {
+    document.removeEventListener('click', clickOutHandler);
+    clickOutHandler = null;
+  }
+}
+
 let stepIndex = 0; // 0 = baseline, 1 = condTrue, 2 = condFalse, 3 = summary
 
     // State
-    let baseline = 50, condTrue = 70, condFalse = 30, inverse = false;
+    let baseline = 50, condTrue = 50, condFalse = 50, inverse = false;
     let isUpdating = false; // Flag to prevent infinite loops
     
     // Helper function to safely update slider values without triggering events
@@ -139,6 +150,9 @@ document.getElementById('cancel-btn').addEventListener('click', function() {
       baseline = Number(baselineSlider.value);
       baselineValue.textContent = baseline + "%";
       
+      // Show the value display when user interacts with slider
+      baselineValue.style.visibility = 'visible';
+      
       isUpdating = false; // Reset flag
     }
     baselineSlider.addEventListener('input', updateBaseline);
@@ -149,11 +163,9 @@ document.getElementById('cancel-btn').addEventListener('click', function() {
       parentFalseWord.textContent = inverse ? "true" : "false";
       parentFalseWord2.textContent = inverse ? "true" : "false";
       
-      console.log('Inverse checkbox changed to:', inverse);
       // Note: Constraints will update when user clicks "Set Baseline"
     });
 setBaselineBtn.onclick = () => {
-  console.log('Set Baseline clicked, inverse =', inverse);
   baselineInputRow.classList.add('hidden');
   baselineLockedRow.classList.remove('hidden');
   baselineLockedValue.textContent = baseline + "%";
@@ -163,10 +175,10 @@ setBaselineBtn.onclick = () => {
   // Set initial slider values based on inverse mode
   if (inverse) {
     // Inverse mode: True should be <= baseline, False should be >= baseline
-    safeSetSliderValue(condTrueSlider, Math.min(baseline, 50), updateCondTrue);
+    safeSetSliderValue(condTrueSlider, baseline, updateCondTrue);
   } else {
     // Normal mode: True should be >= baseline, False should be <= baseline  
-    safeSetSliderValue(condTrueSlider, Math.max(baseline, 50), updateCondTrue);
+    safeSetSliderValue(condTrueSlider, baseline, updateCondTrue);
   }
 };
 
@@ -177,13 +189,16 @@ renderStep();
 
     // --- Cond True ---
     function updateCondTrue() {
-      if (isUpdating) return; // Prevent infinite loops
+      if (isUpdating) {
+        return; // Prevent infinite loops
+      }
       isUpdating = true;
       
       condTrue = Number(condTrueSlider.value);
       condTrueValue.textContent = condTrue + "%";
       
-      console.log('updateCondTrue called, inverse =', inverse, 'baseline =', baseline);
+      // Show the value display when user interacts with slider
+      condTrueValue.style.visibility = 'visible';
       
       // Flip constraints based on inverse setting
       if (inverse) {
@@ -191,13 +206,11 @@ renderStep();
         const legal = condTrue >= 0 && condTrue <= baseline;
         setCondTrueBtn.disabled = !legal;
         condTrueWarning.textContent = legal ? "" : `Value must be between 0% and baseline (${baseline}%)`;
-        console.log('True conditional: INVERSE mode, allowed 0%-' + baseline + '%');
       } else {
         regionTrueLabel.textContent = `Allowed: ${baseline}%–100%`;
         const legal = condTrue >= baseline && condTrue <= 100;
         setCondTrueBtn.disabled = !legal;
         condTrueWarning.textContent = legal ? "" : `Value must be between baseline (${baseline}%) and 100%`;
-        console.log('True conditional: NORMAL mode, allowed ' + baseline + '%-100%');
       }
       
       let ratio = baseline === 0 ? 99 : condTrue / baseline;
@@ -217,10 +230,10 @@ setCondTrueBtn.onclick = () => {
   // Set initial slider value for false conditional based on inverse mode
   if (inverse) {
     // Inverse mode: False should be >= baseline
-    safeSetSliderValue(condFalseSlider, Math.max(baseline, 50), updateCondFalse);
+    safeSetSliderValue(condFalseSlider, baseline, updateCondFalse);
   } else {
     // Normal mode: False should be <= baseline
-    safeSetSliderValue(condFalseSlider, Math.min(baseline, 50), updateCondFalse);
+    safeSetSliderValue(condFalseSlider, baseline, updateCondFalse);
   }
 };
 
@@ -236,6 +249,9 @@ setCondTrueBtn.onclick = () => {
       
       condFalse = Number(condFalseSlider.value);
       condFalseValue.textContent = condFalse + "%";
+      
+      // Show the value display when user interacts with slider
+      condFalseValue.style.visibility = 'visible';
       
       // Flip constraints based on inverse setting
       if (inverse) {
@@ -273,20 +289,23 @@ setCondFalseBtn.onclick = () => {
       const parentLabel = window._modalParentLabel || 'Parent';
       const childLabel = window._modalChildLabel || 'Child';
       
-      let pos = inverse ? condFalse : condTrue;
-      let neg = inverse ? condTrue : condFalse;
-      let posTxt = inverse ? parentFalseWord.textContent : parentTrueWord.textContent;
-      let negTxt = inverse ? parentTrueWord.textContent : parentFalseWord.textContent;
+      // The summary should always show the direct mapping:
+      // P(Child | Parent is true) = condTrue value
+      // P(Child | Parent is false) = condFalse value
+      // The inverse flag affects the UI flow but not the final summary display
+      let trueCondition = condTrue;   // P(Child | Parent is true)
+      let falseCondition = condFalse; // P(Child | Parent is false)
+      
       let msg = `<b>Baseline:</b> ${baseline}%<br>
-      <b>P(${childLabel} | ${parentLabel} is ${posTxt}):</b> ${pos}%<br>
-      <b>P(${childLabel} | ${parentLabel} is ${negTxt}):</b> ${neg}%<br><br>`;
-      let ratio = neg === 0 ? (pos === 0 ? 1 : 99) : pos / neg;
+      <b>P(${childLabel} | ${parentLabel} is true):</b> ${trueCondition}%<br>
+      <b>P(${childLabel} | ${parentLabel} is false):</b> ${falseCondition}%<br><br>`;
+      let ratio = falseCondition === 0 ? (trueCondition === 0 ? 1 : 99) : trueCondition / falseCondition;
       msg += `Conditional likelihood ratio: <b>${ratio.toFixed(2)}×</b><br>`;
       msg += qualitativeRatio(ratio);
       summaryText.innerHTML = msg;
     }
 okBtn.addEventListener('click', () => {
-  document.getElementById('bayes-modal').classList.add('hidden');
+  closeModal();
   
   // Save modal values to the edge - HEAVY MODE DATA ONLY
   if (window._currentBayesEdge) {
@@ -310,29 +329,21 @@ okBtn.addEventListener('click', () => {
     if (window.computeVisuals && window.cy) {
       window.computeVisuals(window.cy);
     }
-    
-    console.log('Heavy mode CPT data saved:', {baseline, condTrue, condFalse, inverse});
   }
 });
 
 cancelBtn.addEventListener('click', () => {
-  if (confirm('Cancel and discard changes to this conditional?')) {
-    modal.classList.add('hidden');
-    // Optionally, reset any Bayes modal state here.
-  }
+  closeModal();
+  // Optionally, reset any Bayes modal state here.
 });
 
-    // Initial render - safely initialize
-    isUpdating = true;
-    updateBaseline();
-    updateCondTrue();
-    updateCondFalse();
-    updateSummary();
-    isUpdating = false;
+// Handle early cancel button
+document.getElementById('cancel-btn-early').addEventListener('click', () => {
+  closeModal();
+});
 
 
 window.openBayesModalForEdge = function(edge) {
-    console.log('openBayesModalForEdge called with:', edge);
   window._currentBayesEdge = edge;
 
   // Get actual node labels and clean them
@@ -368,20 +379,31 @@ window.openBayesModalForEdge = function(edge) {
   
   // Update local variables first
   baseline = cpt.baseline !== undefined ? cpt.baseline : 50;
-  condTrue = cpt.condTrue !== undefined ? cpt.condTrue : 70;
-  condFalse = cpt.condFalse !== undefined ? cpt.condFalse : 30;
+  condTrue = cpt.condTrue !== undefined ? cpt.condTrue : baseline;
+  condFalse = cpt.condFalse !== undefined ? cpt.condFalse : baseline;
   inverse = !!cpt.inverse;
   
   // Then update the DOM elements safely
   isUpdating = true;
   document.getElementById('baseline-slider').value = baseline;
-  document.getElementById('baseline-value').textContent = baseline + '%';
   document.getElementById('cond-true-slider').value = condTrue;
-  document.getElementById('cond-true-value').textContent = condTrue + '%';
   document.getElementById('cond-false-slider').value = condFalse;
-  document.getElementById('cond-false-value').textContent = condFalse + '%';
   document.getElementById('inverse-checkbox').checked = inverse;
-  isUpdating = false;
+  
+  // Hide the value displays initially - they'll show when user interacts with sliders
+  document.getElementById('baseline-value').style.visibility = 'hidden';
+  document.getElementById('cond-true-value').style.visibility = 'hidden';
+  document.getElementById('cond-false-value').style.visibility = 'hidden';
+  
+  // Use a small delay to ensure DOM updates have taken effect, then call update functions
+  setTimeout(() => {
+    updateBaseline();
+    updateCondTrue();
+    updateCondFalse();
+    
+    // Now that initialization is complete, allow normal slider interactions
+    isUpdating = false;
+  }, 10);
 
   // Update the modal text with actual labels
   updateModalLabels();
@@ -395,6 +417,18 @@ window.openBayesModalForEdge = function(edge) {
   document.getElementById('bayes-modal').classList.remove('hidden');
   stepIndex = 0;
   renderStep();
+
+  // Add click-out functionality - use a more robust approach
+  clickOutHandler = (e) => {
+    // Only close if clicking directly on the modal background, not on any child elements
+    if (e.target === document.getElementById('bayes-modal')) {
+      closeModal();
+    }
+  };
+  // Use document-level listener with slight delay to avoid immediate closure
+  setTimeout(() => {
+    document.addEventListener('click', clickOutHandler);
+  }, 100);
 };
 
 // Function to update all the modal text with actual node labels
@@ -438,7 +472,6 @@ function updateModalLabels() {
       parentFalseWord.textContent = inverse ? "true" : "false";
       parentFalseWord2.textContent = inverse ? "true" : "false";
       
-      console.log('Inverse checkbox changed to:', inverse);
       // Note: Constraints will update when user clicks "Set Baseline"
     });
   }

@@ -64,11 +64,13 @@
         <div class="region-label">Allowed: 0%–100%</div>
         <div class="actions">
           <button id="set-baseline-btn">Set baseline</button>
+          <button id="cancel-btn-early" style="margin-left:10px;">Cancel</button>
         </div>
       </div>
       <div id="baseline-locked-row" class="hidden locked">
         Set at <span id="baseline-locked-value">50%</span>
         <button id="edit-baseline-btn" style="margin-left:10px;">Edit</button>
+        <button id="cancel-btn" style="margin-left:10px;">Cancel</button>
       </div>
     </div>
     <!-- Step 2: Conditional (Parent True/False) -->
@@ -77,8 +79,8 @@
       <div class="step-sub">Chance <b>[Child]</b> is true if <b>[Parent]</b> is <span id="parent-true-word2">true</span>.</div>
       <div id="cond-true-input-row">
         <div class="slider-row">
-          <input type="range" min="0" max="100" value="70" step="1" id="cond-true-slider">
-          <span id="cond-true-value">70%</span>
+          <input type="range" min="0" max="100" value="50" step="1" id="cond-true-slider">
+          <span id="cond-true-value">50%</span>
         </div>
         <div class="region-label" id="region-true-label"></div>
         <div class="ratio-label" id="ratio-true-label"></div>
@@ -88,7 +90,7 @@
         </div>
       </div>
       <div id="cond-true-locked-row" class="hidden locked">
-        Set at <span id="cond-true-locked-value">70%</span>
+        Set at <span id="cond-true-locked-value">50%</span>
         <button id="edit-cond-true-btn" style="margin-left:10px;">Edit</button>
       </div>
     </div>
@@ -98,8 +100,8 @@
       <div class="step-sub">Chance <b>[Child]</b> is true if <b>[Parent]</b> is <span id="parent-false-word2">false</span>.</div>
       <div id="cond-false-input-row">
         <div class="slider-row">
-          <input type="range" min="0" max="100" value="30" step="1" id="cond-false-slider">
-          <span id="cond-false-value">30%</span>
+          <input type="range" min="0" max="100" value="50" step="1" id="cond-false-slider">
+          <span id="cond-false-value">50%</span>
         </div>
         <div class="region-label" id="region-false-label"></div>
         <div class="ratio-label" id="ratio-false-label"></div>
@@ -109,7 +111,7 @@
         </div>
       </div>
       <div id="cond-false-locked-row" class="hidden locked">
-        Set at <span id="cond-false-locked-value">30%</span>
+        Set at <span id="cond-false-locked-value">50%</span>
         <button id="edit-cond-false-btn" style="margin-left:10px;">Edit</button>
       </div>
     </div>
@@ -119,7 +121,6 @@
       <div class="summary" id="summary-text"></div>
       <div class="actions">
         <button id="ok-btn">OK</button>
-        <button id="cancel-btn">Cancel</button>
       </div>
     </div>
   </div>

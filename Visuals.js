@@ -225,7 +225,13 @@ export function computeVisuals(cy) {
     else if (nodeType === NODE_TYPE_AND || nodeType === NODE_TYPE_OR) {
       let pct;
       if (bayesMode === 'heavy') {
-        pct = typeof node.data('heavyProb') === "number" ? Math.round(node.data('heavyProb') * 100) : null;
+        // Check if node has valid parent edges in heavy mode (same logic as lite mode)
+        const incomingEdges = node.incomers('edge');
+        const hasValidParents = incomingEdges.length > 0 && 
+          incomingEdges.every(edge => typeof edge.source().data('heavyProb') === "number");
+        
+        pct = hasValidParents && typeof node.data('heavyProb') === "number" ? 
+          Math.round(node.data('heavyProb') * 100) : null;
       } else {
         pct = typeof node.data('prob') === "number" ? Math.round(node.data('prob') * 100) : null;
       }
@@ -694,6 +700,21 @@ export function registerVisualEventHandlers(cy) {
       edgeHoverTimeout = null;
     }
     removeModifierBox();
+  });
+
+  // Clear hover boxes when dragging starts to prevent sticking
+  cy.on('grab', 'node', evt => {
+    // Clear pending timeout
+    if (nodeHoverTimeout) {
+      clearTimeout(nodeHoverTimeout);
+      nodeHoverTimeout = null;
+    }
+    removeNodeHoverBox();
+  });
+
+  cy.on('drag', 'node', evt => {
+    // Ensure hover boxes stay cleared during drag
+    removeNodeHoverBox();
   });
 
   // Optional: clean up boxes when clicking elsewhere
