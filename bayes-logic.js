@@ -211,3 +211,198 @@ export function getConditionalProbs(edge) {
 }
 
 window.propagateBayesHeavy = propagateBayesHeavy;
+
+// Debug function to show detailed calculation steps
+export function debugBayesCalculations(cy) {
+  console.log("🔍 ===========================================");
+  console.log("🔍 BELIEF GRAPH DEBUG CALCULATIONS");
+  console.log("🔍 ===========================================");
+  
+  const nodes = cy.nodes().filter(n =>
+    ['assertion', 'and', 'or', 'fact'].includes((n.data('type') || '').toLowerCase())
+  );
+
+  // Show calculation order
+  const sortedNodes = topologicalSort(nodes, cy);
+  console.log("📊 CALCULATION ORDER (topologically sorted):");
+  sortedNodes.forEach((node, index) => {
+    const type = (node.data('type') || '').toLowerCase();
+    const label = node.data('label') || node.id();
+    console.log(`  ${index + 1}. [${type.toUpperCase()}] ${label}`);
+  });
+  console.log("");
+
+  // Calculate and show details for each node
+  sortedNodes.forEach(node => {
+    const type = (node.data('type') || '').toLowerCase();
+    const label = node.data('label') || node.id();
+    const parentEdges = node.incomers('edge');
+    
+    console.log(`🎯 NODE: [${type.toUpperCase()}] ${label}`);
+    console.log(`   Current heavyProb: ${node.data('heavyProb')?.toFixed(4) || 'undefined'}`);
+    
+    if (parentEdges.length === 0) {
+      console.log("   ✅ Root node (no parents)");
+      if (type === 'fact') {
+        const explicitProb = node.data('explicitHeavyProb');
+        console.log(`   🎲 Explicit probability: ${explicitProb !== undefined ? explicitProb : 0.995}`);
+      } else {
+        console.log("   🎲 Default probability: 0.5");
+      }
+    } else {
+      console.log(`   📥 Parents (${parentEdges.length}):`);
+      parentEdges.forEach((edge, i) => {
+        const parent = edge.source();
+        const parentLabel = parent.data('label') || parent.id();
+        const parentProb = parent.data('heavyProb') ?? 0.5;
+        const cpt = edge.data('cpt') || {};
+        console.log(`     ${i + 1}. ${parentLabel} (prob: ${parentProb.toFixed(4)})`);
+        if (type === 'assertion') {
+          console.log(`        CPT: condTrue=${cpt.condTrue}%, condFalse=${cpt.condFalse}%, baseline=${cpt.baseline || 50}%`);
+        } else if (cpt.inverse) {
+          console.log(`        🔄 Inverse relationship`);
+        }
+      });
+      
+      // Show calculation details
+      if (type === 'assertion') {
+        debugAssertionCalculation(node, parentEdges);
+      } else if (type === 'and') {
+        debugAndCalculation(parentEdges);
+      } else if (type === 'or') {
+        debugOrCalculation(parentEdges);
+      }
+    }
+    console.log("");
+  });
+  
+  console.log("🔍 ===========================================");
+  console.log("🔍 DEBUG COMPLETE");
+  console.log("🔍 ===========================================");
+}
+
+function debugAssertionCalculation(node, parentEdges) {
+  const validEdges = parentEdges.toArray().filter(edge => {
+    const cpt = edge.data('cpt');
+    return cpt && typeof cpt.condTrue === 'number' && typeof cpt.condFalse === 'number';
+  });
+  
+  console.log(`   🧮 ASSERTION CALCULATION:`);
+  
+  if (validEdges.length === 0) {
+    console.log("     ❌ No valid CPTs found, using default 0.5");
+    return;
+  }
+  
+  if (validEdges.length === 1) {
+    const edge = validEdges[0];
+    const cpt = edge.data('cpt');
+    const parentMarginal = edge.source().data('heavyProb') ?? 0.5;
+    
+    const pTrue = Math.min(Math.max(cpt.condTrue / 100, 0.001), 0.999);
+    const pFalse = Math.min(Math.max(cpt.condFalse / 100, 0.001), 0.999);
+    
+    console.log(`     📋 Single parent calculation:`);
+    console.log(`        P(child=true|parent=true) = ${pTrue.toFixed(4)}`);
+    console.log(`        P(child=true|parent=false) = ${pFalse.toFixed(4)}`);
+    console.log(`        Parent marginal = ${parentMarginal.toFixed(4)}`);
+    
+    const result = pTrue * parentMarginal + pFalse * (1 - parentMarginal);
+    console.log(`        Result = ${pTrue.toFixed(4)} × ${parentMarginal.toFixed(4)} + ${pFalse.toFixed(4)} × ${(1-parentMarginal).toFixed(4)} = ${result.toFixed(4)}`);
+    return;
+  }
+  
+  // Multi-parent enumeration
+  const numParents = validEdges.length;
+  const parentNodes = validEdges.map(edge => edge.source());
+  const cpts = validEdges.map(edge => {
+    const cpt = edge.data('cpt');
+    return {
+      pTrue: Math.min(Math.max(cpt.condTrue / 100, 0.001), 0.999),
+      pFalse: Math.min(Math.max(cpt.condFalse / 100, 0.001), 0.999),
+      baseline: Math.min(Math.max((cpt.baseline || 50) / 100, 0.001), 0.999)
+    };
+  });
+
+  console.log(`     📋 Multi-parent enumeration (${numParents} parents):`);
+  console.log(`        Baselines: ${cpts.map(c => (c.baseline * 100).toFixed(1) + '%').join(', ')}`);
+  
+  // Check baselines
+  const baselineVals = cpts.map(cpt => cpt.baseline);
+  const minBaseline = Math.min(...baselineVals);
+  const maxBaseline = Math.max(...baselineVals);
+  if ((maxBaseline - minBaseline) / minBaseline > 0.05) {
+    console.log(`        ⚠️  BASELINE INCONSISTENCY: ${(minBaseline * 100).toFixed(1)}% - ${(maxBaseline * 100).toFixed(1)}%`);
+  }
+
+  let pChildTrue = 0;
+  console.log(`        Enumerating ${1 << numParents} combinations:`);
+  
+  for (let combo = 0; combo < (1 << numParents); combo++) {
+    let pCombo = 1;
+    let likelihoodProduct = 1;
+    let baselineProduct = 1;
+    let comboStr = "";
+    
+    for (let i = 0; i < numParents; i++) {
+      const parentIsTrue = !!(combo & (1 << i));
+      const parentProb = parentNodes[i].data('heavyProb') ?? 0.5;
+      const cpt = cpts[i];
+      
+      pCombo *= parentIsTrue ? parentProb : (1 - parentProb);
+      likelihoodProduct *= parentIsTrue ? cpt.pTrue : cpt.pFalse;
+      baselineProduct *= cpt.baseline;
+      comboStr += parentIsTrue ? "T" : "F";
+    }
+    
+    const baselineNormalization = baselineProduct / cpts[0].baseline;
+    const pChildGivenCombo = likelihoodProduct / baselineNormalization;
+    const contribution = pCombo * Math.max(0, Math.min(1, pChildGivenCombo));
+    pChildTrue += contribution;
+    
+    if (combo < 8) { // Show first 8 combinations to avoid spam
+      console.log(`          ${comboStr}: P=${pCombo.toFixed(4)}, L=${likelihoodProduct.toFixed(4)}, B=${baselineNormalization.toFixed(4)}, P(child|combo)=${pChildGivenCombo.toFixed(4)}, contrib=${contribution.toFixed(4)}`);
+    } else if (combo === 8) {
+      console.log(`          ... (showing first 8 of ${1 << numParents} combinations)`);
+    }
+  }
+  
+  console.log(`        Final result: ${pChildTrue.toFixed(4)}`);
+}
+
+function debugAndCalculation(parentEdges) {
+  console.log(`   🧮 AND CALCULATION:`);
+  let result = 1;
+  parentEdges.forEach((edge, i) => {
+    let parentProb = edge.source().data('heavyProb') ?? 0.5;
+    const cpt = edge.data('cpt') || {};
+    if (cpt.inverse) {
+      parentProb = 1 - parentProb;
+      console.log(`     Parent ${i+1}: ${parentProb.toFixed(4)} (inverted)`);
+    } else {
+      console.log(`     Parent ${i+1}: ${parentProb.toFixed(4)}`);
+    }
+    result *= parentProb;
+  });
+  console.log(`     Product: ${result.toFixed(4)}`);
+}
+
+function debugOrCalculation(parentEdges) {
+  console.log(`   🧮 OR CALCULATION:`);
+  let result = 1;
+  parentEdges.forEach((edge, i) => {
+    let parentProb = edge.source().data('heavyProb') ?? 0.5;
+    const cpt = edge.data('cpt') || {};
+    if (cpt.inverse) {
+      parentProb = 1 - parentProb;
+      console.log(`     Parent ${i+1}: ${parentProb.toFixed(4)} (inverted), (1-p)=${(1-parentProb).toFixed(4)}`);
+    } else {
+      console.log(`     Parent ${i+1}: ${parentProb.toFixed(4)}, (1-p)=${(1-parentProb).toFixed(4)}`);
+    }
+    result *= (1 - parentProb);
+  });
+  result = 1 - result;
+  console.log(`     1 - product of (1-p): ${result.toFixed(4)}`);
+}
+
+window.debugBayesCalculations = debugBayesCalculations;

@@ -457,10 +457,18 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnSaveGraph').addEventListener('click', saveGraph);
   document.getElementById('btnLoadGraph').addEventListener('click', loadGraph);
   document.getElementById('btnAddNote').addEventListener('click', addNote);
+  document.getElementById('btnDebugCalculations').addEventListener('click', () => {
+    if (window.debugBayesCalculations && window.cy) {
+      window.debugBayesCalculations(window.cy);
+    } else {
+      console.log("Debug function not available or no graph loaded");
+    }
+  });
 
   // ====== Tooltip Setup ======
   // Simple placeholder tooltip for Toggle Bayes button
   attachTooltip(document.getElementById('btnBayesTime'), TOOLTIP_TEXTS.toggleBayes);
+  attachTooltip(document.getElementById('btnDebugCalculations'), TOOLTIP_TEXTS.debugCalculations);
 
   // ====== Smart Auto-Backup Timer ======
   setInterval(autosave, 10 * 1000); // Every 10 seconds
