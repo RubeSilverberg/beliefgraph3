@@ -93,30 +93,86 @@ export function propagateBayesHeavy(cy) {
           // Calculate target probability: P(B=true) = P(B=true|A=true)*P(A=true) + P(B=true|A=false)*P(A=false)
           newProb = pTargetGivenSourceTrue * sourceProb + pTargetGivenSourceFalse * (1 - sourceProb);
         } else {
-          // Multiple parents: assume independence (Naive Bayes)
-          // Use likelihood ratios for proper Bayesian updating
-          let logOdds = 0; // Start with neutral odds (log(1) = 0)
-          
-          validEdges.forEach(edge => {
-            const cpt = edge.data('cpt');
-            const parentProb = edge.source().data('heavyProb') ?? 0.5;
-            
-            // Use same logic as single parent case - no inverse handling needed
-            const pTargetGivenSourceTrue = Math.min(Math.max(cpt.condTrue / 100, 0.001), 0.999);
-            const pTargetGivenSourceFalse = Math.min(Math.max(cpt.condFalse / 100, 0.001), 0.999);
-            
-            // Calculate likelihood ratio for this parent
-            const pTrueGivenParent = pTargetGivenSourceTrue * parentProb + pTargetGivenSourceFalse * (1 - parentProb);
-            const pFalseGivenParent = 1 - pTrueGivenParent;
-            
-            // Calculate likelihood ratio with epsilon-protected values
-            const likelihoodRatio = pTrueGivenParent / pFalseGivenParent;
-            logOdds += Math.log(likelihoodRatio);
-          });
-          
-          // Convert log odds back to probability
-          const odds = Math.exp(logOdds);
-          newProb = odds / (1 + odds);
+          // Multi-parent: exact Naive Bayes via joint enumeration with baseline normalization
+          const maxParents = 8; // Set threshold for exact vs. fallback
+          if (validEdges.length <= maxParents) {
+            const numParents = validEdges.length;
+            const parentNodes = validEdges.map(edge => edge.source());
+            const cpts = validEdges.map(edge => {
+              const cpt = edge.data('cpt');
+              return {
+                pTrue: Math.min(Math.max(cpt.condTrue / 100, 0.001), 0.999),
+                pFalse: Math.min(Math.max(cpt.condFalse / 100, 0.001), 0.999),
+                baseline: Math.min(Math.max((cpt.baseline || 50) / 100, 0.001), 0.999)
+              };
+            });
+
+            // Check for inconsistent baselines
+            const baselineVals = cpts.map(cpt => cpt.baseline);
+            const minBaseline = Math.min(...baselineVals);
+            const maxBaseline = Math.max(...baselineVals);
+
+            console.log(`Debug baseline check for node ${node.id()}:`, {
+              numParents,
+              baselineVals: baselineVals.map(b => (b * 100).toFixed(1) + '%'),
+              minBaseline: (minBaseline * 100).toFixed(1) + '%',
+              maxBaseline: (maxBaseline * 100).toFixed(1) + '%',
+              relativeDiff: ((maxBaseline - minBaseline) / minBaseline).toFixed(3),
+              threshold: '0.05'
+            });
+
+            if ((maxBaseline - minBaseline) / minBaseline > 0.05) {
+              const message = `⚠️ Inconsistent Baselines Detected!\n\n` +
+                `Assertion node "${node.data('label') || node.id()}" has mismatched baseline probabilities:\n` +
+                baselineVals.map((b, i) => `• Parent ${i+1}: ${(b * 100).toFixed(1)}%`).join('\n') + '\n\n' +
+                `Range: ${(minBaseline * 100).toFixed(1)}% - ${(maxBaseline * 100).toFixed(1)}%\n\n` +
+                `For accurate Naive Bayes calculations, all CPTs for the same target should have identical baselines.`;
+              
+              alert(message);
+              
+              console.warn(
+                `Inconsistent baselines for assertion node ${node.id()}:`,
+                baselineVals.map(b => (b * 100).toFixed(1) + '%'),
+                `(min: ${(minBaseline * 100).toFixed(1)}%, max: ${(maxBaseline * 100).toFixed(1)}%)`
+              );
+            }
+
+            let pChildTrue = 0;
+            for (let combo = 0; combo < (1 << numParents); combo++) {
+              let pCombo = 1;
+              let likelihoodProduct = 1;
+              let baselineProduct = 1;
+              for (let i = 0; i < numParents; i++) {
+                const parentIsTrue = !!(combo & (1 << i));
+                const parentProb = parentNodes[i].data('heavyProb') ?? 0.5;
+                const cpt = cpts[i];
+                pCombo *= parentIsTrue ? parentProb : (1 - parentProb);
+                likelihoodProduct *= parentIsTrue ? cpt.pTrue : cpt.pFalse;
+                baselineProduct *= cpt.baseline;
+              }
+              // Normalize by baseline^(numParents-1)
+              const baselineNormalization = baselineProduct / cpts[0].baseline;
+              const pChildGivenCombo = likelihoodProduct / baselineNormalization;
+              pChildTrue += pCombo * Math.max(0, Math.min(1, pChildGivenCombo));
+            }
+            newProb = Math.max(0, Math.min(1, pChildTrue));
+          } else {
+            // Fallback: log-odds approximation for performance
+            let logOdds = 0;
+            validEdges.forEach(edge => {
+              const cpt = edge.data('cpt');
+              const parentProb = edge.source().data('heavyProb') ?? 0.5;
+              const pTargetGivenSourceTrue = Math.min(Math.max(cpt.condTrue / 100, 0.001), 0.999);
+              const pTargetGivenSourceFalse = Math.min(Math.max(cpt.condFalse / 100, 0.001), 0.999);
+              const pTrueGivenParent = pTargetGivenSourceTrue * parentProb +
+                                      pTargetGivenSourceFalse * (1 - parentProb);
+              const pFalseGivenParent = 1 - pTrueGivenParent;
+              const likelihoodRatio = pTrueGivenParent / pFalseGivenParent;
+              logOdds += Math.log(likelihoodRatio);
+            });
+            const odds = Math.exp(logOdds);
+            newProb = odds / (1 + odds);
+          }
         }
       }
 
