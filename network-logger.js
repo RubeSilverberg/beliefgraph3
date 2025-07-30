@@ -81,7 +81,6 @@ function logNetworkForPgmpy(cy) {
       console.log(`    Baseline: P(${targetLabel}) = ${cpt.baseline}%`);
       console.log(`    P(${targetLabel} | ${sourceLabel} = true) = ${cpt.condTrue}%`);
       console.log(`    P(${targetLabel} | ${sourceLabel} = false) = ${cpt.condFalse}%`);
-      console.log(`    Inverse relationship: ${cpt.inverse}`);
     } else {
       console.log(`  No CPT data (virgin edge)`);
     }
