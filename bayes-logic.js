@@ -112,15 +112,6 @@ export function propagateBayesHeavy(cy) {
             const minBaseline = Math.min(...baselineVals);
             const maxBaseline = Math.max(...baselineVals);
 
-            console.log(`Debug baseline check for node ${node.id()}:`, {
-              numParents,
-              baselineVals: baselineVals.map(b => (b * 100).toFixed(1) + '%'),
-              minBaseline: (minBaseline * 100).toFixed(1) + '%',
-              maxBaseline: (maxBaseline * 100).toFixed(1) + '%',
-              relativeDiff: ((maxBaseline - minBaseline) / minBaseline).toFixed(3),
-              threshold: '0.05'
-            });
-
             if ((maxBaseline - minBaseline) / minBaseline > 0.05) {
               const message = `⚠️ Inconsistent Baselines Detected!\n\n` +
                 `Assertion node "${node.data('label') || node.id()}" has mismatched baseline probabilities:\n` +
@@ -129,12 +120,6 @@ export function propagateBayesHeavy(cy) {
                 `For accurate Naive Bayes calculations, all CPTs for the same target should have identical baselines.`;
               
               alert(message);
-              
-              console.warn(
-                `Inconsistent baselines for assertion node ${node.id()}:`,
-                baselineVals.map(b => (b * 100).toFixed(1) + '%'),
-                `(min: ${(minBaseline * 100).toFixed(1)}%, max: ${(maxBaseline * 100).toFixed(1)}%)`
-              );
             }
 
             let pChildTrue = 0;
