@@ -428,6 +428,10 @@ export function propagateBayesLite({ cy } = {}) {
   if (window.computeVisuals) window.computeVisuals(cy);
   return true;
 }
+// Ensure propagateBayesLite is always available globally for all modules
+if (typeof window !== 'undefined') {
+  window.propagateBayesLite = propagateBayesLite;
+}
 
 // --- Cycle Check ---
 
@@ -600,6 +604,10 @@ export function loadGraph() {
       } catch (err) {
         console.error('Failed to load graph:', err);
       }
+// Ensure propagateBayesLite is always available globally for all modules
+if (typeof window !== 'undefined') {
+  window.propagateBayesLite = propagateBayesLite;
+}
     };
     reader.readAsText(file);
   };

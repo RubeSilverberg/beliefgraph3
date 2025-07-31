@@ -116,7 +116,7 @@ window.cy.on('doubleTap', 'node', function(event) {
               newNode.removeData('prob');
               newNode.removeData('robustness');
               newNode.removeData('robustnessLabel');
-              propagateBayesLite({ cy });
+              (window.propagateBayesLite || propagateBayesLite)({ cy });
               computeVisuals(cy);
             }, 0);
           }
@@ -133,7 +133,7 @@ window.cy.on('doubleTap', 'node', function(event) {
               },
               position: evt.position
             });
-            propagateBayesLite({ cy });
+            (window.propagateBayesLite || propagateBayesLite)({ cy });
             computeVisuals(cy);
           }
         }
@@ -207,7 +207,7 @@ window.cy.on('doubleTap', 'node', function(event) {
         toggleLogic.onclick = () => {
           const newType = nodeType === NODE_TYPE_AND ? NODE_TYPE_OR : NODE_TYPE_AND;
           node.data({ type: newType });
-          propagateBayesLite({ cy });
+          (window.propagateBayesLite || propagateBayesLite)({ cy });
           computeVisuals(cy);
           hideMenu();
         };
@@ -238,7 +238,7 @@ window.cy.on('doubleTap', 'node', function(event) {
       del.onclick = () => {
         if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
         selectedNodes.forEach(node => node.remove());
-        propagateBayesLite({ cy });
+        (window.propagateBayesLite || propagateBayesLite)({ cy });
         computeVisuals(cy);
         hideMenu();
       };
@@ -354,7 +354,7 @@ window.cy.on('doubleTap', 'node', function(event) {
 
     cy.add({ group: 'edges', data: edgeData });
     pendingEdgeSource = null;
-    propagateBayesLite({ cy });
+    (window.propagateBayesLite || propagateBayesLite)({ cy });
     cy.nodes().forEach(node => {
       if (
         node.data('type') === NODE_TYPE_ASSERTION &&
@@ -472,7 +472,7 @@ cy.on('dblclick', 'edge', evt => {
 
     document.body.removeChild(modal);
     setTimeout(() => {
-      propagateBayesLite({ cy });
+      (window.propagateBayesLite || propagateBayesLite)({ cy });
       cy.nodes().forEach(node => {
         if (
           node.data('type') === NODE_TYPE_ASSERTION &&
