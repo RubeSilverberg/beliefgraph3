@@ -37,6 +37,7 @@ import {
   saveGraph,
   loadGraph,
   addNote,
+  addStatement,
   finalizeBayesTimeCPT,
   getParentStateCombos,
   startBayesTimeSequence,
@@ -456,6 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnClearGraph').addEventListener('click', clearGraph);
   document.getElementById('btnSaveGraph').addEventListener('click', saveGraph);
   document.getElementById('btnLoadGraph').addEventListener('click', loadGraph);
+  document.getElementById('btnAddStatement').addEventListener('click', addStatement);
   document.getElementById('btnAddNote').addEventListener('click', addNote);
   document.getElementById('btnDebugCalculations').addEventListener('click', () => {
     if (window.debugBayesCalculations && window.cy) {

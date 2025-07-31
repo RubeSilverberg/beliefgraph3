@@ -724,3 +724,42 @@ export function addNote() {
     }
   }, 0);
 }
+
+export function addStatement() {
+  const cy = window.cy;
+  if (typeof cy === 'undefined') {
+    alert('Graph not loaded.');
+    return;
+  }
+  
+  // Add assertion node to center of current viewport
+  const viewport = cy.extent();
+  const centerX = (viewport.x1 + viewport.x2) / 2;
+  const centerY = (viewport.y1 + viewport.y2) / 2;
+  
+  const newNode = cy.add({
+    group: 'nodes',
+    data: {
+      id: 'assertion' + Date.now(),
+      label: 'New Fact',
+      origLabel: 'New Fact',
+      type: 'assertion',
+      width: 60,
+      height: 36
+    },
+    position: { x: centerX, y: centerY }
+  });
+  
+  console.log(`Created assertion node with type: ${newNode.data('type')}`);
+  
+  // Trigger visuals update and automatically open edit dialog
+  setTimeout(() => { 
+    window.computeVisuals?.(cy);
+    console.log('Statement added');
+    
+    // Auto-open edit dialog for immediate editing
+    if (window.openEditNodeLabelModal) {
+      window.openEditNodeLabelModal(newNode);
+    }
+  }, 0);
+}
