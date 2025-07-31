@@ -1,9 +1,9 @@
 console.log("Loaded menu.js");
-import { wouldCreateCycle } from './logic.js';
+import { wouldCreateCycle, propagateBayesLite } from './logic.js';
 import { openVisualSignalsModal } from './modals.js';
 export function setupMenuAndEdgeModals({
   cy,
-  convergeAll,
+  propagateBayesLite,
   computeVisuals,
   openNotesModal,
   openRationaleModal,
@@ -116,7 +116,7 @@ window.cy.on('doubleTap', 'node', function(event) {
               newNode.removeData('prob');
               newNode.removeData('robustness');
               newNode.removeData('robustnessLabel');
-              convergeAll({ cy });
+              propagateBayesLite({ cy });
               computeVisuals(cy);
             }, 0);
           }
@@ -133,7 +133,7 @@ window.cy.on('doubleTap', 'node', function(event) {
               },
               position: evt.position
             });
-            convergeAll({ cy });
+            propagateBayesLite({ cy });
             computeVisuals(cy);
           }
         }
@@ -207,7 +207,7 @@ window.cy.on('doubleTap', 'node', function(event) {
         toggleLogic.onclick = () => {
           const newType = nodeType === NODE_TYPE_AND ? NODE_TYPE_OR : NODE_TYPE_AND;
           node.data({ type: newType });
-          convergeAll({ cy });
+          propagateBayesLite({ cy });
           computeVisuals(cy);
           hideMenu();
         };
@@ -235,11 +235,10 @@ window.cy.on('doubleTap', 'node', function(event) {
       const del = document.createElement('li');
       del.textContent = 'Delete Node';
       del.style.cursor = 'pointer';
-      del.onclick = () => { node.remove(); setTimeout(() => { convergeAll({ cy }); computeVisuals(cy); }, 0); hideMenu(); };
       del.onclick = () => {
         if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
-        node.remove();
-        convergeAll({ cy });
+        selectedNodes.forEach(node => node.remove());
+        propagateBayesLite({ cy });
         computeVisuals(cy);
         hideMenu();
       };
@@ -265,7 +264,7 @@ window.cy.on('doubleTap', 'node', function(event) {
       del.onclick = () => {
         if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
         edge.remove();
-        convergeAll({ cy });
+        propagateBayesLite({ cy });
         cy.nodes().forEach(node => {
           const inc = node.incomers('edge').filter(e => {
             // Check if edge is virgin based on current mode
@@ -355,7 +354,7 @@ window.cy.on('doubleTap', 'node', function(event) {
 
     cy.add({ group: 'edges', data: edgeData });
     pendingEdgeSource = null;
-    convergeAll({ cy });
+    propagateBayesLite({ cy });
     cy.nodes().forEach(node => {
       if (
         node.data('type') === NODE_TYPE_ASSERTION &&
@@ -473,7 +472,7 @@ cy.on('dblclick', 'edge', evt => {
 
     document.body.removeChild(modal);
     setTimeout(() => {
-      convergeAll({ cy });
+      propagateBayesLite({ cy });
       cy.nodes().forEach(node => {
         if (
           node.data('type') === NODE_TYPE_ASSERTION &&

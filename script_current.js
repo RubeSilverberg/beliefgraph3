@@ -41,7 +41,8 @@ import {
   finalizeBayesTimeCPT,
   getParentStateCombos,
   startBayesTimeSequence,
-  convergeAll,
+  // convergeAll, (removed)
+  propagateBayesLite,
   wouldCreateCycle,
   getTopologicallySortedNodesWithParents,
   syncNaiveBayesParents,
@@ -87,9 +88,9 @@ function setBayesMode(newMode) {
   
   // Mode-specific initialization
   if (newMode === 'lite') {
-    // Ensure lite mode propagation is current
-    if (typeof convergeAll === 'function') {
-      convergeAll({ cy: window.cy });
+    // Ensure lite mode propagation is current (using topological sort)
+    if (typeof propagateBayesLite === 'function') {
+      propagateBayesLite({ cy: window.cy });
     }
   } else if (newMode === 'heavy') {
     // Ensure heavy mode propagation is current  
@@ -115,6 +116,9 @@ window.setBayesMode = setBayesMode;
 
 // Attach computeVisuals to window for cross-module use
 window.computeVisuals = computeVisuals;
+
+// Attach new Bayes Lite propagation to window for cross-module use
+window.propagateBayesLite = propagateBayesLite;
 
 function handleModeProcesses(mode) {
   // Put any mode-specific logic here.
@@ -437,7 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Register custom context menu, edge modals, etc.
   setupMenuAndEdgeModals({
     cy,
-    convergeAll,
+    // convergeAll, (removed)
     computeVisuals,
     openNotesModal,
     openRationaleModal,

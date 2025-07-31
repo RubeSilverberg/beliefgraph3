@@ -292,8 +292,141 @@ export function convergeAll({ cy, tolerance = 0.001, maxIters = 30 } = {}) {
     console.error('convergeAll: Error during node convergence:', err);
     nodeResult = { converged: false, error: err };
   }
+  // Removed obsolete convergeAll from window
+  // if (window.computeVisuals) window.computeVisuals(cy);
+  // return { edgeResult, nodeResult };
+}
+
+// --- Topological Sort-Based Propagation for Bayes Lite ---
+export function propagateBayesLite({ cy } = {}) {
+  if (!cy) cy = window.cy;
+  
+  // Get all nodes that participate in propagation
+  const nodes = cy.nodes().filter(n => 
+    ['fact', 'and', 'or', 'assertion'].includes((n.data('type') || '').toLowerCase())
+  );
+
+  // Topological sort using DFS post-order (same as Bayes Heavy)
+  const visited = new Set();
+  const sorted = [];
+
+  function dfsVisit(node) {
+    if (visited.has(node.id())) return;
+    
+    // Visit all parents first (dependencies)
+    node.incomers('edge').sources().forEach(parent => {
+      if (nodes.includes(parent)) {
+        dfsVisit(parent);
+      }
+    });
+    
+    visited.add(node.id());
+    sorted.push(node);
+  }
+
+  nodes.forEach(node => {
+    if (!visited.has(node.id())) {
+      dfsVisit(node);
+    }
+  });
+
+  // Single-pass calculation in dependency order
+  sorted.forEach(node => {
+    const nodeType = node.data('type');
+    let newProb;
+
+    if (nodeType === 'fact') {
+      newProb = FACT_PROB;
+      node.removeData('isVirgin');
+    } else if (nodeType === 'and') {
+      const incomingEdges = node.incomers('edge');
+      if (incomingEdges.length === 0 || incomingEdges.some(edge => typeof edge.source().data('prob') !== "number")) {
+        newProb = undefined;
+        node.data('isVirgin', true);
+      } else {
+        newProb = incomingEdges.reduce((acc, edge) => {
+          const parent = edge.source();
+          let parentProb = parent.data('prob');
+          
+          // Check if edge has inverse relationship (NOT)
+          const cpt = edge.data('cpt') || {};
+          const opposes = edge.data('opposes');
+          const isInverse = !!cpt.inverse || !!opposes;
+          if (isInverse) {
+            parentProb = 1 - parentProb;
+          }
+          
+          return acc * parentProb;
+        }, 1);
+        node.removeData('isVirgin');
+      }
+    } else if (nodeType === 'or') {
+      const incomingEdges = node.incomers('edge');
+      if (incomingEdges.length === 0 || incomingEdges.some(edge => typeof edge.source().data('prob') !== "number")) {
+        newProb = undefined;
+        node.data('isVirgin', true);
+      } else {
+        let prod = 1;
+        incomingEdges.forEach(edge => {
+          const parent = edge.source();
+          let parentProb = parent.data('prob');
+          
+          // Check if edge has inverse relationship (NOT)
+          const cpt = edge.data('cpt') || {};
+          const opposes = edge.data('opposes');
+          const isInverse = !!cpt.inverse || !!opposes;
+          if (isInverse) {
+            parentProb = 1 - parentProb;
+          }
+          
+          prod *= (1 - parentProb);
+        });
+        newProb = 1 - prod;
+        node.removeData('isVirgin');
+      }
+    } else if (nodeType === 'assertion') {
+      const incomingEdges = node.incomers('edge');
+      // Filter for parent edges where the source has a defined prob AND edge has non-zero weight
+      const validEdges = incomingEdges.filter(e => {
+        const parentProb = e.source().data('prob');
+        const edgeWeight = e.data('computedWeight') || e.data('weight');
+        return typeof parentProb === "number" && edgeWeight && edgeWeight !== 0;
+      });
+
+      if (validEdges.length === 0) {
+        newProb = undefined;
+        node.data('isVirgin', true);
+      } else {
+        node.removeData('isVirgin');
+        newProb = propagateFromParentsRobust({
+          baseProb: 0.5,
+          parents: validEdges,
+          getProb: e => {
+            const parent = e.source();
+            if (parent.data('type') === 'fact') return FACT_PROB;
+            return parent.data('prob');
+          },
+          getWeight: e => e.data('computedWeight') || e.data('weight') || 0,
+          epsilon: 0.01,
+          saturationK: 1
+        });
+      }
+    }
+
+    // Update the node's probability
+    node.data('prob', newProb);
+  });
+
+  // Update edge weights (simplified - no iteration needed)
+  cy.edges().forEach(edge => {
+    const targetNode = edge.target();
+    if (targetNode.data('type') === 'assertion') {
+      edge.data('computedWeight', edge.data('weight'));
+    }
+  });
+
   if (window.computeVisuals) window.computeVisuals(cy);
-  return { edgeResult, nodeResult };
+  return true;
 }
 
 // --- Cycle Check ---
@@ -325,7 +458,7 @@ export function finalizeBayesTimeCPT(userCPT) {
   });
   window.bayesHeavyMode = false;
   if (window.updateModeBadge) window.updateModeBadge();
-  convergeAll({ cy });
+  propagateBayesLite({ cy });
   if (window.computeVisuals) window.computeVisuals(cy);
   alert('Bayes Time CPT entry complete.');
 }
@@ -386,10 +519,8 @@ export function startBayesTimeSequence() {
           node.removeData('cpt');
         }
       });
-      convergeAll({ cy });
-      if (window.computeVisuals) window.computeVisuals(cy);
-      alert('Naive Bayes entry complete.');
-      return;
+      propagateBayesLite({ cy });
+// Removed obsolete convergeAll, convergeNodes, and convergeEdges from window
     }
     const node = nodes[nodeIdx];
     const parents = node.incomers('edge').map(e => e.source());
@@ -409,7 +540,7 @@ export function startBayesTimeSequence() {
       onSave: (result) => {
         userNaiveBayes[node.id()][parents[parentIdx].id()] = result;
         node.data('naiveBayes', userNaiveBayes[node.id()]);
-        convergeAll({ cy });
+        propagateBayesLite({ cy });
         if (window.computeVisuals) window.computeVisuals(cy);
         advance();
       },
@@ -459,7 +590,7 @@ export function loadGraph() {
         const elements = JSON.parse(evt.target.result);
         cy.elements().remove();
         cy.add(elements);
-        convergeAll({ cy });
+        propagateBayesLite({ cy });
         cy.layout({ name: 'preset' }).run();
         window.computeVisuals?.(cy);
         cy.fit();
@@ -644,7 +775,7 @@ function restoreFromSnapshot(snapshotData) {
         n.data('prob', n.data('initialProb'));
       }
     });
-    convergeAll({ cy });
+    propagateBayesLite({ cy });
     window.computeVisuals?.(cy);
     window.resetLayout?.();
     console.log('Graph successfully restored from snapshot');

@@ -107,7 +107,7 @@ function openEditNoteModal(node) {
 
     hideModal(modal.id);
     setTimeout(() => {
-      if (window.convergeAll) window.convergeAll({ cy: window.cy });
+      if (window.propagateBayesLite) window.propagateBayesLite({ cy: window.cy });
       if (window.computeVisuals) window.computeVisuals(window.cy);
     }, 0);
   };
