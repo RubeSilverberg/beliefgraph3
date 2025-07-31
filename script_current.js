@@ -59,6 +59,51 @@ import {
 } from './modals.js';
 
 import { setupMenuAndEdgeModals } from './menu.js';
+// --- Quick Guide Button Logic ---
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('quick-guide-btn');
+  if (btn) {
+    btn.onclick = () => {
+      fetch('quick_guide.txt')
+        .then(resp => resp.text())
+        .then(text => {
+          const modal = document.createElement('div');
+          modal.style.position = 'fixed';
+          modal.style.top = '10%';
+          modal.style.left = '50%';
+          modal.style.transform = 'translateX(-50%)';
+          modal.style.background = '#fff';
+          modal.style.border = '1px solid #888';
+          modal.style.padding = '24px';
+          modal.style.maxWidth = '600px';
+          modal.style.maxHeight = '70vh';
+          modal.style.overflowY = 'auto';
+          modal.style.zIndex = 10000;
+          // Convert lines starting with a bullet to HTML list items
+          const lines = text.split(/\r?\n/);
+          let html = '';
+          let inList = false;
+          lines.forEach(line => {
+            if (/^\s*[•*-]/.test(line)) {
+              if (!inList) { html += '<ul style="margin-top:0">'; inList = true; }
+              html += `<li>${line.replace(/^\s*[•*-]\s*/, '')}</li>`;
+            } else {
+              if (inList) { html += '</ul>'; inList = false; }
+              html += `<div>${line.replace(/</g, '&lt;')}</div>`;
+            }
+          });
+          if (inList) html += '</ul>';
+          modal.innerHTML = html;
+          const closeBtn = document.createElement('button');
+          closeBtn.textContent = 'Close';
+          closeBtn.style.marginTop = '16px';
+          closeBtn.onclick = () => document.body.removeChild(modal);
+          modal.appendChild(closeBtn);
+          document.body.appendChild(modal);
+        });
+    };
+  }
+});
 
 let mode = 'lite'; // Tracks current Bayes mode globally
 window.getBayesMode = () => mode;
