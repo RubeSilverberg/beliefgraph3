@@ -470,7 +470,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // ====== Tooltip Setup ======
   // Simple placeholder tooltip for Toggle Bayes button
   attachTooltip(document.getElementById('btnBayesTime'), TOOLTIP_TEXTS.toggleBayes);
+
   attachTooltip(document.getElementById('btnDebugCalculations'), TOOLTIP_TEXTS.debugCalculations);
+  attachTooltip(document.querySelector('button[onclick*="logNetworkForPgmpy"]'), TOOLTIP_TEXTS.exportPgmpy);
+  attachTooltip(document.querySelector('button[onclick*="colab.research.google.com"]'), TOOLTIP_TEXTS.mathDocs);
 
   // ====== Smart Auto-Backup Timer ======
   setInterval(autosave, 10 * 1000); // Every 10 seconds

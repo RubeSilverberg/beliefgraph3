@@ -79,6 +79,8 @@ export const TOOLTIP_TEXTS = {
   baseline: "If you're unsure what the baseline is, just leave it at 50%. That's a neutral, safe default.",
 toggleBayes: "Switch between 'Bayes Lite' and 'Bayes Heavy'. Bayes Heavy disables structural edits, but you can toggle modes at any time. Basic Bayesian knowledge is helpful.",
 debugCalculations: "Show detailed step-by-step calculations for all nodes in the browser console. Useful for verifying Bayesian probability computations.",
+exportPgmpy: "Exports your current network in a format that can be loaded and analyzed with pgmpy, a Python tool for probabilistic graphical models.",
+mathDocs: "Check the math, if you're interested.",
 };
 
 // Helper to create an info icon with tooltip attached
