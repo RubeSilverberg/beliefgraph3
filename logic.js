@@ -313,6 +313,16 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
 
 // Main convergence controller
 export function convergeAll({ cy, tolerance = 0.001, maxIters = 30 } = {}) {
+  // First, check for any node type changes (facts ↔ assertions)
+  // This ensures topology changes are handled before convergence
+  if (window.autoUpdateNodeTypes) {
+    try {
+      window.autoUpdateNodeTypes(cy, true); // Pass true to indicate we're calling from convergeAll
+    } catch (err) {
+      console.error('convergeAll: Error during node type update:', err);
+    }
+  }
+
   let edgeResult, nodeResult;
   try {
     edgeResult = convergeEdges({ cy, tolerance, maxIters });

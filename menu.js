@@ -453,6 +453,7 @@ cy.on('dblclick', 'edge', evt => {
       const val = parseFloat(select.value);
       edge.data('weight', val);
       edge.data('absWeight', Math.abs(val));
+      edge.data('userAssignedWeight', val); // Track that user has set a weight
 
 
       if (prevWeight !== val) {

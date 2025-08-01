@@ -31,7 +31,9 @@ export function robustnessToLabel(robust) {
  * - Nodes with incoming edges = assertions
  * - Logic nodes (and, or) and notes remain unchanged
  */
-export function autoUpdateNodeTypes(cy) {
+export function autoUpdateNodeTypes(cy, fromConvergeAll = false) {
+  let hasChanges = false;
+  
   cy.nodes().forEach(node => {
     const currentType = node.data('type');
     
@@ -45,7 +47,18 @@ export function autoUpdateNodeTypes(cy) {
     
     // Only update if type actually changed (avoid unnecessary re-renders)
     if (currentType !== newType) {
+      hasChanges = true;
       node.data('type', newType);
+      
+      // If converting from fact to assertion, preserve incoming edge weights
+      if (currentType === NODE_TYPE_FACT && newType === NODE_TYPE_ASSERTION) {
+        incomingEdges.forEach(edge => {
+          const currentWeight = edge.data('weight');
+          if (currentWeight !== undefined && currentWeight !== 0 && !edge.data('userAssignedWeight')) {
+            edge.data('userAssignedWeight', currentWeight);
+          }
+        });
+      }
       
       // Update default labels for nodes that still have generic labels
       const currentLabel = node.data('label') || '';
@@ -77,6 +90,16 @@ export function autoUpdateNodeTypes(cy) {
       console.log(`Auto-updated node ${node.id()} from ${currentType} to ${newType}`);
     }
   });
+  
+  // If any nodes changed type and we're not already inside convergeAll, trigger convergence
+  if (hasChanges && !fromConvergeAll) {
+    console.log('Node type changes detected, triggering convergence...');
+    if (window.convergeAll) {
+      window.convergeAll({ cy });
+    }
+  }
+  
+  return hasChanges; // Return whether changes occurred
 }
 
 /**
@@ -86,19 +109,8 @@ export function autoUpdateNodeTypes(cy) {
 export function computeVisuals(cy) {
   const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
 
-  // Auto-update node types based on topology (only in lite mode when graph can be modified)
-  if (bayesMode === 'lite') {
-    autoUpdateNodeTypes(cy);
-  }
-
-  // Clean up any edges connected to note nodes (notes should not have connections)
-  cy.nodes(`[type = "${NODE_TYPE_NOTE}"]`).forEach(noteNode => {
-    const connectedEdges = noteNode.connectedEdges();
-    if (connectedEdges.length > 0) {
-      console.log(`Removing ${connectedEdges.length} edges from note node`);
-      connectedEdges.remove();
-    }
-  });
+  // Note: Node type updates and note edge cleanup are now handled in convergeAll() 
+  // before this function is called to avoid circular calls
 
   cy.nodes().forEach(node => {
     const nodeType = node.data('type');
@@ -606,7 +618,21 @@ export function showModifierBox(cy, edge) {
     if (edgeTargetType === NODE_TYPE_AND || edgeTargetType === NODE_TYPE_OR) {
       box.innerHTML = `<i>Parent node has no probability.</i>`;
     } else {
-      box.innerHTML = `<i>Weight not set.</i>`;
+      // Check if this is an assigned virgin (user set weight but edge is dormant)
+      const userAssignedWeight = edge.data('userAssignedWeight');
+      if (userAssignedWeight !== undefined) {
+        // Assigned virgin - show the preserved weight in orange
+        const likert = weightToLikert(userAssignedWeight);
+        const isOpposing = edge.data('opposes') || edge.data('type') === 'opposes';
+        const relationshipType = isOpposing ? 'opposes' : 'supports';
+        
+        box.innerHTML = `<div style="color: #ff9900;"><b>Preserved weight:</b> ${likert} (${relationshipType})</div>`;
+        box.innerHTML += `<div style="color: #666; font-size: 11px;"><i>Edge dormant - not propagating</i></div>`;
+      } else {
+        // Unassigned virgin - show em dash
+        box.innerHTML = `<div style="color: #999;"><b>Weight:</b> —</div>`;
+        box.innerHTML += `<div style="color: #666; font-size: 11px;"><i>Not assigned</i></div>`;
+      }
     }
     container.parentElement.appendChild(box);
     return;
@@ -720,4 +746,9 @@ export function registerVisualEventHandlers(cy) {
   // Optional: clean up boxes when clicking elsewhere
   document.addEventListener('mousedown', removeNodeHoverBox);
   document.addEventListener('mousedown', removeModifierBox);
+}
+
+// Make autoUpdateNodeTypes available globally for menu.js
+if (typeof window !== 'undefined') {
+  window.autoUpdateNodeTypes = autoUpdateNodeTypes;
 }
