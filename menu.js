@@ -237,7 +237,7 @@ window.cy.on('doubleTap', 'node', function(event) {
       del.style.cursor = 'pointer';
       del.onclick = () => {
         if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
-        selectedNodes.forEach(node => node.remove());
+        node.remove();
         (window.propagateBayesLite || propagateBayesLite)({ cy });
         computeVisuals(cy);
         hideMenu();

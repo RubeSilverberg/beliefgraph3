@@ -53,7 +53,7 @@ export function highlightBayesNodeFocus(node) {
 // 0.995² = 0.990 = 99% displayed vs 0.99² = 0.9801 = 98% displayed  
 export const FACT_PROB = 0.995;
 
-function propagateFromParentsRobust({ baseProb, parents, getProb, getWeight, epsilon = 0.01, saturationK = 1 }) {
+function propagateFromParentsRobust({ baseProb, parents, getProb, getWeight, epsilon = 0.01, saturationK = 1, debug = false }) {
   if (!parents || parents.length === 0) return baseProb;
 
   // Filter to valid parents (exclude edges whose parent prob is null/undefined/virgin)
@@ -62,13 +62,19 @@ function propagateFromParentsRobust({ baseProb, parents, getProb, getWeight, eps
     return prob !== undefined && prob !== null;
   });
 
+  if (debug) console.log(`    🧮 propagateFromParentsRobust: ${parents.length} input edges, ${validEdges.length} valid edges`);
+
   if (validEdges.length === 1) {
     const edge = validEdges[0];
     const prob = getProb(edge);
     const sign = edge.data('opposes') || edge.data('type') === 'opposes' ? -1 : 1;
     const effectiveWeight = getWeight(edge) * sign;
+    if (debug) console.log(`    🔍 Single edge: prob=${prob}, weight=${getWeight(edge)}, sign=${sign}, effectiveWeight=${effectiveWeight}`);
+    
     if (Math.abs(effectiveWeight) >= 0.99) {
-      return effectiveWeight > 0 ? prob : 1 - prob;
+      const result = effectiveWeight > 0 ? prob : 1 - prob;
+      if (debug) console.log(`    ⚡ High weight (>= 0.99) single edge bypass: returning ${result}`);
+      return result;
     }
   }
 
@@ -84,17 +90,49 @@ function propagateFromParentsRobust({ baseProb, parents, getProb, getWeight, eps
       weight: getWeight(edge) * sign
     };
   });
+  
+  if (debug) {
+    console.log(`    📊 Edge details:`);
+    infos.forEach((info, i) => {
+      const edge = info.parent; // This is actually the EDGE, not the parent node
+      const parentNode = edge.source(); // This is the actual parent node
+      const parentProb = Math.min(Math.max(getProb(edge), epsilon), 1 - epsilon);
+      const rawWeight = getWeight(edge);
+      const opposes = edge.data('opposes'); // Read opposes from the EDGE, not the parent node
+      const effectiveWeight = info.weight;
+      const odds = info.odds;
+      console.log(`      [${i+1}] Edge ${edge.id()}: parentNode=${parentNode.id()}, prob=${parentProb}, rawWeight=${rawWeight}, opposes=${opposes}, effectiveWeight=${effectiveWeight}, odds=${odds}`);
+    });
+  }
+  
   const totalAbsW = infos.reduce((sum, x) => sum + Math.abs(x.weight), 0);
   let oddsDelta = 0;
+  
+  if (debug) console.log(`    🧮 Individual contributions:`);
   for (let i = 0; i < infos.length; ++i) {
     const { odds, weight } = infos[i];
-    oddsDelta += weight * (odds - priorOdds);
+    const contribution = weight * (odds - priorOdds);
+    oddsDelta += contribution;
+    if (debug) {
+      const edge = infos[i].parent;
+      const parentNode = edge.source();
+      console.log(`      [${i+1}] ${parentNode.id()}: weight=${weight}, odds=${odds}, priorOdds=${priorOdds}, (odds-prior)=${odds-priorOdds}, contribution=${contribution}`);
+    }
   }
-  // Apply global saturation to oddsDelta
-  const saturation = 1 - Math.exp(-saturationK * totalAbsW);
-  oddsDelta *= saturation;
+  
+  if (debug) console.log(`    📈 Raw oddsDelta: ${oddsDelta}`);
+  
+  // Apply PROPER saturation that limits instead of amplifies
+  // Use tanh with a FIXED maximum change, not one that scales with total weight
+  const maxOddsChange = 3.0; // Fixed limit for reasonable probability changes
+  oddsDelta = Math.sign(oddsDelta) * Math.tanh(Math.abs(oddsDelta) / maxOddsChange) * maxOddsChange;
+  
   const updatedOdds = priorOdds + oddsDelta;
-  return 1 / (1 + Math.exp(-updatedOdds));
+  const result = 1 / (1 + Math.exp(-updatedOdds));
+  
+  if (debug) console.log(`    🔢 Calculation: baseProb=${baseProb}, priorOdds=${priorOdds}, totalAbsW=${totalAbsW}, maxOddsChange=${maxOddsChange}, oddsDelta=${oddsDelta}, updatedOdds=${updatedOdds}, result=${result}`);
+  
+  return result;
 }
 
 export function convergeEdges({ cy, tolerance = 0.001, maxIters = 30 }) {
@@ -298,13 +336,24 @@ export function convergeAll({ cy, tolerance = 0.001, maxIters = 30 } = {}) {
 }
 
 // --- Topological Sort-Based Propagation for Bayes Lite ---
-export function propagateBayesLite({ cy } = {}) {
+export function propagateBayesLite({ cy, debug = false } = {}) {
   if (!cy) cy = window.cy;
+  
+  if (debug) console.log('🔄 Starting propagateBayesLite with debug logging');
+  
+  // First, ensure all edge weights are properly updated from current weight values
+  cy.edges().forEach(edge => {
+    const currentWeight = edge.data('weight') || 0;
+    edge.data('computedWeight', currentWeight);
+    if (debug) console.log(`⚖️ Updated edge ${edge.id()}: weight=${edge.data('weight')} → computedWeight=${edge.data('computedWeight')}`);
+  });
   
   // Get all nodes that participate in propagation
   const nodes = cy.nodes().filter(n => 
     ['fact', 'and', 'or', 'assertion'].includes((n.data('type') || '').toLowerCase())
   );
+  
+  if (debug) console.log(`📊 Found ${nodes.length} nodes to process:`, nodes.map(n => `${n.id()}(${n.data('type')})`));
 
   // Topological sort using DFS post-order (same as Bayes Heavy)
   const visited = new Set();
@@ -330,21 +379,30 @@ export function propagateBayesLite({ cy } = {}) {
     }
   });
 
+  if (debug) console.log(`🔀 Topological sort order:`, sorted.map(n => `${n.id()}(${n.data('type')})`));
+
   // Single-pass calculation in dependency order
-  sorted.forEach(node => {
+  sorted.forEach((node, index) => {
     const nodeType = node.data('type');
     let newProb;
+    
+    if (debug) console.log(`\n🎯 [${index + 1}/${sorted.length}] Processing ${nodeType} node: ${node.id()}`);
 
     if (nodeType === 'fact') {
       newProb = FACT_PROB;
       node.removeData('isVirgin');
+      if (debug) console.log(`  ✅ FACT: Set to ${FACT_PROB}`);
     } else if (nodeType === 'and') {
       const incomingEdges = node.incomers('edge');
+      if (debug) console.log(`  📥 AND node has ${incomingEdges.length} incoming edges`);
+      
       if (incomingEdges.length === 0 || incomingEdges.some(edge => typeof edge.source().data('prob') !== "number")) {
         newProb = undefined;
         node.data('isVirgin', true);
+        if (debug) console.log(`  ❌ AND: No valid parents, marking as virgin`);
       } else {
-        newProb = incomingEdges.reduce((acc, edge) => {
+        if (debug) console.log(`  🔢 AND calculation:`);
+        newProb = incomingEdges.reduce((acc, edge, i) => {
           const parent = edge.source();
           let parentProb = parent.data('prob');
           
@@ -352,22 +410,33 @@ export function propagateBayesLite({ cy } = {}) {
           const cpt = edge.data('cpt') || {};
           const opposes = edge.data('opposes');
           const isInverse = !!cpt.inverse || !!opposes;
+          
+          if (debug) console.log(`    [${i + 1}] Edge ${edge.id()}: parent=${parent.id()}, prob=${parentProb}, inverse=${isInverse}`);
+          
           if (isInverse) {
             parentProb = 1 - parentProb;
+            if (debug) console.log(`      → After inverse: ${parentProb}`);
           }
           
-          return acc * parentProb;
+          const result = acc * parentProb;
+          if (debug) console.log(`      → ${acc} × ${parentProb} = ${result}`);
+          return result;
         }, 1);
         node.removeData('isVirgin');
+        if (debug) console.log(`  ✅ AND final result: ${newProb}`);
       }
     } else if (nodeType === 'or') {
       const incomingEdges = node.incomers('edge');
+      if (debug) console.log(`  📥 OR node has ${incomingEdges.length} incoming edges`);
+      
       if (incomingEdges.length === 0 || incomingEdges.some(edge => typeof edge.source().data('prob') !== "number")) {
         newProb = undefined;
         node.data('isVirgin', true);
+        if (debug) console.log(`  ❌ OR: No valid parents, marking as virgin`);
       } else {
+        if (debug) console.log(`  🔢 OR calculation:`);
         let prod = 1;
-        incomingEdges.forEach(edge => {
+        incomingEdges.forEach((edge, i) => {
           const parent = edge.source();
           let parentProb = parent.data('prob');
           
@@ -375,29 +444,51 @@ export function propagateBayesLite({ cy } = {}) {
           const cpt = edge.data('cpt') || {};
           const opposes = edge.data('opposes');
           const isInverse = !!cpt.inverse || !!opposes;
+          
+          if (debug) console.log(`    [${i + 1}] Edge ${edge.id()}: parent=${parent.id()}, prob=${parentProb}, inverse=${isInverse}`);
+          
           if (isInverse) {
             parentProb = 1 - parentProb;
+            if (debug) console.log(`      → After inverse: ${parentProb}`);
           }
           
+          const prevProd = prod;
           prod *= (1 - parentProb);
+          if (debug) console.log(`      → ${prevProd} × (1 - ${parentProb}) = ${prod}`);
         });
         newProb = 1 - prod;
         node.removeData('isVirgin');
+        if (debug) console.log(`  ✅ OR final result: 1 - ${prod} = ${newProb}`);
       }
     } else if (nodeType === 'assertion') {
       const incomingEdges = node.incomers('edge');
+      if (debug) console.log(`  📥 ASSERTION node has ${incomingEdges.length} incoming edges`);
+      
       // Filter for parent edges where the source has a defined prob AND edge has non-zero weight
       const validEdges = incomingEdges.filter(e => {
         const parentProb = e.source().data('prob');
-        const edgeWeight = e.data('computedWeight') || e.data('weight');
-        return typeof parentProb === "number" && edgeWeight && edgeWeight !== 0;
+        const edgeWeight = e.data('computedWeight');
+        const isValid = typeof parentProb === "number" && edgeWeight !== undefined && edgeWeight !== 0;
+        if (debug) console.log(`    Edge ${e.id()}: parent=${e.source().id()}, prob=${parentProb}, weight=${edgeWeight}, valid=${isValid}`);
+        return isValid;
       });
 
       if (validEdges.length === 0) {
         newProb = undefined;
         node.data('isVirgin', true);
+        if (debug) console.log(`  ❌ ASSERTION: No valid edges, marking as virgin`);
       } else {
         node.removeData('isVirgin');
+        if (debug) console.log(`  🔢 ASSERTION calculation with ${validEdges.length} valid edges:`);
+        
+        const parentData = validEdges.map(e => ({
+          id: e.source().id(),
+          prob: e.source().data('prob'),
+          weight: e.data('computedWeight'),
+          opposes: e.data('opposes')
+        }));
+        if (debug) console.log(`    Parents:`, parentData);
+        
         newProb = propagateFromParentsRobust({
           baseProb: 0.5,
           parents: validEdges,
@@ -406,31 +497,32 @@ export function propagateBayesLite({ cy } = {}) {
             if (parent.data('type') === 'fact') return FACT_PROB;
             return parent.data('prob');
           },
-          getWeight: e => e.data('computedWeight') || e.data('weight') || 0,
+          getWeight: e => e.data('computedWeight'),
           epsilon: 0.01,
-          saturationK: 1
+          saturationK: 1,
+          debug: debug
         });
+        if (debug) console.log(`  ✅ ASSERTION final result: ${newProb}`);
       }
     }
 
     // Update the node's probability
+    const oldProb = node.data('prob');
     node.data('prob', newProb);
+    if (debug) console.log(`  🔄 Updated ${node.id()}: ${oldProb} → ${newProb}`);
   });
 
-  // Update edge weights (simplified - no iteration needed)
-  cy.edges().forEach(edge => {
-    const targetNode = edge.target();
-    if (targetNode.data('type') === 'assertion') {
-      edge.data('computedWeight', edge.data('weight'));
-    }
-  });
-
+  if (debug) console.log('🏁 propagateBayesLite completed');
   if (window.computeVisuals) window.computeVisuals(cy);
   return true;
 }
 // Ensure propagateBayesLite is always available globally for all modules
 if (typeof window !== 'undefined') {
   window.propagateBayesLite = propagateBayesLite;
+  
+  // Add debug helper functions to window for easy console access
+  window.debugBayesLite = () => propagateBayesLite({ debug: true });
+  window.bayesLiteDebug = true; // Flag to enable debug by default if needed
 }
 
 // --- Cycle Check ---
