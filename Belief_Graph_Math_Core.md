@@ -31,7 +31,12 @@ $$P(\text{OR}) = 1 - \prod_{i=1}^{n} (1 - P(\text{parent}_i))$$
 ### Core Propagation Algorithm
 
 **Propagation Order:**
-Lite mode now uses a single-pass, topological sort-based propagation. All nodes are updated in topological order (parents before children), ensuring correct dependency resolution in acyclic graphs.
+Lite mode uses an **iterative convergence approach** to propagate probabilities through the belief network. The system performs multiple passes until convergence is achieved or maximum iterations are reached.
+
+**Convergence Parameters:**
+- Tolerance: 0.001 (default)
+- Maximum iterations: 30 (default)  
+- Convergence achieved when maximum probability change < tolerance
 
 **Input Parameters:**
 - $P_{base}$: Prior probability (0.5 for assertions)
@@ -57,6 +62,12 @@ Lite mode now uses a single-pass, topological sort-based propagation. All nodes 
 5. **Final Probability:**
    $$\text{updatedOdds} = \text{priorOdds} + \Delta_{final}$$
    $$P_{final} = \frac{1}{1 + e^{-\text{updatedOdds}}}$$
+
+**Saturation Design for Iterative Convergence:**
+The saturation function is specifically designed for iterative systems. Over multiple iterations:
+- **Low total weights**: $\text{saturation} \approx W_{total}$ (linear accumulation)
+- **High total weights**: $\text{saturation} \to 1$ (prevents extreme swings)
+- **Multiple iterations**: Small incremental changes accumulate to proper final values
 
 **Special Case: High-Weight Single Edge**
 When $|w_{eff}| \geq 0.99$:
@@ -115,12 +126,18 @@ If number of parents $> 8$:
 
 ## Propagation Passes
 
+### Lite Mode: Iterative Convergence
+Lite mode uses an **iterative convergence approach**:
+1. **Edge Convergence**: Update all edge weights (typically converges immediately for assertions)
+2. **Node Convergence**: Iteratively update all node probabilities until convergence
+3. **Convergence Check**: Continue until maximum change < tolerance or max iterations reached
 
-Both Lite and Heavy modes use a single topological sort-based pass to update all node probabilities. No iterative updates or convergence checks are performed in the main propagation logic.
+### Heavy Mode: Single-Pass Topological Sort
+Heavy mode uses a single topological sort-based pass to update all node probabilities. No iterative updates or convergence checks are performed.
 
-### Topological Sort Algorithm
+### Topological Sort Algorithm (Heavy Mode Only)
 
-To guarantee that all parent nodes are updated before their children, the propagation order is determined by a topological sort of the directed acyclic graph (DAG):
+To guarantee that all parent nodes are updated before their children in Heavy mode, the propagation order is determined by a topological sort of the directed acyclic graph (DAG):
 
 **Algorithm:**
 1. Mark all nodes as unvisited.
@@ -188,9 +205,9 @@ FACT_PROB = 0.995             # Fact node probability (both modes)
 epsilon = 0.01                # Numerical stability bound
 saturationK = 1.0             # Saturation strength
 
-
-
-# (No convergence parameters needed; propagation is single-pass in both modes)
+# Convergence parameters (Lite mode only)
+tolerance = 0.001             # Convergence tolerance
+maxIters = 30                 # Maximum iterations for convergence
 
 # Weight bounds
 WEIGHT_MIN = 0.01             # Minimum edge weight magnitude
@@ -203,9 +220,14 @@ WEIGHT_MIN = 0.01             # Minimum edge weight magnitude
 ### Probability Conservation
 $$\forall \text{ nodes } n: P(n) \in [0,1]$$
 
+### Propagation Guarantees
+- **Lite Mode**: Iterative convergence ensures network stability through multiple passes
+- **Heavy Mode**: Single-pass topological sort ensures dependency-respecting calculation order
 
-### Single-Pass Guarantee
-All node probabilities are updated in a single, dependency-respecting pass. No iterative convergence is required.
+### Convergence Properties (Lite Mode)
+- **Monotonic Convergence**: Each iteration reduces maximum probability change
+- **Stability**: System reaches equilibrium when $\max_n |\Delta P(n)| < \text{tolerance}$
+- **Bounded Iterations**: Process terminates within maximum iteration limit
 
 ### Bayesian Soundness
 Heavy mode satisfies:
