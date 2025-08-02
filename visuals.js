@@ -26,6 +26,67 @@ export function robustnessToLabel(robust) {
 }
 
 /**
+ * Convert edge weight [0.15-1.0] to short descriptive label for virgin edges
+ */
+export function weightToShortLabel(weight, isOpposing = false) {
+  const absWeight = Math.abs(weight);
+  let label;
+  
+  if (absWeight >= 0.99) label = "Max";
+  else if (absWeight >= 0.825) label = "Lrg"; // Between Large (0.85) and Strong (0.60)
+  else if (absWeight >= 0.475) label = "Med"; // Between Medium (0.60) and Small (0.35)
+  else if (absWeight >= 0.25) label = "Sm";   // Between Small (0.35) and Minimal (0.15)
+  else label = "Min";
+  
+  return isOpposing ? `(${label})` : label;
+}
+
+/**
+ * Generate edge label for virgin edges based on mode and assignment state
+ */
+export function getEdgeLabel(edge) {
+  const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
+  
+  if (bayesMode === 'heavy') {
+    const cpt = edge.data('cpt') || {};
+    const isVirgin = !cpt || 
+                     cpt.baseline === undefined || 
+                     cpt.condTrue === undefined || 
+                     cpt.condFalse === undefined;
+    
+    if (isVirgin) {
+      return "—"; // Em dash for unassigned Heavy mode edges
+    } else {
+      // Heavy mode assigned virgin - could show ratio but user said "later"
+      return ""; // No label for now
+    }
+  }
+  
+  // Lite mode logic
+  const targetNode = edge.target();
+  const parentNode = edge.source();
+  const parentProb = parentNode.data('prob');
+  const edgeWeight = edge.data('weight');
+  const hasUserWeight = edge.data('userAssignedWeight') !== undefined;
+  
+  // Check if this is a virgin edge (no parent prob OR no weight)
+  const isVirgin = typeof parentProb !== "number" || !edgeWeight || edgeWeight === 0;
+  
+  if (!isVirgin) {
+    return ""; // Non-virgin edges show no label (use dynamic sizing/coloring)
+  }
+  
+  // Virgin edge - check if assigned or unassigned
+  if (!hasUserWeight || edgeWeight === 0) {
+    return "—"; // Em dash for unassigned virgin edges
+  }
+  
+  // Assigned virgin edge - show weight label
+  const isOpposing = edge.data('opposes') || edge.data('type') === 'opposes';
+  return weightToShortLabel(edgeWeight, isOpposing);
+}
+
+/**
  * Automatically assign node types based on graph topology:
  * - Nodes with no incoming edges = facts
  * - Nodes with incoming edges = assertions
@@ -401,6 +462,10 @@ export function computeVisuals(cy) {
     
     // Store current display type without cross-mode pollution
     edge.data('displayType', edgeType);
+    
+    // Set edge label for virgin edges (show weight labels or em dash)
+    const edgeLabel = getEdgeLabel(edge);
+    edge.data('label', edgeLabel);
   });
 
   cy.style().update();
@@ -466,25 +531,40 @@ export function showNodeHoverBox(cy, node) {
   box.style.position = 'absolute';
   box.style.left = `${x + 20}px`;
   box.style.top = `${y - 30}px`;
-  box.style.background = '#f3f3fc';
-  box.style.border = '1.5px solid #2e7d32';
-  box.style.borderRadius = '8px';
-  box.style.padding = '7px 14px';
-  box.style.fontSize = '12px';
+  box.style.background = '#f8f9fa';
+  box.style.border = '2px solid #2e7d32';
+  box.style.borderRadius = '12px';
+  box.style.padding = '16px 20px';
+  box.style.fontSize = '16px';  // Much larger font
+  box.style.lineHeight = '1.5';
+  box.style.maxWidth = '400px';  // Allow much wider tooltips
+  box.style.minWidth = '200px';
   box.style.zIndex = 20;
-  box.style.boxShadow = '0 2px 8px #1565c066';
+  box.style.boxShadow = '0 4px 20px rgba(0,0,0,0.15)';
+  box.style.fontFamily = 'Segoe UI, Roboto, Arial, sans-serif';
 
   const displayLabel = node.data('displayLabel') || node.data('origLabel') || "";
   const hoverLabel = node.data('hoverLabel');
   const nodeType = node.data('type');
   const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
 
+  // Create combined label: "Short: Full description" with short label bold and description italic
+  let combinedLabel = displayLabel;
+  if (hoverLabel && hoverLabel !== displayLabel) {
+    combinedLabel = `<b>${displayLabel}</b>: <i style="font-weight: 300;">${hoverLabel}</i>`;
+  } else if (hoverLabel) {
+    combinedLabel = `<i style="font-weight: 300;">${hoverLabel}</i>`;
+  } else if (displayLabel) {
+    combinedLabel = `<b>${displayLabel}</b>`;
+  }
+
   function formatProb(p) {
-    return (typeof p === "number") ? `<b>${Math.round(100 * p)}%</b>` : "<b>—</b>";
+    return (typeof p === "number") ? `<b style="font-size: 18px; color: #1565c0;">${Math.round(100 * p)}%</b>` : "<b style=\"color: #666;\">—</b>";
   }
 
   if (nodeType === NODE_TYPE_FACT) {
-    box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><span>Fact node</span>`;
+    box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${combinedLabel}</div>
+                     <div style="color: #666; font-style: italic;">Fact node</div>`;
     container.parentElement.appendChild(box);
     return;
   }
@@ -504,11 +584,13 @@ export function showNodeHoverBox(cy, node) {
       });
       
       if (!hasValidEdges) {
-        box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><span>Current: <b>—</b></span><br><i>No incoming conditional relationships configured.</i>`;
+        box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${combinedLabel}</div>
+                         <div style="margin-bottom: 6px;">Current: <b style="color: #666;">—</b></div>
+                         <div style="color: #e65100; font-style: italic;">No incoming conditional relationships configured.</div>`;
       } else {
         const hp = node.data('heavyProb');
-        box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br>
-          <span>Current: ${formatProb(hp)}</span>`;
+        box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${combinedLabel}</div>
+                         <div>Current: ${formatProb(hp)}</div>`;
       }
       container.parentElement.appendChild(box);
       return;
@@ -517,11 +599,13 @@ export function showNodeHoverBox(cy, node) {
     if (nodeType === NODE_TYPE_AND || nodeType === NODE_TYPE_OR) {
       const hp = node.data('heavyProb');
       let typeLabel = nodeType === NODE_TYPE_AND ? 'AND' : 'OR';
-      box.innerHTML = `<b>${typeLabel}</b><br>Current: ${formatProb(hp)}`;
-      if (nodeType === NODE_TYPE_AND)
-        box.innerHTML += "<br><i>AND logic node (product of heavy parent probs)</i>";
-      else
-        box.innerHTML += "<br><i>OR logic node (sum-minus-product of heavy parent probs)</i>";
+      let logicDescription = nodeType === NODE_TYPE_AND 
+        ? 'AND logic node (product of heavy parent probs)'
+        : 'OR logic node (sum-minus-product of heavy parent probs)';
+      
+      box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${typeLabel}</div>
+                       <div style="margin-bottom: 6px;">Current: ${formatProb(hp)}</div>
+                       <div style="color: #666; font-style: italic;">${logicDescription}</div>`;
       container.parentElement.appendChild(box);
       return;
     }
@@ -530,10 +614,12 @@ export function showNodeHoverBox(cy, node) {
     if (nodeType === NODE_TYPE_ASSERTION) {
       const lp = node.data('prob');
       if (typeof lp !== "number") {
-        box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><span>Current: <b>—</b></span><br><i>No incoming information.</i>`;
+        box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${combinedLabel}</div>
+                         <div style="margin-bottom: 6px;">Current: <b style="color: #666;">—</b></div>
+                         <div style="color: #e65100; font-style: italic;">No incoming information.</div>`;
       } else {
-        box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br>
-          <span>Current: <b>${Math.round(100 * lp)}%</b></span>`;
+        box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${combinedLabel}</div>
+                         <div style="margin-bottom: 6px;">Current: <b style="font-size: 18px; color: #1565c0;">${Math.round(100 * lp)}%</b></div>`;
       }
       const rlabel = node.data('robustnessLabel');
       if (rlabel) {
@@ -541,7 +627,7 @@ export function showNodeHoverBox(cy, node) {
         const grayscale = robust !== undefined
           ? `rgb(${Math.round(180 - 60 * robust)}, ${Math.round(180 - 60 * robust)}, ${Math.round(180 - 60 * robust)})`
           : '#888';
-        box.innerHTML += `<br><span><b style="color:#111">Robustness</b>: <b style="color:${grayscale}">${rlabel}</b></span>`;
+        box.innerHTML += `<div style="margin-top: 6px;"><b style="color:#111;">Robustness</b>: <b style="color:${grayscale};">${rlabel}</b></div>`;
       }
       container.parentElement.appendChild(box);
       return;
@@ -549,16 +635,19 @@ export function showNodeHoverBox(cy, node) {
     if (nodeType === NODE_TYPE_AND || nodeType === NODE_TYPE_OR) {
       let typeLabel = nodeType === NODE_TYPE_AND ? 'AND' : 'OR';
       const lp = node.data('prob');
-      box.innerHTML = `<b>${typeLabel}</b><br>Current: ${formatProb(lp)}`;
-      if (nodeType === NODE_TYPE_AND)
-        box.innerHTML += "<br><i>AND logic node<br>(product of parent probs)</i>";
-      else
-        box.innerHTML += "<br><i>OR logic node<br>(sum-minus-product of parent probs)</i>";
+      let logicDescription = nodeType === NODE_TYPE_AND 
+        ? 'AND logic node (product of parent probs)'
+        : 'OR logic node (sum-minus-product of parent probs)';
+      
+      box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${typeLabel}</div>
+                       <div style="margin-bottom: 6px;">Current: ${formatProb(lp)}</div>
+                       <div style="color: #666; font-style: italic;">${logicDescription}</div>`;
       container.parentElement.appendChild(box);
       return;
     }
   }
-  box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><i>Unknown node type</i>`;
+  box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${combinedLabel}</div>
+                   <div style="color: #e65100; font-style: italic;">Unknown node type</div>`;
   container.parentElement.appendChild(box);
 }
 
@@ -607,8 +696,12 @@ export function showModifierBox(cy, edge) {
   box.style.background = 'rgba(220,235,250,0.97)';
   box.style.border = '1.5px solid #1565c0';
   box.style.borderRadius = '8px';
-  box.style.padding = '6px 14px';
-  box.style.fontSize = '12px';
+  box.style.padding = '10px 16px';
+  box.style.fontSize = '14px';  // Increased from 12px
+  box.style.lineHeight = '1.4';
+  box.style.fontFamily = 'Segoe UI, Roboto, Arial, sans-serif';
+  box.style.minWidth = '120px';
+  box.style.maxWidth = '280px';
   box.style.zIndex = 20;
   box.style.boxShadow = '0 2px 8px #1565c066';
 
@@ -645,11 +738,11 @@ export function showModifierBox(cy, edge) {
         const relationshipType = isOpposing ? 'opposes' : 'supports';
         
         box.innerHTML = `<div style="color: #ff9900;"><b>Preserved weight:</b> ${likert} (${relationshipType})</div>`;
-        box.innerHTML += `<div style="color: #666; font-size: 11px;"><i>Edge dormant - not propagating</i></div>`;
+        box.innerHTML += `<div style="color: #666; font-size: 12px;"><i>Edge dormant - not propagating</i></div>`;
       } else {
         // Unassigned virgin - show em dash
         box.innerHTML = `<div style="color: #999;"><b>Weight:</b> —</div>`;
-        box.innerHTML += `<div style="color: #666; font-size: 11px;"><i>Not assigned</i></div>`;
+        box.innerHTML += `<div style="color: #666; font-size: 12px;"><i>Not assigned</i></div>`;
       }
     }
     container.parentElement.appendChild(box);
@@ -666,7 +759,7 @@ export function showModifierBox(cy, edge) {
     }
   } else {
     // Standard assertion edge display
-    box.innerHTML = `<div><b>Base influence:</b> ${baseLabel}</div>`;
+    box.innerHTML = `<div><b>Influence:</b> ${baseLabel}</div>`;
 
     if (mods.length) {
       box.innerHTML += `<hr style="margin:6px 0 3px 0">`;
@@ -680,6 +773,12 @@ export function showModifierBox(cy, edge) {
         </div>`;
       });
     }
+  }
+
+  // Check if edge has rationale text and add indicator
+  const rationale = edge.data('rationale');
+  if (rationale && rationale.trim().length > 0) {
+    box.innerHTML += `<div style="margin-top: 8px; font-size: 12px; color: #666; font-style: italic;">*see rationale</div>`;
   }
 
   container.parentElement.appendChild(box);

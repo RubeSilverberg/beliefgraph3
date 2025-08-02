@@ -321,7 +321,19 @@ document.addEventListener('DOMContentLoaded', () => {
       'width': 'mapData(absWeight, 0, 1, 2, 8)',
       'line-color': 'data(lineColor)',
       'mid-target-arrow-color': 'data(lineColor)',
-      'opacity': 1
+      'opacity': 1,
+      // Edge labels for virgin edges - positioned to float away from arrow
+      'label': 'data(label)',
+      'font-size': '11px',
+      'font-weight': 'bold',
+      'color': '#000000',  // Black text for visibility
+      'text-background-color': '#ffffff',
+      'text-background-opacity': 0.9,
+      'text-background-padding': '3px',
+      'text-background-shape': 'roundrectangle',
+      'text-margin-y': '-15px',     // Move text up from edge line
+      'source-text-margin-x': '10px',  // Small offset from center
+      'text-rotation': 'none'       // Keep text horizontal for readability
     }
   },
   // Edge supports: use displayType to avoid cross-mode conflicts
@@ -339,6 +351,13 @@ document.addEventListener('DOMContentLoaded', () => {
       'line-style': 'dotted',
       'mid-target-arrow-shape': 'triangle',
       'mid-target-arrow-color': '#d32f2f'  // Red triangle for NOT relationships
+    }
+  },
+  // Virgin edges: dashed line style to indicate non-propagation
+  {
+    selector: 'edge[absWeight = 0]',  // Virgin edges have absWeight = 0
+    style: {
+      'line-style': 'dashed'  // Perforated paper effect
     }
   },
   // Floret color override
