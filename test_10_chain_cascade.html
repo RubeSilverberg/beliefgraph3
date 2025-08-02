@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>10-Node Chain Cascade Test</title>
+    <script src="https://unpkg.com/cytoscape@3.26.0/dist/cytoscape.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #cy { width: 100%; height: 400px; border: 1px solid #ccc; margin: 20px 0; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .test-step { margin: 10px 0; padding: 10px; background: #f5f5f5; }
+        button { margin: 5px; padding: 8px 16px; }
+        .status { font-weight: bold; }
+        .pass { color: green; }
+        .fail { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>10-Node Chain Cascade Test</h1>
+    
+    <div id="cy"></div>
+    
+    <div class="test-section">
+        <h3>Test Controls</h3>
+        <button onclick="setupChain()">1. Setup 10-Node Chain</button>
+        <button onclick="addFactToLeft()">2. Add Fact to Left</button>
+        <button onclick="setNewFactWeight()">3. Set New Fact Weight (1.0)</button>
+        <button onclick="checkPropagation()">4. Check Propagation Status</button>
+        <button onclick="reset()">Reset</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test Results</h3>
+        <div id="results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Chain Status</h3>
+        <div id="chainStatus"></div>
+    </div>
+
+    <script type="module">
+        import { convergeAll, FACT_PROB } from './logic.js';
+        
+        window.cy = cytoscape({
+            container: document.getElementById('cy'),
+            style: [
+                {
+                    selector: 'node',
+                    style: {
+                        'background-color': 'data(bgColor)',
+                        'label': 'data(label)',
+                        'color': '#000',
+                        'text-valign': 'center',
+                        'text-halign': 'center',
+                        'font-size': '12px',
+                        'width': '60px',
+                        'height': '40px'
+                    }
+                },
+                {
+                    selector: 'edge',
+                    style: {
+                        'width': 3,
+                        'line-color': '#666',
+                        'target-arrow-color': '#666',
+                        'target-arrow-shape': 'triangle',
+                        'curve-style': 'bezier',
+                        'label': 'data(weightLabel)',
+                        'font-size': '10px'
+                    }
+                }
+            ],
+            layout: { name: 'preset' }
+        });
+
+        let testStep = 0;
+        let newFactId = null;
+        let newEdgeId = null;
+
+        window.setupChain = function() {
+            cy.elements().remove();
+            
+            // Create 10-node chain: fact -> assertion1 -> assertion2 -> ... -> assertion9
+            const nodes = [];
+            const edges = [];
+            
+            // Create fact node
+            nodes.push({
+                group: 'nodes',
+                data: {
+                    id: 'fact1',
+                    label: 'Fact1',
+                    type: 'fact',
+                    prob: FACT_PROB,
+                    bgColor: '#90EE90'
+                },
+                position: { x: 50, y: 200 }
+            });
+            
+            // Create 9 assertion nodes
+            for (let i = 1; i <= 9; i++) {
+                nodes.push({
+                    group: 'nodes',
+                    data: {
+                        id: `assertion${i}`,
+                        label: `A${i}`,
+                        type: 'assertion',
+                        bgColor: '#ADD8E6'
+                    },
+                    position: { x: 50 + (i * 80), y: 200 }
+                });
+            }
+            
+            // Create edges connecting the chain
+            for (let i = 1; i <= 9; i++) {
+                const sourceId = i === 1 ? 'fact1' : `assertion${i-1}`;
+                const targetId = `assertion${i}`;
+                edges.push({
+                    group: 'edges',
+                    data: {
+                        id: `edge${i}`,
+                        source: sourceId,
+                        target: targetId,
+                        weight: 1.0,
+                        weightLabel: '1.0'
+                    }
+                });
+            }
+            
+            cy.add([...nodes, ...edges]);
+            convergeAll({ cy });
+            updateChainStatus();
+            
+            logResult('Setup complete: 10-node chain created', 'info');
+            testStep = 1;
+        };
+
+        window.addFactToLeft = function() {
+            if (testStep !== 1) {
+                logResult('Please setup chain first', 'fail');
+                return;
+            }
+            
+            // Add new fact node to the left of the chain
+            newFactId = 'newFact';
+            const newFactNode = {
+                group: 'nodes',
+                data: {
+                    id: newFactId,
+                    label: 'NewFact',
+                    type: 'fact',
+                    prob: FACT_PROB,
+                    bgColor: '#FFB6C1'
+                },
+                position: { x: -50, y: 120 }
+            };
+            
+            // Add edge from new fact to first assertion (but with weight 0)
+            newEdgeId = 'newEdge';
+            const newEdge = {
+                group: 'edges',
+                data: {
+                    id: newEdgeId,
+                    source: newFactId,
+                    target: 'assertion1',
+                    weight: 0,  // Start with 0 weight - should kill propagation
+                    weightLabel: '0'
+                }
+            };
+            
+            cy.add([newFactNode, newEdge]);
+            convergeAll({ cy });
+            updateChainStatus();
+            
+            // Check if propagation was killed
+            const assertion1 = cy.getElementById('assertion1');
+            const isVirgin = assertion1.data('isVirgin');
+            
+            if (isVirgin) {
+                logResult('✓ PASS: Adding fact with 0 weight killed propagation as expected', 'pass');
+            } else {
+                logResult('✗ FAIL: Adding fact should have killed propagation but didn\'t', 'fail');
+            }
+            
+            testStep = 2;
+        };
+
+        window.setNewFactWeight = function() {
+            if (testStep !== 2) {
+                logResult('Please add fact to left first', 'fail');
+                return;
+            }
+            
+            // Set the new edge weight to 1.0
+            const edge = cy.getElementById(newEdgeId);
+            edge.data('weight', 1.0);
+            edge.data('weightLabel', '1.0');
+            
+            convergeAll({ cy });
+            updateChainStatus();
+            
+            // Check if propagation was restored
+            const assertion8 = cy.getElementById('assertion8'); // Second to last
+            const assertion9 = cy.getElementById('assertion9'); // Last (should remain virgin)
+            
+            const has8Prob = typeof assertion8.data('prob') === 'number';
+            const is9Virgin = assertion9.data('isVirgin');
+            
+            if (has8Prob && is9Virgin) {
+                logResult('✓ PASS: Setting weight restored propagation to assertion8, assertion9 remains virgin', 'pass');
+            } else if (has8Prob && !is9Virgin) {
+                logResult('✗ FAIL: Propagation restored but assertion9 should remain virgin', 'fail');
+            } else {
+                logResult('✗ FAIL: Setting weight did not restore propagation properly', 'fail');
+            }
+            
+            testStep = 3;
+        };
+
+        window.checkPropagation = function() {
+            updateChainStatus();
+            logResult('Chain status updated - check the status table below', 'info');
+        };
+
+        window.reset = function() {
+            cy.elements().remove();
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('chainStatus').innerHTML = '';
+            testStep = 0;
+            newFactId = null;
+            newEdgeId = null;
+            logResult('Test reset', 'info');
+        };
+
+        function updateChainStatus() {
+            const statusDiv = document.getElementById('chainStatus');
+            let html = '<table border="1" style="border-collapse: collapse; width: 100%;">';
+            html += '<tr><th>Node</th><th>Type</th><th>Probability</th><th>Is Virgin</th><th>Status</th></tr>';
+            
+            // Check new fact if it exists
+            if (newFactId) {
+                const node = cy.getElementById(newFactId);
+                if (node.length > 0) {
+                    const prob = node.data('prob');
+                    const isVirgin = node.data('isVirgin');
+                    html += `<tr><td>${newFactId}</td><td>fact</td><td>${prob?.toFixed(3) || 'undefined'}</td><td>${isVirgin || false}</td><td>New Fact</td></tr>`;
+                }
+            }
+            
+            // Check original fact
+            const fact1 = cy.getElementById('fact1');
+            if (fact1.length > 0) {
+                const prob = fact1.data('prob');
+                const isVirgin = fact1.data('isVirgin');
+                html += `<tr><td>fact1</td><td>fact</td><td>${prob?.toFixed(3) || 'undefined'}</td><td>${isVirgin || false}</td><td>Original Fact</td></tr>`;
+            }
+            
+            // Check all assertions
+            for (let i = 1; i <= 9; i++) {
+                const node = cy.getElementById(`assertion${i}`);
+                if (node.length > 0) {
+                    const prob = node.data('prob');
+                    const isVirgin = node.data('isVirgin');
+                    const status = isVirgin ? 'Virgin (—)' : (typeof prob === 'number' ? `${Math.round(prob * 100)}%` : 'Undefined');
+                    const statusClass = isVirgin ? 'virgin' : (typeof prob === 'number' ? 'active' : 'undefined');
+                    html += `<tr><td>assertion${i}</td><td>assertion</td><td>${prob?.toFixed(3) || 'undefined'}</td><td>${isVirgin || false}</td><td class="${statusClass}">${status}</td></tr>`;
+                }
+            }
+            
+            html += '</table>';
+            
+            // Add edge weights info
+            html += '<h4>Edge Weights</h4><table border="1" style="border-collapse: collapse; margin-top: 10px;">';
+            html += '<tr><th>Edge</th><th>Source</th><th>Target</th><th>Weight</th></tr>';
+            
+            cy.edges().forEach(edge => {
+                const weight = edge.data('weight');
+                const source = edge.source().id();
+                const target = edge.target().id();
+                html += `<tr><td>${edge.id()}</td><td>${source}</td><td>${target}</td><td>${weight}</td></tr>`;
+            });
+            
+            html += '</table>';
+            statusDiv.innerHTML = html;
+        }
+
+        function logResult(message, type) {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            resultsDiv.appendChild(div);
+        }
+
+        // Auto-setup on load
+        setTimeout(() => {
+            logResult('Test page loaded. Click "Setup 10-Node Chain" to begin.', 'info');
+        }, 100);
+    </script>
+</body>
+</html>

@@ -318,6 +318,38 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
 // - Heavy mode: Uses single-pass Bayes Heavy calculation (no convergence loop)
 // - Topology changes: Only occur in Lite mode, Heavy mode reflects Lite's structure
 // - Multi-pass: Only needed for Lite mode topology changes, Heavy mode is single-pass
+export function clearVisualOnlyData(node, properties) {
+  // Clear visual-only properties that don't affect logic state
+  properties.forEach(prop => node.removeData(prop));
+}
+
+export function initializeNodeData(node, nodeType) {
+  // Initialize node data based on type - handles all data clearing in logic system
+  if (nodeType === 'fact') {
+    // Facts should have high probability in both modes
+    node.data('heavyProb', 1.0); // 100%
+    // Note: lite mode prob will be set by propagation logic
+  } else if (nodeType === 'assertion') {
+    // Assertions should start virgin in lite mode, with 50% latent prior in heavy mode
+    node.removeData('prob'); // Clear any existing lite mode probability to make it virgin
+    node.data('isVirgin', true); // Mark as virgin for lite mode
+    // Only set heavy mode default if not already calculated
+    if (typeof node.data('heavyProb') !== 'number') {
+      node.data('heavyProb', 0.5); // 50%
+    }
+  }
+}
+
+export function clearNodeDataForUnknownType(node) {
+  // Clear all probability and state data for unknown node types
+  node.removeData('robustness');
+  node.removeData('robustnessLabel');
+  node.removeData('hoverLabel');
+  node.removeData('prob');
+  node.removeData('heavyProb');
+  node.removeData('isVirgin');
+}
+
 export function convergeAll({ cy, tolerance = 0.001, maxIters = 30 } = {}) {
   const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
   
@@ -856,6 +888,9 @@ if (typeof window !== 'undefined') {
   window.convergeAll = convergeAll;
   window.convergeEdges = convergeEdges;
   window.convergeNodes = convergeNodes;
+  window.initializeNodeData = initializeNodeData;
+  window.clearNodeDataForUnknownType = clearNodeDataForUnknownType;
+  window.clearVisualOnlyData = clearVisualOnlyData;
   
   // Add debug helper functions to window for easy console access
   window.debugConvergeAll = () => convergeAll({ cy: window.cy, debug: true });

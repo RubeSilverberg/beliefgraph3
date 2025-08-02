@@ -47,6 +47,9 @@ import {
   syncNaiveBayesParents,
   clearBayesHighlights,
   highlightBayesNodeFocus,
+  initializeNodeData,
+  clearNodeDataForUnknownType,
+  clearVisualOnlyData,
   // If you later add more, include here
 } from './logic.js';
 

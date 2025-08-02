@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple 10-Node Chain Test</title>
+    <script src="https://unpkg.com/cytoscape@3.26.0/dist/cytoscape.min.js"></script>
+</head>
+<body>
+    <h1>10-Node Chain Cascade Test</h1>
+    <div id="output" style="font-family: monospace; white-space: pre-line; background: #f5f5f5; padding: 20px; margin: 20px;"></div>
+
+    <script type="module">
+        import { convergeAll, FACT_PROB } from './logic.js';
+        
+        const output = document.getElementById('output');
+        function log(message) {
+            output.textContent += message + '\n';
+            console.log(message);
+        }
+
+        // Create Cytoscape instance
+        window.cy = cytoscape({
+            container: document.createElement('div'), // Hidden container
+            style: [
+                {
+                    selector: 'node',
+                    style: { 'background-color': '#666', 'label': 'data(label)' }
+                },
+                {
+                    selector: 'edge',
+                    style: { 'target-arrow-shape': 'triangle' }
+                }
+            ]
+        });
+
+        function printStatus(title) {
+            log(`\n=== ${title} ===`);
+            
+            // Check facts
+            const newFact = cy.getElementById('newFact');
+            if (newFact.length > 0) {
+                const prob = newFact.data('prob');
+                const isVirgin = newFact.data('isVirgin');
+                log(`newFact: prob=${prob?.toFixed(3) || 'undefined'}, virgin=${!!isVirgin}`);
+            }
+            
+            const fact1 = cy.getElementById('fact1');
+            if (fact1.length > 0) {
+                const prob = fact1.data('prob');
+                const isVirgin = fact1.data('isVirgin');
+                log(`fact1: prob=${prob?.toFixed(3) || 'undefined'}, virgin=${!!isVirgin}`);
+            }
+            
+            // Check assertions
+            for (let i = 1; i <= 9; i++) {
+                const node = cy.getElementById(`assertion${i}`);
+                if (node.length > 0) {
+                    const prob = node.data('prob');
+                    const isVirgin = node.data('isVirgin');
+                    const display = isVirgin ? 'Virgin (—)' : (typeof prob === 'number' ? `${Math.round(prob * 100)}%` : 'Undefined');
+                    log(`assertion${i}: prob=${prob?.toFixed(3) || 'undefined'}, virgin=${!!isVirgin}, display=${display}`);
+                }
+            }
+            
+            // Show edges
+            log('\nEdge weights:');
+            cy.edges().forEach(edge => {
+                const weight = edge.data('weight');
+                const source = edge.source().id();
+                const target = edge.target().id();
+                log(`  ${edge.id()}: ${source} → ${target}, weight=${weight}`);
+            });
+        }
+
+        async function runTest() {
+            log('Starting 10-node chain cascade test...');
+            log(`Using FACT_PROB = ${FACT_PROB}`);
+
+            // Step 1: Setup chain
+            log('\n🔧 STEP 1: Setting up 10-node chain');
+            cy.elements().remove();
+            
+            // Create fact node
+            cy.add({
+                group: 'nodes',
+                data: { id: 'fact1', label: 'Fact1', type: 'fact', prob: FACT_PROB }
+            });
+            
+            // Create 9 assertion nodes
+            for (let i = 1; i <= 9; i++) {
+                cy.add({
+                    group: 'nodes',
+                    data: { id: `assertion${i}`, label: `A${i}`, type: 'assertion' }
+                });
+            }
+            
+            // Create edges
+            for (let i = 1; i <= 9; i++) {
+                const sourceId = i === 1 ? 'fact1' : `assertion${i-1}`;
+                const targetId = `assertion${i}`;
+                cy.add({
+                    group: 'edges',
+                    data: { id: `edge${i}`, source: sourceId, target: targetId, weight: 1.0 }
+                });
+            }
+            
+            convergeAll({ cy });
+            printStatus('After initial setup');
+
+            // Step 2: Remove fact and add new one with 0 weight
+            log('\n🔧 STEP 2: Removing original fact, adding new fact with 0 weight');
+            cy.getElementById('fact1').remove();
+            cy.getElementById('edge1').remove();
+            
+            cy.add({
+                group: 'nodes',
+                data: { id: 'newFact', label: 'NewFact', type: 'fact', prob: FACT_PROB }
+            });
+            
+            cy.add({
+                group: 'edges',
+                data: { id: 'newEdge', source: 'newFact', target: 'assertion1', weight: 0 }
+            });
+            
+            convergeAll({ cy });
+            printStatus('After removing fact and adding 0-weight edge');
+            
+            // Check if propagation was killed
+            const assertion1 = cy.getElementById('assertion1');
+            const isVirgin = assertion1.data('isVirgin');
+            
+            if (isVirgin) {
+                log('✅ PASS: With only 0-weight edge, propagation is killed as expected');
+            } else {
+                log('❌ FAIL: With only 0-weight edge, propagation should be killed');
+            }
+
+            // Step 3: Set weight to 1.0
+            log('\n🔧 STEP 3: Setting new fact weight to 1.0');
+            const newEdge = cy.getElementById('newEdge');
+            newEdge.data('weight', 1.0);
+            
+            convergeAll({ cy });
+            printStatus('After setting weight to 1.0');
+            
+            // Check if propagation was restored properly
+            const assertion8 = cy.getElementById('assertion8');
+            const assertion9 = cy.getElementById('assertion9');
+            
+            const has8Prob = typeof assertion8.data('prob') === 'number';
+            const is9Virgin = assertion9.data('isVirgin');
+            
+            if (has8Prob && is9Virgin) {
+                log('✅ PASS: Propagation restored to assertion8, assertion9 remains virgin');
+            } else if (has8Prob && !is9Virgin) {
+                log('❌ FAIL: Propagation restored but assertion9 should remain virgin');
+                log(`   assertion8 prob: ${assertion8.data('prob')}, virgin: ${assertion8.data('isVirgin')}`);
+                log(`   assertion9 prob: ${assertion9.data('prob')}, virgin: ${assertion9.data('isVirgin')}`);
+            } else {
+                log('❌ FAIL: Setting weight did not restore propagation properly');
+                log(`   assertion8 prob: ${assertion8.data('prob')}, virgin: ${assertion8.data('isVirgin')}`);
+                log(`   assertion9 prob: ${assertion9.data('prob')}, virgin: ${assertion9.data('isVirgin')}`);
+            }
+
+            log('\n🎯 TEST COMPLETE');
+            log('Expected behavior:');
+            log('1. Removing fact and adding 0-weight edge kills propagation');
+            log('2. Setting weight to 1.0 restores propagation up to second-to-last node');
+            log('3. Last node remains virgin (no outgoing edges)');
+        }
+
+        // Run test after a short delay
+        setTimeout(runTest, 100);
+    </script>
+</body>
+</html>

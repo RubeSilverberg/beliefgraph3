@@ -153,16 +153,14 @@ export function autoUpdateNodeTypes(cy, fromConvergeAll = false) {
       
       // Set appropriate default probabilities
       if (newType === NODE_TYPE_FACT) {
-        // Facts should have high probability in both modes
-        node.data('heavyProb', 1.0); // 100%
-        // Note: lite mode prob will be set by propagation logic
+        // Initialize fact data through logic system
+        if (window.initializeNodeData) {
+          window.initializeNodeData(node, 'fact');
+        }
       } else if (newType === NODE_TYPE_ASSERTION) {
-        // Assertions should start virgin in lite mode, with 50% latent prior in heavy mode
-        node.removeData('prob'); // Clear any existing lite mode probability to make it virgin
-        node.data('isVirgin', true); // Mark as virgin for lite mode
-        // Only set heavy mode default if not already calculated
-        if (typeof node.data('heavyProb') !== 'number') {
-          node.data('heavyProb', 0.5); // 50%
+        // Initialize assertion data through logic system
+        if (window.initializeNodeData) {
+          window.initializeNodeData(node, 'assertion');
         }
       }
       
@@ -275,7 +273,8 @@ export function computeVisuals(cy) {
         });
         return;
       } else {
-        node.removeData('isVirgin');
+        // Note: isVirgin should be managed by logic system, not visual system
+        // Removed boundary violation: node.removeData('isVirgin');
       }
 
       let p = node.data('prob');
@@ -349,18 +348,19 @@ export function computeVisuals(cy) {
       label = node.data('displayLabel') || node.data('origLabel') || node.data('label') || 'Note';
       borderColor = '#ddd';
       borderWidth = 1;
-      node.removeData('robustness');
-      node.removeData('robustnessLabel');
-      node.removeData('hoverLabel'); // No hover label distinction
-      node.removeData('prob');
-      node.removeData('heavyProb');
+      // Clear data through logic system instead of direct removeData calls
+      if (window.clearNodeDataForUnknownType) {
+        window.clearNodeDataForUnknownType(node);
+      }
     }
     // Unknown type
     else {
       label = `[Unknown Type] ${displayLabel}`;
       borderColor = '#bbb';
-      node.removeData('robustness');
-      node.removeData('robustnessLabel');
+      // Clear data through logic system instead of direct removeData calls
+      if (window.clearNodeDataForUnknownType) {
+        window.clearNodeDataForUnknownType(node);
+      }
     }
     node.data({
       label,
