@@ -180,27 +180,134 @@ export function convergeEdges({ cy, tolerance = 0.001, maxIters = 30 }) {
 export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
   let converged = false, finalDelta = 0, iterations = 0;
 
+  // 🔍 COMPREHENSIVE DEBUG LOG - Initialize debugging system
+  const DEBUG_COMPREHENSIVE = true;
+  const debugLog = {
+    totalNodes: cy.nodes().length,
+    totalEdges: cy.edges().length,
+    iterationDetails: [],
+    nodeProcessingOrder: [],
+    edgeStates: [],
+    virginAnalysis: [],
+    nodeDetails: [],
+    iterationSummaries: []
+  };
+
+  if (DEBUG_COMPREHENSIVE) {
+    console.log(`\n🚀 ========== COMPREHENSIVE DEBUG: convergeNodes START ==========`);
+    console.log(`📊 Graph State: ${debugLog.totalNodes} nodes, ${debugLog.totalEdges} edges`);
+    
+    // Log all nodes and their current states
+    cy.nodes().forEach(node => {
+      console.log(`📋 Node ${node.id()}: type=${node.data('type')}, prob=${node.data('prob')}, isVirgin=${node.data('isVirgin')}`);
+    });
+    
+    // Log all edges and their weights
+    cy.edges().forEach(edge => {
+      console.log(`🔗 Edge ${edge.id()}: ${edge.source().id()} → ${edge.target().id()}, weight=${edge.data('weight')}, computedWeight=${edge.data('computedWeight')}`);
+    });
+  }
+
   for (let iter = 0; iter < maxIters; iter++) {
     iterations = iter + 1;
     let deltas = [];
     let maxDelta = 0;
     let changed = false;
     
+    // Reset node details for this iteration
+    debugLog.nodeDetails = [];
+    
+    const iterationDebug = {
+      iteration: iterations,
+      nodesProcessed: [],
+      virginDetections: [],
+      probabilityChanges: [],
+      edgeValidations: []
+    };
+    
     // Track probabilities calculated in this iteration to avoid stale data issues
     const currentIterProbs = new Map();
+    
+    // Helper function to get current iteration probability - used by all node types
+    const getCurrentIterProb = (node) => {
+      return currentIterProbs.has(node.id()) ? currentIterProbs.get(node.id()) : node.data('prob');
+    };
 
-    cy.nodes().forEach(node => {
+    if (DEBUG_COMPREHENSIVE) {
+      console.log(`\n🔄 ===== ITERATION ${iterations} START =====`);
+    }
+
+    // Process nodes in topological order to ensure dependencies are calculated first
+    const allNodes = cy.nodes().jsons();
+    const sortedNodes = [];
+    const visited = new Set();
+    const visiting = new Set();
+    
+    function topologicalSort(nodeData) {
+      if (visiting.has(nodeData.data.id)) {
+        // Cycle detected, skip this path
+        return;
+      }
+      if (visited.has(nodeData.data.id)) {
+        return;
+      }
+      
+      visiting.add(nodeData.data.id);
+      
+      // Process all dependencies (incoming edges) first
+      const node = cy.getElementById(nodeData.data.id);
+      node.incomers('edge').forEach(edge => {
+        const parentNodeData = allNodes.find(n => n.data.id === edge.source().id());
+        if (parentNodeData) {
+          topologicalSort(parentNodeData);
+        }
+      });
+      
+      visiting.delete(nodeData.data.id);
+      visited.add(nodeData.data.id);
+      sortedNodes.push(node);
+    }
+    
+    // Sort all nodes topologically
+    allNodes.forEach(nodeData => {
+      if (!visited.has(nodeData.data.id)) {
+        topologicalSort(nodeData);
+      }
+    });
+    
+    if (DEBUG_COMPREHENSIVE) {
+      console.log(`🔄 Processing ${sortedNodes.length} nodes in topological order: ${sortedNodes.map(n => n.id()).join(' → ')}`);
+    }
+
+    sortedNodes.forEach(node => {
       const nodeType = node.data('type');
       let newProb;
 
+      const nodeDebug = {
+        nodeId: node.id(),
+        nodeType: nodeType,
+        startingProb: node.data('prob'),
+        startingIsVirgin: node.data('isVirgin'),
+        incomingEdges: node.incomers('edge').length,
+        edgeDetails: []
+      };
+
+      if (DEBUG_COMPREHENSIVE) {
+        console.log(`\n📍 Processing Node: ${node.id()} (type: ${nodeType})`);
+        console.log(`   🎯 Starting state: prob=${node.data('prob')}, isVirgin=${node.data('isVirgin')}`);
+        console.log(`   📥 Incoming edges: ${node.incomers('edge').length}`);
+      }
+
       if (nodeType === 'fact') {
+        newProb = FACT_PROB; // Explicitly set fact probability
         currentIterProbs.set(node.id(), newProb);
-      } else if (nodeType === 'and') {
-        // Helper function to get current iteration probability
-        const getCurrentIterProb = (node) => {
-          return currentIterProbs.has(node.id()) ? currentIterProbs.get(node.id()) : node.data('prob');
-        };
+        nodeDebug.action = 'SET_FACT_PROB';
+        nodeDebug.newProb = newProb;
         
+        if (DEBUG_COMPREHENSIVE) {
+          console.log(`   ✅ FACT node: Set probability to ${FACT_PROB}`);
+        }
+      } else if (nodeType === 'and') {
         const incomingEdges = node.incomers('edge');
         if (incomingEdges.length === 0 || incomingEdges.some(edge => typeof getCurrentIterProb(edge.source()) !== "number")) {
           newProb = undefined;
@@ -229,11 +336,6 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
         }
         currentIterProbs.set(node.id(), newProb);
       } else if (nodeType === 'or') {
-        // Helper function to get current iteration probability
-        const getCurrentIterProb = (node) => {
-          return currentIterProbs.has(node.id()) ? currentIterProbs.get(node.id()) : node.data('prob');
-        };
-        
         const incomingEdges = node.incomers('edge');
         if (incomingEdges.length === 0 || incomingEdges.some(edge => typeof getCurrentIterProb(edge.source()) !== "number")) {
           newProb = undefined;
@@ -259,25 +361,96 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
         }
         currentIterProbs.set(node.id(), newProb);
       } else if (nodeType === 'assertion') {
-        // Helper function to get current iteration probability
-        const getCurrentIterProb = (node) => {
-          return currentIterProbs.has(node.id()) ? currentIterProbs.get(node.id()) : node.data('prob');
-        };
         
         const incomingEdges = node.incomers('edge');
-        // Filter for parent edges where the source has a defined prob AND edge has non-zero weight
-        // CRITICAL FIX: Use current iteration probability, not stale data
+        
+        if (DEBUG_COMPREHENSIVE) {
+          console.log(`   🔍 ASSERTION Analysis for ${node.id()}:`);
+          console.log(`   📥 Found ${incomingEdges.length} incoming edges`);
+        }
+        
+        // COMPREHENSIVE EDGE VALIDATION WITH DETAILED LOGGING
+        const edgeValidationResults = [];
         const validEdges = incomingEdges.filter(e => {
-          const parentProb = getCurrentIterProb(e.source());
+          const parentNode = e.source();
+          const parentProb = getCurrentIterProb(parentNode);
           const edgeWeight = e.data('weight');
-          return typeof parentProb === "number" && edgeWeight && edgeWeight !== 0;
+          const computedWeight = e.data('computedWeight');
+          
+          const parentHasProb = typeof parentProb === "number";
+          const weightIsValid = edgeWeight && edgeWeight !== 0;
+          const isValidEdge = parentHasProb && weightIsValid;
+          
+          const edgeValidation = {
+            edgeId: e.id(),
+            parentId: parentNode.id(),
+            parentType: parentNode.data('type'),
+            parentProb: parentProb,
+            parentHasProb: parentHasProb,
+            edgeWeight: edgeWeight,
+            computedWeight: computedWeight,
+            weightIsValid: weightIsValid,
+            isValidEdge: isValidEdge,
+            invalidReason: !isValidEdge ? (!parentHasProb ? 'NO_PARENT_PROB' : 'NO_VALID_WEIGHT') : null
+          };
+          
+          edgeValidationResults.push(edgeValidation);
+          
+          if (DEBUG_COMPREHENSIVE) {
+            console.log(`     🔗 Edge ${e.id()}: ${parentNode.id()} → ${node.id()}`);
+            console.log(`       👤 Parent: type=${parentNode.data('type')}, prob=${parentProb} (hasProb=${parentHasProb})`);
+            console.log(`       ⚖️ Weight: original=${edgeWeight}, computed=${computedWeight} (valid=${weightIsValid})`);
+            console.log(`       ✅ Valid: ${isValidEdge} ${!isValidEdge ? `(${edgeValidation.invalidReason})` : ''}`);
+          }
+          
+          return isValidEdge;
         });
+
+        nodeDebug.edgeValidationResults = edgeValidationResults;
+        nodeDebug.validEdgesCount = validEdges.length;
+        
+        if (DEBUG_COMPREHENSIVE) {
+          console.log(`   📊 Edge Validation Summary: ${validEdges.length}/${incomingEdges.length} edges are valid`);
+          
+          if (validEdges.length === 0) {
+            console.log(`   🚨 NO VALID EDGES - Node will become virgin`);
+            edgeValidationResults.forEach(result => {
+              if (!result.isValidEdge) {
+                console.log(`     ❌ ${result.edgeId}: ${result.invalidReason}`);
+              }
+            });
+          }
+        }
 
         if (validEdges.length === 0) {
           newProb = undefined;
           node.data('isVirgin', true);
+          nodeDebug.action = 'BECAME_VIRGIN';
+          nodeDebug.reason = 'NO_VALID_EDGES';
+          
+          if (DEBUG_COMPREHENSIVE) {
+            console.log(`   🔴 RESULT: Node ${node.id()} marked as VIRGIN (no valid edges)`);
+          }
         } else {
           node.removeData('isVirgin');
+          nodeDebug.action = 'CALCULATE_PROB';
+          
+          const propagationDebug = {
+            validEdgesUsed: validEdges.map(e => ({
+              edgeId: e.id(),
+              parentId: e.source().id(),
+              parentProb: getCurrentIterProb(e.source()),
+              weight: e.data('computedWeight') || 0
+            }))
+          };
+          
+          if (DEBUG_COMPREHENSIVE) {
+            console.log(`   🧮 PROPAGATING from ${validEdges.length} valid edges:`);
+            propagationDebug.validEdgesUsed.forEach((edge, i) => {
+              console.log(`     [${i+1}] ${edge.parentId} (prob=${edge.parentProb}) → weight=${edge.weight}`);
+            });
+          }
+          
           newProb = propagateFromParentsRobust({
             baseProb: 0.5,
             parents: validEdges,
@@ -290,16 +463,95 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
             epsilon: 0.01,
             saturationK: 1
           });
-          console.log(
-            'assertion node:', node.id(),
-            'parents:', validEdges.map(e => e.source().id()),
-            'weights:', validEdges.map(e => e.data('computedWeight')),
-            'parent probs:', validEdges.map(e => getCurrentIterProb(e.source())),
-            'computed newProb:', newProb
-          );
+          
+          nodeDebug.propagationDebug = propagationDebug;
+          nodeDebug.newProb = newProb;
+          
+          if (DEBUG_COMPREHENSIVE) {
+            console.log(`   🎯 CALCULATED probability: ${newProb}`);
+            console.log(`   📈 Change: ${node.data('prob')} → ${newProb} (delta: ${Math.abs((newProb || 0) - (node.data('prob') || 0))})`);
+          }
+        }
+        currentIterProbs.set(node.id(), newProb);
+      } else if (nodeType === 'andNode' || nodeType === 'orNode') {
+        const incomingEdges = node.incomers('edge');
+        
+        if (DEBUG_COMPREHENSIVE) {
+          console.log(`   🔍 ${nodeType.toUpperCase()} Analysis for ${node.id()}:`);
+          console.log(`   📥 Found ${incomingEdges.length} incoming edges`);
+        }
+        
+        // COMPREHENSIVE LOGIC NODE EDGE VALIDATION
+        const logicEdgeResults = [];
+        const validLogicEdges = incomingEdges.filter(e => {
+          const parentNode = e.source();
+          const parentProb = getCurrentIterProb(parentNode);
+          const parentHasProb = typeof parentProb === "number";
+          
+          const logicEdgeValidation = {
+            edgeId: e.id(),
+            parentId: parentNode.id(),
+            parentType: parentNode.data('type'),
+            parentProb: parentProb,
+            parentHasProb: parentHasProb,
+            isValid: parentHasProb
+          };
+          
+          logicEdgeResults.push(logicEdgeValidation);
+          
+          if (DEBUG_COMPREHENSIVE) {
+            console.log(`     🔗 Edge ${e.id()}: ${parentNode.id()} → ${node.id()}`);
+            console.log(`       👤 Parent: type=${parentNode.data('type')}, prob=${parentProb} (hasProb=${parentHasProb})`);
+            console.log(`       ✅ Valid: ${parentHasProb}`);
+          }
+          
+          return parentHasProb;
+        });
+        
+        nodeDebug.logicEdgeResults = logicEdgeResults;
+        nodeDebug.validLogicEdgesCount = validLogicEdges.length;
+        
+        if (DEBUG_COMPREHENSIVE) {
+          console.log(`   📊 Logic Edge Summary: ${validLogicEdges.length}/${incomingEdges.length} edges have defined probabilities`);
+        }
+
+        if (validLogicEdges.length === 0) {
+          newProb = undefined;
+          node.data('isVirgin', true);
+          nodeDebug.action = 'BECAME_VIRGIN';
+          nodeDebug.reason = 'NO_PARENTS_WITH_PROB';
+          
+          if (DEBUG_COMPREHENSIVE) {
+            console.log(`   🔴 RESULT: ${nodeType} ${node.id()} marked as VIRGIN (no parents with probability)`);
+          }
+        } else {
+          node.removeData('isVirgin');
+          
+          const logicProbs = validLogicEdges.map(e => getCurrentIterProb(e.source()));
+          
+          if (nodeType === 'andNode') {
+            newProb = logicProbs.reduce((acc, prob) => acc * prob, 1);
+            nodeDebug.action = 'AND_CALCULATION';
+            nodeDebug.calculation = `${logicProbs.join(' × ')} = ${newProb}`;
+          } else { // orNode
+            newProb = 1 - logicProbs.reduce((acc, prob) => acc * (1 - prob), 1);
+            nodeDebug.action = 'OR_CALCULATION';
+            nodeDebug.calculation = `1 - ${logicProbs.map(p => `(1-${p})`).join(' × ')} = ${newProb}`;
+          }
+          
+          nodeDebug.inputProbs = logicProbs;
+          nodeDebug.newProb = newProb;
+          
+          if (DEBUG_COMPREHENSIVE) {
+            console.log(`   🧮 ${nodeType.toUpperCase()} calculation: ${nodeDebug.calculation}`);
+            console.log(`   🎯 RESULT: ${newProb}`);
+          }
         }
         currentIterProbs.set(node.id(), newProb);
       }
+
+      // Store comprehensive debug info for this node
+      debugLog.nodeDetails.push(nodeDebug);
 
       deltas.push({ node, prev: node.data('prob'), newProb });
       // If newProb is different, mark as changed
@@ -313,8 +565,64 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
     });
 
     cy.batch(() => {
-      deltas.forEach(({ node, newProb }) => node.data('prob', newProb));
+      deltas.forEach(({ node, newProb }) => {
+        if (newProb === undefined) {
+          node.removeData('prob'); // Explicitly remove data when undefined
+        } else {
+          node.data('prob', newProb);
+        }
+      });
     });
+
+    // COMPREHENSIVE ITERATION SUMMARY
+    if (DEBUG_COMPREHENSIVE) {
+      const iterationSummary = {
+        iteration: iter + 1,
+        totalNodes: debugLog.totalNodes,
+        totalEdges: debugLog.totalEdges,
+        nodesProcessed: debugLog.nodeDetails.length,
+        converged: !changed || finalDelta < tolerance,
+        maxDelta: maxDelta,
+        deltaBreakdown: {
+          facts: debugLog.nodeDetails.filter(n => n.nodeType === 'fact').length,
+          assertions: debugLog.nodeDetails.filter(n => n.nodeType === 'assertion').length,
+          andNodes: debugLog.nodeDetails.filter(n => n.nodeType === 'andNode').length,
+          orNodes: debugLog.nodeDetails.filter(n => n.nodeType === 'orNode').length
+        },
+        virginNodes: debugLog.nodeDetails.filter(n => n.action === 'BECAME_VIRGIN').map(n => n.nodeId),
+        probabilityChanges: debugLog.nodeDetails.filter(n => n.newProb !== n.startingProb).map(n => ({
+          nodeId: n.nodeId,
+          type: n.nodeType,
+          change: `${n.startingProb} → ${n.newProb}`,
+          delta: Math.abs((n.newProb || 0) - (n.startingProb || 0))
+        }))
+      };
+      
+      console.log(`\n🔄 ===== ITERATION ${iter + 1} SUMMARY =====`);
+      console.log(`📊 Processed: ${iterationSummary.nodesProcessed} nodes (${iterationSummary.deltaBreakdown.facts} facts, ${iterationSummary.deltaBreakdown.assertions} assertions, ${iterationSummary.deltaBreakdown.andNodes} AND, ${iterationSummary.deltaBreakdown.orNodes} OR)`);
+      console.log(`🎯 Max Delta: ${maxDelta.toExponential(3)} (tolerance: ${tolerance})`);
+      console.log(`💀 Virgin Nodes: ${iterationSummary.virginNodes.length} → [${iterationSummary.virginNodes.join(', ')}]`);
+      console.log(`📈 Probability Changes: ${iterationSummary.probabilityChanges.length}`);
+      
+      if (iterationSummary.probabilityChanges.length > 0) {
+        console.log(`   Significant changes:`);
+        iterationSummary.probabilityChanges
+          .filter(change => change.delta > 0.001)
+          .slice(0, 10) // Show top 10 changes
+          .forEach(change => {
+            console.log(`     ${change.nodeId} (${change.type}): ${change.change} (Δ=${change.delta.toFixed(4)})`);
+          });
+      }
+      
+      debugLog.iterationSummaries.push(iterationSummary);
+      
+      if (iterationSummary.converged) {
+        console.log(`✅ CONVERGED after ${iter + 1} iterations`);
+      } else {
+        console.log(`🔄 Continuing to iteration ${iter + 2}...`);
+      }
+      console.log(`=====================================\n`);
+    }
 
     finalDelta = maxDelta;
     if (!changed || finalDelta < tolerance) {
@@ -325,6 +633,100 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
 
   if (!converged) {
     console.warn(`convergeNodes: hit maxIters (${maxIters}) without converging (final delta=${finalDelta.toExponential(3)})`);
+  }
+
+  // COMPREHENSIVE FINAL DEBUGGING SUMMARY
+  if (DEBUG_COMPREHENSIVE) {
+    console.log(`\n🏁 ===== COMPREHENSIVE CONVERGENCE ANALYSIS =====`);
+    console.log(`📊 Total Statistics:`);
+    console.log(`   - Iterations: ${iterations} (converged: ${converged})`);
+    console.log(`   - Final Delta: ${finalDelta.toExponential(3)}`);
+    console.log(`   - Total Nodes: ${debugLog.totalNodes} | Total Edges: ${debugLog.totalEdges}`);
+    
+    // Virgin Node Analysis
+    const allVirginNodes = [];
+    debugLog.iterationSummaries.forEach((summary, i) => {
+      if (summary.virginNodes.length > 0) {
+        allVirginNodes.push({
+          iteration: i + 1,
+          virginNodes: summary.virginNodes
+        });
+      }
+    });
+    
+    console.log(`\n💀 Virgin Node Timeline:`);
+    if (allVirginNodes.length === 0) {
+      console.log(`   ✅ No nodes became virgin during convergence`);
+    } else {
+      allVirginNodes.forEach(entry => {
+        console.log(`   Iteration ${entry.iteration}: ${entry.virginNodes.join(', ')} became virgin`);
+      });
+    }
+    
+    // Edge Weight Issue Analysis
+    const edgeIssues = [];
+    debugLog.nodeDetails.forEach(nodeDetail => {
+      if (nodeDetail.edgeValidationResults) {
+        nodeDetail.edgeValidationResults.forEach(edge => {
+          if (!edge.isValidEdge) {
+            edgeIssues.push({
+              nodeId: nodeDetail.nodeId,
+              edgeId: edge.edgeId,
+              parentId: edge.parentId,
+              reason: edge.invalidReason,
+              parentType: edge.parentType,
+              parentProb: edge.parentProb,
+              edgeWeight: edge.edgeWeight
+            });
+          }
+        });
+      }
+    });
+    
+    console.log(`\n⚠️ Edge Validation Issues: ${edgeIssues.length} total`);
+    if (edgeIssues.length > 0) {
+      const issuesByReason = {};
+      edgeIssues.forEach(issue => {
+        if (!issuesByReason[issue.reason]) issuesByReason[issue.reason] = [];
+        issuesByReason[issue.reason].push(issue);
+      });
+      
+      Object.entries(issuesByReason).forEach(([reason, issues]) => {
+        console.log(`   ${reason}: ${issues.length} edges`);
+        issues.slice(0, 5).forEach(issue => {
+          console.log(`     ${issue.edgeId}: ${issue.parentId} → ${issue.nodeId} (parent: ${issue.parentType}, weight: ${issue.edgeWeight})`);
+        });
+        if (issues.length > 5) {
+          console.log(`     ... and ${issues.length - 5} more`);
+        }
+      });
+    }
+    
+    // Final state analysis
+    const finalNodes = cy.nodes().map(node => ({
+      id: node.id(),
+      type: node.data('type'),
+      prob: node.data('prob'),
+      isVirgin: node.data('isVirgin'),
+      hasIncomingEdges: node.incomers('edge').length > 0
+    }));
+    
+    const finalVirginNodes = finalNodes.filter(n => n.isVirgin);
+    const finalNodesWithProb = finalNodes.filter(n => typeof n.prob === 'number');
+    
+    console.log(`\n📈 Final State:`);
+    console.log(`   - Nodes with probability: ${finalNodesWithProb.length}/${finalNodes.length}`);
+    console.log(`   - Virgin nodes: ${finalVirginNodes.length}/${finalNodes.length}`);
+    
+    if (finalVirginNodes.length > 0) {
+      console.log(`   Virgin nodes: ${finalVirginNodes.map(n => `${n.id}(${n.type})`).join(', ')}`);
+    }
+    
+    console.log(`===============================================\n`);
+    
+    // Store final debug data globally for inspection
+    window.CONVERGENCE_DEBUG = debugLog;
+    console.log(`🔍 Complete debug data available in window.CONVERGENCE_DEBUG`);
   }
 
   return { converged, iterations, finalDelta };
