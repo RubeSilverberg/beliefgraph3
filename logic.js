@@ -347,8 +347,8 @@ export function initializeNodeData(node, nodeType) {
   // Initialize node data based on type - handles all data clearing in logic system
   if (nodeType === 'fact') {
     // Facts should have high probability in both modes
-    node.data('heavyProb', 1.0); // 100%
-    // Note: lite mode prob will be set by propagation logic
+    node.data('prob', FACT_PROB); // Lite mode: 0.995
+    node.data('heavyProb', 1.0); // Heavy mode: 100%
   } else if (nodeType === 'assertion') {
     // Assertions should start virgin in lite mode, with 50% latent prior in heavy mode
     node.removeData('prob'); // Clear any existing lite mode probability to make it virgin

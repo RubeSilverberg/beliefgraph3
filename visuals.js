@@ -72,6 +72,11 @@ export function getEdgeLabel(edge) {
   // Check if this is a virgin edge (no parent prob OR no weight)
   const isVirgin = typeof parentProb !== "number" || !edgeWeight || edgeWeight === 0;
   
+  // Debug logging to track virgin detection
+  if (DEBUG) {
+    console.log(`Edge ${edge.id()}: parentProb=${parentProb}, edgeWeight=${edgeWeight}, isVirgin=${isVirgin}`);
+  }
+  
   if (!isVirgin) {
     return ""; // Non-virgin edges show no label (use dynamic sizing/coloring)
   }
@@ -257,14 +262,21 @@ export function computeVisuals(cy) {
         // Edge is valid if parent has a probability AND weight is set (not 0)
         const parentProb = e.source().data('prob');
         const edgeWeight = e.data('weight');
-        return typeof parentProb === "number" && edgeWeight && edgeWeight !== 0;
+        const isValid = typeof parentProb === "number" && edgeWeight && edgeWeight !== 0;
+        
+        // Debug logging for edge validity
+        if (DEBUG) {
+          console.log(`Node ${node.id()} - Edge ${e.id()}: parentProb=${parentProb}, edgeWeight=${edgeWeight}, isValid=${isValid}`);
+        }
+        
+        return isValid;
       });
 
       // EARLY VIRGIN CASE (no valid parents) - always show dash
       if (validEdges.length === 0) {
         label += `\n—`;
+        // Note: Don't set isVirgin here - that's managed by logic system
         node.data({
-          isVirgin: true,
           robustness: undefined,
           robustnessLabel: undefined,
           borderWidth: 1,
@@ -274,7 +286,7 @@ export function computeVisuals(cy) {
         return;
       } else {
         // Note: isVirgin should be managed by logic system, not visual system
-        // Removed boundary violation: node.removeData('isVirgin');
+        // Visual system should not modify isVirgin data
       }
 
       let p = node.data('prob');
@@ -440,6 +452,11 @@ export function computeVisuals(cy) {
       } else {
         // Standard assertion nodes: virgin if parent has no prob OR weight is 0/unset
         isVirgin = typeof parentProb !== "number" || !edgeWeight || edgeWeight === 0;
+        
+        // Debug logging to track virgin detection
+        if (DEBUG) {
+          console.log(`Edge ${edge.id()} (computeVisuals): parentProb=${parentProb}, edgeWeight=${edgeWeight}, isVirgin=${isVirgin}`);
+        }
         
         if (!isVirgin) {
           absWeight = Math.abs(edgeWeight);
