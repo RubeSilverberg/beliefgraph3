@@ -320,9 +320,9 @@ okBtn.addEventListener('click', () => {
     // Mark as non-virgin for heavy mode only (don't touch lite mode data)
     // Note: We don't use 'isVirgin' since that conflicts with lite mode
     
-    // Trigger heavy mode propagation only
-    if (window.propagateBayesHeavy && window.cy) {
-      window.propagateBayesHeavy(window.cy);
+    // Trigger unified convergence (in Heavy mode: single-pass calculation only)
+    if (window.convergeAll && window.cy) {
+      window.convergeAll({ cy: window.cy });
     }
     
     // Update visuals to reflect heavy mode changes
@@ -568,9 +568,9 @@ function openLogicEdgeModal(edge, sourceNode, targetNode) {
     
     document.body.removeChild(modal);
     setTimeout(() => {
-      // Trigger heavy mode propagation
-      if (window.propagateBayesHeavy && window.cy) {
-        window.propagateBayesHeavy(window.cy);
+      // Trigger unified convergence (in Heavy mode: single-pass calculation only)
+      if (window.convergeAll && window.cy) {
+        window.convergeAll({ cy: window.cy });
       }
       
       // Update visuals

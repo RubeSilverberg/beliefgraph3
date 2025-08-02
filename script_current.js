@@ -130,17 +130,9 @@ function setBayesMode(newMode) {
   
   mode = newMode;
   
-  // Mode-specific initialization
-  if (newMode === 'lite') {
-    // Ensure lite mode propagation is current
-    if (typeof convergeAll === 'function') {
-      convergeAll({ cy: window.cy });
-    }
-  } else if (newMode === 'heavy') {
-    // Ensure heavy mode propagation is current  
-    if (window.propagateBayesHeavy && window.cy) {
-      window.propagateBayesHeavy(window.cy);
-    }
+  // Use unified convergence for both modes (handles mode-specific propagation internally)
+  if (window.convergeAll && window.cy) {
+    window.convergeAll({ cy: window.cy });
   }
   
   // Update UI and visuals for new mode

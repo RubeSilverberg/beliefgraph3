@@ -311,35 +311,77 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
 }
 
 
-// Main convergence controller
+// Main convergence controller - handles both Lite and Heavy modes
+// ARCHITECTURE: This unified convergence system ensures that structural changes 
+// (node/edge additions/deletions) trigger proper recalculation in BOTH modes:
+// - Lite mode: Uses iterative edge/node convergence with robust propagation
+// - Heavy mode: Uses single-pass Bayes Heavy calculation (no convergence loop)
+// - Topology changes: Only occur in Lite mode, Heavy mode reflects Lite's structure
+// - Multi-pass: Only needed for Lite mode topology changes, Heavy mode is single-pass
 export function convergeAll({ cy, tolerance = 0.001, maxIters = 30 } = {}) {
-  // First, check for any node type changes (facts ↔ assertions)
-  // This ensures topology changes are handled before convergence
-  if (window.autoUpdateNodeTypes) {
+  const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
+  
+  if (bayesMode === 'heavy') {
+    // Heavy mode: Single-pass calculation only, no topology changes, no convergence loops
     try {
-      window.autoUpdateNodeTypes(cy, true); // Pass true to indicate we're calling from convergeAll
+      if (window.propagateBayesHeavy) {
+        window.propagateBayesHeavy(cy);
+      }
     } catch (err) {
-      console.error('convergeAll: Error during node type update:', err);
+      console.error('convergeAll: Error during heavy mode propagation:', err);
+    }
+    
+    if (window.computeVisuals) window.computeVisuals(cy);
+    return { totalPasses: 1, hasTopologyChanges: false, mode: bayesMode };
+  }
+  
+  // Lite mode: Full convergence with topology change detection and multi-pass support
+  let totalPasses = 0;
+  let hasTopologyChanges = true;
+  
+  // Keep running until no more topology changes occur
+  while (hasTopologyChanges && totalPasses < 3) { // Max 3 passes to prevent infinite loops
+    totalPasses++;
+    
+    // Check for any node type changes (facts ↔ assertions)
+    // This only applies to Lite mode since Heavy mode cannot change topology
+    hasTopologyChanges = false;
+    if (window.autoUpdateNodeTypes) {
+      try {
+        hasTopologyChanges = window.autoUpdateNodeTypes(cy, true); // Returns true if changes occurred
+      } catch (err) {
+        console.error('convergeAll: Error during node type update:', err);
+      }
+    }
+
+    // Lite mode: Use edge and node convergence
+    let edgeResult, nodeResult;
+    try {
+      edgeResult = convergeEdges({ cy, tolerance, maxIters });
+      if (!edgeResult.converged) console.warn('convergeAll: Edge stage failed to converge');
+    } catch (err) {
+      console.error('convergeAll: Error during edge convergence:', err);
+      edgeResult = { converged: false, error: err };
+    }
+    try {
+      nodeResult = convergeNodes({ cy, tolerance, maxIters });
+      if (!nodeResult.converged) console.warn('convergeAll: Node stage failed to converge');
+    } catch (err) {
+      console.error('convergeAll: Error during node convergence:', err);
+      nodeResult = { converged: false, error: err };
+    }
+    
+    if (hasTopologyChanges) {
+      console.log(`convergeAll: Topology changes detected in ${bayesMode} mode, running additional pass ${totalPasses}`);
     }
   }
-
-  let edgeResult, nodeResult;
-  try {
-    edgeResult = convergeEdges({ cy, tolerance, maxIters });
-    if (!edgeResult.converged) console.warn('convergeAll: Edge stage failed to converge');
-  } catch (err) {
-    console.error('convergeAll: Error during edge convergence:', err);
-    edgeResult = { converged: false, error: err };
+  
+  if (totalPasses > 1) {
+    console.log(`convergeAll: Completed after ${totalPasses} passes in ${bayesMode} mode`);
   }
-  try {
-    nodeResult = convergeNodes({ cy, tolerance, maxIters });
-    if (!nodeResult.converged) console.warn('convergeAll: Node stage failed to converge');
-  } catch (err) {
-    console.error('convergeAll: Error during node convergence:', err);
-    nodeResult = { converged: false, error: err };
-  }
+  
   if (window.computeVisuals) window.computeVisuals(cy);
-  return { edgeResult, nodeResult };
+  return { totalPasses, hasTopologyChanges, mode: bayesMode };
 }
 
 // --- Cycle Check ---

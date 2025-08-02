@@ -32,6 +32,12 @@ export function robustnessToLabel(robust) {
  * - Logic nodes (and, or) and notes remain unchanged
  */
 export function autoUpdateNodeTypes(cy, fromConvergeAll = false) {
+  // Heavy mode cannot make topology changes - only Lite mode can change node types
+  const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
+  if (bayesMode === 'heavy') {
+    return false; // No changes possible in Heavy mode
+  }
+  
   let hasChanges = false;
   
   cy.nodes().forEach(node => {
@@ -56,6 +62,18 @@ export function autoUpdateNodeTypes(cy, fromConvergeAll = false) {
           const currentWeight = edge.data('weight');
           if (currentWeight !== undefined && currentWeight !== 0 && !edge.data('userAssignedWeight')) {
             edge.data('userAssignedWeight', currentWeight);
+          }
+        });
+      }
+      
+      // If converting from assertion to fact, restore any preserved edge weights
+      if (currentType === NODE_TYPE_ASSERTION && newType === NODE_TYPE_FACT) {
+        // For any remaining edges to this node, restore preserved weights
+        incomingEdges.forEach(edge => {
+          const preservedWeight = edge.data('userAssignedWeight');
+          if (preservedWeight !== undefined) {
+            edge.data('weight', preservedWeight);
+            console.log(`Restored preserved weight ${preservedWeight} for edge ${edge.id()} during assertion→fact conversion`);
           }
         });
       }
