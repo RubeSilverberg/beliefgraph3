@@ -734,11 +734,12 @@ export function showModifierBox(cy, edge) {
       if (userAssignedWeight !== undefined) {
         // Assigned virgin - show the preserved weight in orange
         const likert = weightToLikert(userAssignedWeight);
+        const qualitativeLabel = likertDescriptor(likert);
         const isOpposing = edge.data('opposes') || edge.data('type') === 'opposes';
         const relationshipType = isOpposing ? 'opposes' : 'supports';
         
-        box.innerHTML = `<div style="color: #ff9900;"><b>Preserved weight:</b> ${likert} (${relationshipType})</div>`;
-        box.innerHTML += `<div style="color: #666; font-size: 12px;"><i>Edge dormant - not propagating</i></div>`;
+        box.innerHTML = `<div style="color: #666;"><b>Weight:</b> ${qualitativeLabel} (${relationshipType})</div>`;
+
       } else {
         // Unassigned virgin - show em dash
         box.innerHTML = `<div style="color: #999;"><b>Weight:</b> —</div>`;

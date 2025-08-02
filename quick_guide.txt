@@ -1,6 +1,6 @@
 This tool lets you build belief networks with minimal setup. Use point-and-click (right click, double click) to add nodes, connect them, and set qualitative weights. Most features are self-explanatory.
 •	Purpose: Designed to give valid, numerical weights to beliefs - useful for legal, investigative, or general reasoning contexts.
-•	Bayes Lite: Default mode. No math required - just build your network and choose edge strengths. Facts vs. assertions are handled automatically. Outputs: node probabilities and a qualitative ‘robustness’ score (how well-supported each node is).
+•	Bayes Lite: Default mode. No math required - just build your network and choose influence strengths. Facts vs. assertions are handled automatically. Outputs: node probabilities and a qualitative ‘robustness’ score (how well-supported each node is).
 •	AND/OR nodes: Provided for modeling logical relationships when needed, but most users can ignore them.
 •	Bayes Heavy: Toggle on for more rigorous, probability-driven inference. Here you’ll assign explicit baseline and conditional probabilities for each edge. Structure edits are disabled in this mode; switch back to Lite to revise.
 •	Assumptions: Heavy mode assumes independent inputs unless you use logic nodes.
