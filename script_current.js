@@ -139,12 +139,10 @@ function setBayesMode(newMode) {
   handleModeProcesses(newMode);
   updateModeIndicator(newMode);
   
-  // Recompute visuals with clean slate (small delay to ensure cleanup completes)
-  setTimeout(() => {
-    if (window.computeVisuals && window.cy) {
-      window.computeVisuals(window.cy);
-    }
-  }, 50);
+  // Recompute visuals with clean slate (synchronous to avoid race conditions)
+  if (window.computeVisuals && window.cy) {
+    window.computeVisuals(window.cy);
+  }
   
   console.log(`Mode switch to ${newMode} complete`);
 }
