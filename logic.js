@@ -185,24 +185,31 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
     let deltas = [];
     let maxDelta = 0;
     let changed = false;
+    
+    // Track probabilities calculated in this iteration to avoid stale data issues
+    const currentIterProbs = new Map();
 
     cy.nodes().forEach(node => {
       const nodeType = node.data('type');
       let newProb;
 
       if (nodeType === 'fact') {
-        newProb = FACT_PROB;
-        node.removeData('isVirgin');
+        currentIterProbs.set(node.id(), newProb);
       } else if (nodeType === 'and') {
+        // Helper function to get current iteration probability
+        const getCurrentIterProb = (node) => {
+          return currentIterProbs.has(node.id()) ? currentIterProbs.get(node.id()) : node.data('prob');
+        };
+        
         const incomingEdges = node.incomers('edge');
-        if (incomingEdges.length === 0 || incomingEdges.some(edge => typeof edge.source().data('prob') !== "number")) {
+        if (incomingEdges.length === 0 || incomingEdges.some(edge => typeof getCurrentIterProb(edge.source()) !== "number")) {
           newProb = undefined;
           node.data('isVirgin', true);
         } else {
           console.log('AND node calculation for:', node.id());
           newProb = incomingEdges.reduce((acc, edge) => {
             const parent = edge.source();
-            let parentProb = parent.data('prob');
+            let parentProb = getCurrentIterProb(parent);
             
             // Check if edge has inverse relationship (NOT) - check both lite mode (opposes) and heavy mode (cpt.inverse)
             const cpt = edge.data('cpt') || {};
@@ -220,16 +227,22 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
           console.log(`  Final AND result: ${newProb}`);
           node.removeData('isVirgin');
         }
+        currentIterProbs.set(node.id(), newProb);
       } else if (nodeType === 'or') {
+        // Helper function to get current iteration probability
+        const getCurrentIterProb = (node) => {
+          return currentIterProbs.has(node.id()) ? currentIterProbs.get(node.id()) : node.data('prob');
+        };
+        
         const incomingEdges = node.incomers('edge');
-        if (incomingEdges.length === 0 || incomingEdges.some(edge => typeof edge.source().data('prob') !== "number")) {
+        if (incomingEdges.length === 0 || incomingEdges.some(edge => typeof getCurrentIterProb(edge.source()) !== "number")) {
           newProb = undefined;
           node.data('isVirgin', true);
         } else {
           let prod = 1;
           incomingEdges.forEach(edge => {
             const parent = edge.source();
-            let parentProb = parent.data('prob');
+            let parentProb = getCurrentIterProb(parent);
             
             // Check if edge has inverse relationship (NOT) - check both lite mode (opposes) and heavy mode (cpt.inverse)
             const cpt = edge.data('cpt') || {};
@@ -244,42 +257,49 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
           newProb = 1 - prod;
           node.removeData('isVirgin');
         }
-} else if (nodeType === 'assertion') {
-  const incomingEdges = node.incomers('edge');
-  // Filter for parent edges where the source has a defined prob AND edge has non-zero weight
-  const validEdges = incomingEdges.filter(e => {
-    const parentProb = e.source().data('prob');
-    const edgeWeight = e.data('weight');
-    return typeof parentProb === "number" && edgeWeight && edgeWeight !== 0;
-  });
+        currentIterProbs.set(node.id(), newProb);
+      } else if (nodeType === 'assertion') {
+        // Helper function to get current iteration probability
+        const getCurrentIterProb = (node) => {
+          return currentIterProbs.has(node.id()) ? currentIterProbs.get(node.id()) : node.data('prob');
+        };
+        
+        const incomingEdges = node.incomers('edge');
+        // Filter for parent edges where the source has a defined prob AND edge has non-zero weight
+        // CRITICAL FIX: Use current iteration probability, not stale data
+        const validEdges = incomingEdges.filter(e => {
+          const parentProb = getCurrentIterProb(e.source());
+          const edgeWeight = e.data('weight');
+          return typeof parentProb === "number" && edgeWeight && edgeWeight !== 0;
+        });
 
-  if (validEdges.length === 0) {
-    newProb = undefined;
-    node.data('isVirgin', true);
-  } else {
-    node.removeData('isVirgin');
-    newProb = propagateFromParentsRobust({
-      baseProb: 0.5,
-      parents: validEdges,
-      getProb: e => {
-        const parent = e.source();
-        if (parent.data('type') === 'fact') return FACT_PROB;
-        return parent.data('prob');
-      },
-      getWeight: e => e.data('computedWeight') || 0,
-      epsilon: 0.01,
-      saturationK: 1
-    });
-    console.log(
-  'assertion node:', node.id(),
-  'parents:', validEdges.map(e => e.source().id()),
-  'weights:', validEdges.map(e => e.data('computedWeight')),
-  'parent probs:', validEdges.map(e => e.source().data('prob')),
-  'computed newProb:', newProb
-);
-  }
-}
-
+        if (validEdges.length === 0) {
+          newProb = undefined;
+          node.data('isVirgin', true);
+        } else {
+          node.removeData('isVirgin');
+          newProb = propagateFromParentsRobust({
+            baseProb: 0.5,
+            parents: validEdges,
+            getProb: e => {
+              const parent = e.source();
+              if (parent.data('type') === 'fact') return FACT_PROB;
+              return getCurrentIterProb(parent);
+            },
+            getWeight: e => e.data('computedWeight') || 0,
+            epsilon: 0.01,
+            saturationK: 1
+          });
+          console.log(
+            'assertion node:', node.id(),
+            'parents:', validEdges.map(e => e.source().id()),
+            'weights:', validEdges.map(e => e.data('computedWeight')),
+            'parent probs:', validEdges.map(e => getCurrentIterProb(e.source())),
+            'computed newProb:', newProb
+          );
+        }
+        currentIterProbs.set(node.id(), newProb);
+      }
 
       deltas.push({ node, prev: node.data('prob'), newProb });
       // If newProb is different, mark as changed
