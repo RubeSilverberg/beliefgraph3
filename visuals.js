@@ -770,3 +770,27 @@ export function registerVisualEventHandlers(cy) {
 if (typeof window !== 'undefined') {
   window.autoUpdateNodeTypes = autoUpdateNodeTypes;
 }
+
+// --- Event listener for logic updates ---
+window.addEventListener('logicUpdate', function(event) {
+  const { type, data } = event.detail;
+  
+  if (window.cy && window.computeVisuals) {
+    switch(type) {
+      case 'nodeUpdate':
+      case 'edgeUpdate':
+      case 'convergenceComplete':
+      case 'bayesTimeComplete':
+      case 'naiveBayesComplete':
+      case 'naiveBayesUpdate':
+      case 'graphLoaded':
+      case 'graphRestored':
+      case 'graphCleared':
+      case 'nodeAdded':
+        window.computeVisuals(window.cy);
+        break;
+      default:
+        console.warn('Unknown logic update type:', type);
+    }
+  }
+});

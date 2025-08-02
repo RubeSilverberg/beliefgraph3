@@ -1,5 +1,12 @@
 console.log("Loaded logic.js");
 
+// --- Event Dispatching for Visual Updates ---
+function dispatchLogicUpdate(type, data = {}) {
+  window.dispatchEvent(new CustomEvent('logicUpdate', {
+    detail: { type, data }
+  }));
+}
+
 // --- Helper Functions ---
 
 export function propagateFromParents({ baseProb, parents, getProb, getWeight, saturationK }) {
@@ -331,7 +338,7 @@ export function convergeAll({ cy, tolerance = 0.001, maxIters = 30 } = {}) {
       console.error('convergeAll: Error during heavy mode propagation:', err);
     }
     
-    if (window.computeVisuals) window.computeVisuals(cy);
+    dispatchLogicUpdate('convergenceComplete', { mode: bayesMode });
     return { totalPasses: 1, hasTopologyChanges: false, mode: bayesMode };
   }
   
@@ -380,7 +387,7 @@ export function convergeAll({ cy, tolerance = 0.001, maxIters = 30 } = {}) {
     console.log(`convergeAll: Completed after ${totalPasses} passes in ${bayesMode} mode`);
   }
   
-  if (window.computeVisuals) window.computeVisuals(cy);
+  dispatchLogicUpdate('convergenceComplete', { mode: bayesMode, totalPasses });
   return { totalPasses, hasTopologyChanges, mode: bayesMode };
 }
 
@@ -414,7 +421,7 @@ export function finalizeBayesTimeCPT(userCPT) {
   window.bayesHeavyMode = false;
   if (window.updateModeBadge) window.updateModeBadge();
   convergeAll({ cy });
-  if (window.computeVisuals) window.computeVisuals(cy);
+  dispatchLogicUpdate('bayesTimeComplete');
   alert('Bayes Time CPT entry complete.');
 }
 
@@ -475,7 +482,7 @@ export function startBayesTimeSequence() {
         }
       });
       convergeAll({ cy });
-      if (window.computeVisuals) window.computeVisuals(cy);
+      dispatchLogicUpdate('naiveBayesComplete');
       alert('Naive Bayes entry complete.');
     }
     const node = nodes[nodeIdx];
@@ -497,7 +504,7 @@ export function startBayesTimeSequence() {
         userNaiveBayes[node.id()][parents[parentIdx].id()] = result;
         node.data('naiveBayes', userNaiveBayes[node.id()]);
         convergeAll({ cy });
-        if (window.computeVisuals) window.computeVisuals(cy);
+        dispatchLogicUpdate('naiveBayesUpdate', { nodeId: node.id() });
         advance();
       },
       onPrev: (nodeIdx > 0 || parentIdx > 0) ? retreat : null
@@ -548,7 +555,7 @@ export function loadGraph() {
         cy.add(elements);
         convergeAll({ cy });
         cy.layout({ name: 'preset' }).run();
-        window.computeVisuals?.(cy);
+        dispatchLogicUpdate('graphLoaded', { fileName: file.name });
         cy.fit();
         cy.resize();
         window.resetLayout?.();
@@ -732,7 +739,7 @@ function restoreFromSnapshot(snapshotData) {
       }
     });
     convergeAll({ cy });
-    window.computeVisuals?.(cy);
+    dispatchLogicUpdate('graphRestored');
     window.resetLayout?.();
     console.log('Graph successfully restored from snapshot');
     alert('Graph restored successfully!');
@@ -769,7 +776,7 @@ export function clearGraph() {
   const cy = window.cy;
   if (!confirm('Are you sure you want to clear the graph?')) return;
   cy.elements().remove();
-  setTimeout(() => { window.computeVisuals?.(cy); }, 0);
+  dispatchLogicUpdate('graphCleared');
   console.log('Graph cleared');
 }
 
@@ -801,15 +808,13 @@ export function addNote() {
   console.log(`Created note node with type: ${newNode.data('type')}`);
   
   // Trigger visuals update and automatically open edit dialog
-  setTimeout(() => { 
-    window.computeVisuals?.(cy);
-    console.log('Note added');
-    
-    // Auto-open edit dialog for immediate editing
-    if (window.openEditNodeLabelModal) {
-      window.openEditNodeLabelModal(newNode);
-    }
-  }, 0);
+  dispatchLogicUpdate('nodeAdded', { nodeId: newNode.id() });
+  console.log('Note added');
+  
+  // Auto-open edit dialog for immediate editing
+  if (window.openEditNodeLabelModal) {
+    window.openEditNodeLabelModal(newNode);
+  }
 }
 
 export function addStatement() {
@@ -840,15 +845,13 @@ export function addStatement() {
   console.log(`Created assertion node with type: ${newNode.data('type')}`);
   
   // Trigger visuals update and automatically open edit dialog
-  setTimeout(() => { 
-    window.computeVisuals?.(cy);
-    console.log('Statement added');
-    
-    // Auto-open edit dialog for immediate editing
-    if (window.openEditNodeLabelModal) {
-      window.openEditNodeLabelModal(newNode);
-    }
-  }, 0);
+  dispatchLogicUpdate('nodeAdded', { nodeId: newNode.id() });
+  console.log('Statement added');
+  
+  // Auto-open edit dialog for immediate editing
+  if (window.openEditNodeLabelModal) {
+    window.openEditNodeLabelModal(newNode);
+  }
 }
 
 // Ensure convergeAll and related functions are always available globally for all modules

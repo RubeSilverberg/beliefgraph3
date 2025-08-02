@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Cascade Fix Test</title>
+    <script src="https://unpkg.com/cytoscape@3.26.0/dist/cytoscape.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #cy { width: 100%; height: 400px; border: 1px solid #ccc; margin: 20px 0; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        button { margin: 5px; padding: 8px 16px; }
+        .status { font-weight: bold; }
+        .pass { color: green; }
+        .fail { color: red; }
+        .info { color: blue; }
+        table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Simple Cascade Fix Test</h1>
+    <p>This test verifies that the cascade bug fix works by creating a chain and checking for stale probabilities.</p>
+    
+    <div id="cy"></div>
+    
+    <div class="test-section">
+        <h3>Test Controls</h3>
+        <button onclick="setupChain()">1. Setup Chain (F1 → A1 → A2 → A3)</button>
+        <button onclick="breakChain()">2. Break Chain (remove F1→A1 edge)</button>
+        <button onclick="checkForStaleProbabilities()">3. Check for Stale Probabilities</button>
+        <button onclick="reset()">Reset</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Chain Status</h3>
+        <div id="chainStatus"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test Results</h3>
+        <div id="results"></div>
+    </div>
+
+    <script type="module">
+        import { convergeAll, FACT_PROB } from './logic.js';
+        
+        window.cy = cytoscape({
+            container: document.getElementById('cy'),
+            style: [
+                {
+                    selector: 'node',
+                    style: {
+                        'label': 'data(label)',
+                        'background-color': 'data(bgColor)',
+                        'width': 60,
+                        'height': 60,
+                        'color': '#000',
+                        'text-valign': 'center',
+                        'text-halign': 'center',
+                        'font-size': '12px'
+                    }
+                },
+                {
+                    selector: 'edge',
+                    style: {
+                        'width': 2,
+                        'line-color': '#666',
+                        'target-arrow-color': '#666',
+                        'target-arrow-shape': 'triangle',
+                        'curve-style': 'bezier',
+                        'label': 'data(weightLabel)',
+                        'font-size': '10px'
+                    }
+                }
+            ],
+            layout: { name: 'preset' }
+        });
+
+        function logResult(message, type) {
+            const resultsDiv = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            resultsDiv.innerHTML += `<div class="${type}">[${timestamp}] ${message}</div>`;
+        }
+
+        function updateChainStatus() {
+            const statusDiv = document.getElementById('chainStatus');
+            let html = '<table><tr><th>Node</th><th>Type</th><th>Probability</th><th>Is Virgin</th><th>Parents</th></tr>';
+            
+            const nodes = ['fact1', 'assertion1', 'assertion2', 'assertion3'];
+            nodes.forEach(nodeId => {
+                const node = cy.getElementById(nodeId);
+                if (node.length > 0) {
+                    const prob = node.data('prob');
+                    const isVirgin = node.data('isVirgin');
+                    const type = node.data('type');
+                    
+                    // Get parent info
+                    const parents = node.incomers('edge').map(e => {
+                        const parent = e.source();
+                        const parentProb = parent.data('prob');
+                        return `${parent.id()}(${parentProb?.toFixed(3) || 'undefined'})`;
+                    }).join(', ');
+                    
+                    html += `<tr>
+                        <td>${nodeId}</td>
+                        <td>${type}</td>
+                        <td>${prob?.toFixed(3) || 'undefined'}</td>
+                        <td>${isVirgin || false}</td>
+                        <td>${parents || 'none'}</td>
+                    </tr>`;
+                }
+            });
+            html += '</table>';
+            statusDiv.innerHTML = html;
+        }
+
+        window.setupChain = function() {
+            cy.elements().remove();
+            
+            const elements = [
+                // Nodes
+                { data: { id: 'fact1', label: 'F1', type: 'fact', bgColor: '#90EE90' }, position: { x: 100, y: 200 } },
+                { data: { id: 'assertion1', label: 'A1', type: 'assertion', bgColor: '#ADD8E6' }, position: { x: 250, y: 200 } },
+                { data: { id: 'assertion2', label: 'A2', type: 'assertion', bgColor: '#ADD8E6' }, position: { x: 400, y: 200 } },
+                { data: { id: 'assertion3', label: 'A3', type: 'assertion', bgColor: '#ADD8E6' }, position: { x: 550, y: 200 } },
+                
+                // Edges
+                { data: { id: 'edge1', source: 'fact1', target: 'assertion1', weight: 1.0, weightLabel: '1.0' } },
+                { data: { id: 'edge2', source: 'assertion1', target: 'assertion2', weight: 1.0, weightLabel: '1.0' } },
+                { data: { id: 'edge3', source: 'assertion2', target: 'assertion3', weight: 1.0, weightLabel: '1.0' } }
+            ];
+            
+            cy.add(elements);
+            convergeAll({ cy });
+            updateChainStatus();
+            
+            logResult('✓ Chain setup complete: F1 → A1 → A2 → A3', 'info');
+        };
+
+        window.breakChain = function() {
+            // Remove the edge from fact1 to assertion1
+            const edge = cy.getElementById('edge1');
+            if (edge.length > 0) {
+                edge.remove();
+                convergeAll({ cy });
+                updateChainStatus();
+                logResult('✓ Chain broken: removed F1→A1 edge', 'info');
+            } else {
+                logResult('✗ Edge not found to break', 'fail');
+            }
+        };
+
+        window.checkForStaleProbabilities = function() {
+            updateChainStatus();
+            
+            // After breaking the chain, ALL assertion nodes should be virgin
+            const nodes = ['assertion1', 'assertion2', 'assertion3'];
+            let hasStaleProbs = false;
+            let staleProbNodes = [];
+            
+            nodes.forEach(nodeId => {
+                const node = cy.getElementById(nodeId);
+                if (node.length > 0) {
+                    const prob = node.data('prob');
+                    const isVirgin = node.data('isVirgin');
+                    
+                    // If node has a probability but is not marked virgin, that's a stale probability
+                    if (typeof prob === 'number' && !isVirgin) {
+                        hasStaleProbs = true;
+                        staleProbNodes.push(`${nodeId}(${prob.toFixed(3)})`);
+                    }
+                }
+            });
+            
+            if (hasStaleProbs) {
+                logResult(`✗ FAIL: Found stale probabilities in: ${staleProbNodes.join(', ')}`, 'fail');
+                logResult('The cascade bug still exists - nodes retain old probabilities when chain breaks', 'fail');
+            } else {
+                logResult('✓ PASS: No stale probabilities detected!', 'pass');
+                logResult('The cascade fix is working - all nodes became virgin when chain broke', 'pass');
+            }
+        };
+
+        window.reset = function() {
+            cy.elements().remove();
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('chainStatus').innerHTML = '';
+            logResult('Test reset', 'info');
+        };
+    </script>
+</body>
+</html>
