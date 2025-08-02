@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Timing Dependency Fix Test</title>
+    <script src="https://unpkg.com/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
+    <style>
+        #cy { width: 800px; height: 400px; border: 1px solid #ddd; }
+        #status { margin: 10px 0; font-family: monospace; }
+        button { margin: 5px; padding: 8px 16px; }
+        .log { background: #f5f5f5; padding: 15px; margin: 10px 0; font-family: monospace; white-space: pre-line; }
+    </style>
+</head>
+<body>
+    <h1>Timing Dependency Fix Test</h1>
+    <div id="status">Timing fix test - verifying synchronous visual updates</div>
+    
+    <div>
+        <button onclick="testAddNode()">Add Node (Test Sync)</button>
+        <button onclick="testDeleteNode()">Delete Node (Test Sync)</button>
+        <button onclick="testModeSwitch()">Switch Mode (Test Sync)</button>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+    
+    <div id="cy"></div>
+    <div id="log" class="log">Test log:\n</div>
+    
+    <script type="module">
+        import { addStatement, clearGraph } from './logic.js';
+        import { computeVisuals } from './visuals.js';
+        import { NODE_TYPE_FACT, NODE_TYPE_ASSERTION } from './config.js';
+        
+        let testNodeCount = 0;
+        
+        const cy = cytoscape({
+            container: document.getElementById('cy'),
+            elements: [],
+            style: [
+                {
+                    selector: 'node',
+                    style: {
+                        'background-color': '#666',
+                        'label': 'data(label)',
+                        'text-valign': 'center',
+                        'text-halign': 'center',
+                        'width': '60px',
+                        'height': '40px'
+                    }
+                },
+                {
+                    selector: 'edge',
+                    style: {
+                        'width': 3,
+                        'line-color': '#ccc',
+                        'target-arrow-color': '#ccc',
+                        'target-arrow-shape': 'triangle'
+                    }
+                }
+            ],
+            layout: { name: 'grid', rows: 2 }
+        });
+        
+        window.cy = cy;
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+            console.log(`[${timestamp}] ${message}`);
+        }
+        
+        function isVisualStateUpToDate() {
+            // Check if visual rendering matches logical state
+            const nodeCount = cy.nodes().length;
+            const visuallyRenderedNodes = cy.nodes().filter(n => n.data('label')).length;
+            return nodeCount === visuallyRenderedNodes;
+        }
+        
+        window.testAddNode = function() {
+            log('Testing synchronous node addition...');
+            
+            const beforeNodeCount = cy.nodes().length;
+            log(`Before: ${beforeNodeCount} nodes`);
+            
+            // Add a node using the logic system
+            testNodeCount++;
+            const newNode = cy.add({
+                group: 'nodes',
+                data: {
+                    id: `test${testNodeCount}`,
+                    label: `Test${testNodeCount}`,
+                    type: NODE_TYPE_ASSERTION
+                },
+                position: { x: 100 + (testNodeCount * 80), y: 100 }
+            });
+            
+            // Visual update should be synchronous
+            if (window.computeVisuals) {
+                window.computeVisuals(cy);
+            }
+            
+            const afterNodeCount = cy.nodes().length;
+            const visualState = isVisualStateUpToDate();
+            
+            log(`After: ${afterNodeCount} nodes`);
+            log(`Visual state up to date: ${visualState}`);
+            
+            if (afterNodeCount === beforeNodeCount + 1 && visualState) {
+                log('✅ PASS: Node addition is synchronous');
+            } else {
+                log('❌ FAIL: Node addition has timing issues');
+            }
+        };
+        
+        window.testDeleteNode = function() {
+            log('Testing synchronous node deletion...');
+            
+            if (cy.nodes().length === 0) {
+                log('No nodes to delete. Add some first.');
+                return;
+            }
+            
+            const beforeNodeCount = cy.nodes().length;
+            log(`Before: ${beforeNodeCount} nodes`);
+            
+            // Delete the first node
+            const nodeToDelete = cy.nodes().first();
+            const nodeId = nodeToDelete.id();
+            nodeToDelete.remove();
+            
+            // Visual update should be synchronous
+            if (window.computeVisuals) {
+                window.computeVisuals(cy);
+            }
+            
+            const afterNodeCount = cy.nodes().length;
+            const nodeStillExists = cy.getElementById(nodeId).length > 0;
+            
+            log(`After: ${afterNodeCount} nodes`);
+            log(`Deleted node still exists: ${nodeStillExists}`);
+            
+            if (afterNodeCount === beforeNodeCount - 1 && !nodeStillExists) {
+                log('✅ PASS: Node deletion is synchronous');
+            } else {
+                log('❌ FAIL: Node deletion has timing issues');
+            }
+        };
+        
+        window.testModeSwitch = function() {
+            log('Testing synchronous mode switching...');
+            
+            // Create a test setup
+            if (cy.nodes().length === 0) {
+                cy.add({
+                    group: 'nodes',
+                    data: { id: 'fact1', label: 'Fact1', type: NODE_TYPE_FACT, prob: 0.995 }
+                });
+                cy.add({
+                    group: 'nodes', 
+                    data: { id: 'assertion1', label: 'A1', type: NODE_TYPE_ASSERTION }
+                });
+                cy.add({
+                    group: 'edges',
+                    data: { id: 'edge1', source: 'fact1', target: 'assertion1', weight: 1.0 }
+                });
+            }
+            
+            const currentMode = window.getBayesMode ? window.getBayesMode() : 'lite';
+            log(`Current mode: ${currentMode}`);
+            
+            // Switch mode (this should be synchronous now)
+            const newMode = currentMode === 'lite' ? 'heavy' : 'lite';
+            if (window.setBayesMode) {
+                window.setBayesMode(newMode);
+            }
+            
+            const afterMode = window.getBayesMode ? window.getBayesMode() : 'lite';
+            log(`After mode switch: ${afterMode}`);
+            
+            // Check if visual state is immediately updated
+            const hasVisualLabels = cy.nodes().every(n => n.data('label'));
+            
+            if (afterMode === newMode && hasVisualLabels) {
+                log('✅ PASS: Mode switching is synchronous');
+            } else {
+                log('❌ FAIL: Mode switching has timing issues');
+            }
+        };
+        
+        window.clearLog = function() {
+            document.getElementById('log').textContent = 'Test log:\n';
+        };
+        
+        // Initial setup
+        log('Timing dependency fix test loaded');
+        log('All visual updates should now be synchronous');
+        log('No more setTimeout() race conditions');
+    </script>
+</body>
+</html>

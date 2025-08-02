@@ -165,7 +165,7 @@ window.cy.on('doubleTap', 'node', function(event) {
         deleteItem.style.cursor = 'pointer';
         deleteItem.onclick = () => {
           node.remove();
-          setTimeout(() => { computeVisuals(cy); }, 0);
+          computeVisuals(cy);
           hideMenu();
         };
         list.appendChild(deleteItem);

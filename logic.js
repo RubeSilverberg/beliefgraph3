@@ -801,7 +801,7 @@ export function clearGraph() {
   const cy = window.cy;
   if (!confirm('Are you sure you want to clear the graph?')) return;
   cy.elements().remove();
-  setTimeout(() => { window.computeVisuals?.(cy); }, 0);
+  if (window.computeVisuals) window.computeVisuals(cy);
   console.log('Graph cleared');
 }
 
@@ -833,15 +833,13 @@ export function addNote() {
   console.log(`Created note node with type: ${newNode.data('type')}`);
   
   // Trigger visuals update and automatically open edit dialog
-  setTimeout(() => { 
-    window.computeVisuals?.(cy);
-    console.log('Note added');
-    
-    // Auto-open edit dialog for immediate editing
-    if (window.openEditNodeLabelModal) {
-      window.openEditNodeLabelModal(newNode);
-    }
-  }, 0);
+  if (window.computeVisuals) window.computeVisuals(cy);
+  console.log('Note added');
+  
+  // Auto-open edit dialog for immediate editing
+  if (window.openEditNodeLabelModal) {
+    window.openEditNodeLabelModal(newNode);
+  }
 }
 
 export function addStatement() {
@@ -872,15 +870,13 @@ export function addStatement() {
   console.log(`Created assertion node with type: ${newNode.data('type')}`);
   
   // Trigger visuals update and automatically open edit dialog
-  setTimeout(() => { 
-    window.computeVisuals?.(cy);
-    console.log('Statement added');
-    
-    // Auto-open edit dialog for immediate editing
-    if (window.openEditNodeLabelModal) {
-      window.openEditNodeLabelModal(newNode);
-    }
-  }, 0);
+  if (window.computeVisuals) window.computeVisuals(cy);
+  console.log('Statement added');
+  
+  // Auto-open edit dialog for immediate editing
+  if (window.openEditNodeLabelModal) {
+    window.openEditNodeLabelModal(newNode);
+  }
 }
 
 // Ensure convergeAll and related functions are always available globally for all modules
