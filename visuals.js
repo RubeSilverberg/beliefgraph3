@@ -466,25 +466,40 @@ export function showNodeHoverBox(cy, node) {
   box.style.position = 'absolute';
   box.style.left = `${x + 20}px`;
   box.style.top = `${y - 30}px`;
-  box.style.background = '#f3f3fc';
-  box.style.border = '1.5px solid #2e7d32';
-  box.style.borderRadius = '8px';
-  box.style.padding = '7px 14px';
-  box.style.fontSize = '12px';
+  box.style.background = '#f8f9fa';
+  box.style.border = '2px solid #2e7d32';
+  box.style.borderRadius = '12px';
+  box.style.padding = '16px 20px';
+  box.style.fontSize = '16px';  // Much larger font
+  box.style.lineHeight = '1.5';
+  box.style.maxWidth = '400px';  // Allow much wider tooltips
+  box.style.minWidth = '200px';
   box.style.zIndex = 20;
-  box.style.boxShadow = '0 2px 8px #1565c066';
+  box.style.boxShadow = '0 4px 20px rgba(0,0,0,0.15)';
+  box.style.fontFamily = 'Segoe UI, Roboto, Arial, sans-serif';
 
   const displayLabel = node.data('displayLabel') || node.data('origLabel') || "";
   const hoverLabel = node.data('hoverLabel');
   const nodeType = node.data('type');
   const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
 
+  // Create combined label: "Short: Full description" with short label bold and description italic
+  let combinedLabel = displayLabel;
+  if (hoverLabel && hoverLabel !== displayLabel) {
+    combinedLabel = `<b>${displayLabel}</b>: <i style="font-weight: 300;">${hoverLabel}</i>`;
+  } else if (hoverLabel) {
+    combinedLabel = `<i style="font-weight: 300;">${hoverLabel}</i>`;
+  } else if (displayLabel) {
+    combinedLabel = `<b>${displayLabel}</b>`;
+  }
+
   function formatProb(p) {
-    return (typeof p === "number") ? `<b>${Math.round(100 * p)}%</b>` : "<b>—</b>";
+    return (typeof p === "number") ? `<b style="font-size: 18px; color: #1565c0;">${Math.round(100 * p)}%</b>` : "<b style=\"color: #666;\">—</b>";
   }
 
   if (nodeType === NODE_TYPE_FACT) {
-    box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><span>Fact node</span>`;
+    box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${combinedLabel}</div>
+                     <div style="color: #666; font-style: italic;">Fact node</div>`;
     container.parentElement.appendChild(box);
     return;
   }
@@ -504,11 +519,13 @@ export function showNodeHoverBox(cy, node) {
       });
       
       if (!hasValidEdges) {
-        box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><span>Current: <b>—</b></span><br><i>No incoming conditional relationships configured.</i>`;
+        box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${combinedLabel}</div>
+                         <div style="margin-bottom: 6px;">Current: <b style="color: #666;">—</b></div>
+                         <div style="color: #e65100; font-style: italic;">No incoming conditional relationships configured.</div>`;
       } else {
         const hp = node.data('heavyProb');
-        box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br>
-          <span>Current: ${formatProb(hp)}</span>`;
+        box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${combinedLabel}</div>
+                         <div>Current: ${formatProb(hp)}</div>`;
       }
       container.parentElement.appendChild(box);
       return;
@@ -517,11 +534,13 @@ export function showNodeHoverBox(cy, node) {
     if (nodeType === NODE_TYPE_AND || nodeType === NODE_TYPE_OR) {
       const hp = node.data('heavyProb');
       let typeLabel = nodeType === NODE_TYPE_AND ? 'AND' : 'OR';
-      box.innerHTML = `<b>${typeLabel}</b><br>Current: ${formatProb(hp)}`;
-      if (nodeType === NODE_TYPE_AND)
-        box.innerHTML += "<br><i>AND logic node (product of heavy parent probs)</i>";
-      else
-        box.innerHTML += "<br><i>OR logic node (sum-minus-product of heavy parent probs)</i>";
+      let logicDescription = nodeType === NODE_TYPE_AND 
+        ? 'AND logic node (product of heavy parent probs)'
+        : 'OR logic node (sum-minus-product of heavy parent probs)';
+      
+      box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${typeLabel}</div>
+                       <div style="margin-bottom: 6px;">Current: ${formatProb(hp)}</div>
+                       <div style="color: #666; font-style: italic;">${logicDescription}</div>`;
       container.parentElement.appendChild(box);
       return;
     }
@@ -530,10 +549,12 @@ export function showNodeHoverBox(cy, node) {
     if (nodeType === NODE_TYPE_ASSERTION) {
       const lp = node.data('prob');
       if (typeof lp !== "number") {
-        box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><span>Current: <b>—</b></span><br><i>No incoming information.</i>`;
+        box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${combinedLabel}</div>
+                         <div style="margin-bottom: 6px;">Current: <b style="color: #666;">—</b></div>
+                         <div style="color: #e65100; font-style: italic;">No incoming information.</div>`;
       } else {
-        box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br>
-          <span>Current: <b>${Math.round(100 * lp)}%</b></span>`;
+        box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${combinedLabel}</div>
+                         <div style="margin-bottom: 6px;">Current: <b style="font-size: 18px; color: #1565c0;">${Math.round(100 * lp)}%</b></div>`;
       }
       const rlabel = node.data('robustnessLabel');
       if (rlabel) {
@@ -541,7 +562,7 @@ export function showNodeHoverBox(cy, node) {
         const grayscale = robust !== undefined
           ? `rgb(${Math.round(180 - 60 * robust)}, ${Math.round(180 - 60 * robust)}, ${Math.round(180 - 60 * robust)})`
           : '#888';
-        box.innerHTML += `<br><span><b style="color:#111">Robustness</b>: <b style="color:${grayscale}">${rlabel}</b></span>`;
+        box.innerHTML += `<div style="margin-top: 6px;"><b style="color:#111;">Robustness</b>: <b style="color:${grayscale};">${rlabel}</b></div>`;
       }
       container.parentElement.appendChild(box);
       return;
@@ -549,16 +570,19 @@ export function showNodeHoverBox(cy, node) {
     if (nodeType === NODE_TYPE_AND || nodeType === NODE_TYPE_OR) {
       let typeLabel = nodeType === NODE_TYPE_AND ? 'AND' : 'OR';
       const lp = node.data('prob');
-      box.innerHTML = `<b>${typeLabel}</b><br>Current: ${formatProb(lp)}`;
-      if (nodeType === NODE_TYPE_AND)
-        box.innerHTML += "<br><i>AND logic node<br>(product of parent probs)</i>";
-      else
-        box.innerHTML += "<br><i>OR logic node<br>(sum-minus-product of parent probs)</i>";
+      let logicDescription = nodeType === NODE_TYPE_AND 
+        ? 'AND logic node (product of parent probs)'
+        : 'OR logic node (sum-minus-product of parent probs)';
+      
+      box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${typeLabel}</div>
+                       <div style="margin-bottom: 6px;">Current: ${formatProb(lp)}</div>
+                       <div style="color: #666; font-style: italic;">${logicDescription}</div>`;
       container.parentElement.appendChild(box);
       return;
     }
   }
-  box.innerHTML = `<b>${hoverLabel || displayLabel}</b><br><i>Unknown node type</i>`;
+  box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${combinedLabel}</div>
+                   <div style="color: #e65100; font-style: italic;">Unknown node type</div>`;
   container.parentElement.appendChild(box);
 }
 
@@ -607,8 +631,12 @@ export function showModifierBox(cy, edge) {
   box.style.background = 'rgba(220,235,250,0.97)';
   box.style.border = '1.5px solid #1565c0';
   box.style.borderRadius = '8px';
-  box.style.padding = '6px 14px';
-  box.style.fontSize = '12px';
+  box.style.padding = '10px 16px';
+  box.style.fontSize = '14px';  // Increased from 12px
+  box.style.lineHeight = '1.4';
+  box.style.fontFamily = 'Segoe UI, Roboto, Arial, sans-serif';
+  box.style.minWidth = '120px';
+  box.style.maxWidth = '280px';
   box.style.zIndex = 20;
   box.style.boxShadow = '0 2px 8px #1565c066';
 
