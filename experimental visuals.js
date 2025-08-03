@@ -48,40 +48,45 @@ export function getEdgeLabel(edge) {
   const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
   
   if (bayesMode === 'heavy') {
-    const cpt = edge.data('cpt') || {};
-    const targetNode = edge.target();
+    // Heavy mode uses identical virgin logic to Lite mode
     const parentNode = edge.source();
-    const parentProb = parentNode.data('heavyProb');
-    const targetType = targetNode.data('type');
+    const parentProb = parentNode.data('heavyProb'); // Use heavyProb instead of prob
+    const cpt = edge.data('cpt') || {};
+    const targetType = edge.target().data('type');
     
-    // Special case: edges TO AND/OR nodes only need parent probability
-    if (targetType === NODE_TYPE_AND || targetType === NODE_TYPE_OR) {
+    // Same logic as Lite mode but using Heavy mode data
+    if (targetType === 'and' || targetType === 'or') {
+      // Logic nodes: virgin only if parent has no probability
       const isVirgin = typeof parentProb !== "number";
-      if (isVirgin) {
-        return "—"; // Em dash for unassigned logic edges
-      } else {
-        return ""; // No label for active logic edges
-      }
-    }
-    
-    // Standard assertion edges: three-category system
-    const hasCPT = cpt && 
-                   typeof cpt.baseline === 'number' && 
-                   typeof cpt.condTrue === 'number' && 
-                   typeof cpt.condFalse === 'number';
-    const hasParentProb = typeof parentProb === "number";
-    
-    if (!hasCPT) {
-      // Category 1: Unassigned Virgin - no CPT data
-      return "—"; // Em dash for unassigned Heavy mode edges
-    } else if (!hasParentProb) {
-      // Category 2: Assigned Virgin - has CPT but parent has no probability
-      // Show CPT ratio as indicator that user has configured this edge
-      const ratio = cpt.condFalse > 0 ? (cpt.condTrue / cpt.condFalse).toFixed(1) : "∞";
-      return ratio; // Show ratio for assigned virgin edges
+      return isVirgin ? "—" : "";
     } else {
-      // Category 3: Non-Virgin - has CPT and parent has probability
-      return ""; // No label for active edges
+      // Assertion nodes: virgin if parent has no prob OR no complete CPT
+      const isVirgin = typeof parentProb !== "number" || 
+                       !cpt || 
+                       cpt.baseline === undefined || 
+                       cpt.condTrue === undefined || 
+                       cpt.condFalse === undefined;
+      
+      if (!isVirgin) {
+        return ""; // Non-virgin edges show no label
+      }
+      
+      // Virgin edge - check if has CPT assignment
+      const hasAssignment = cpt && 
+                           cpt.baseline !== undefined && 
+                           cpt.condTrue !== undefined && 
+                           cpt.condFalse !== undefined;
+      
+      if (!hasAssignment) {
+        return "—"; // Unassigned virgin
+      }
+      
+      // Assigned virgin - show CPT ratio
+      if (cpt.condTrue !== undefined && cpt.condFalse !== undefined && cpt.condFalse > 0) {
+        const ratio = cpt.condTrue / cpt.condFalse;
+        return ratio % 1 === 0 ? ratio.toString() : ratio.toFixed(1);
+      }
+      return "—";
     }
   }
   
@@ -245,29 +250,25 @@ export function computeVisuals(cy) {
     else if (nodeType === NODE_TYPE_ASSERTION) {
       node.data('textColor', '#000');
 
-      // HEAVY MODE: use only heavy fields with three-category edge system
+      // HEAVY MODE: use only heavy fields
       if (bayesMode === 'heavy') {
-        // Check if node has any non-virgin incoming edges in heavy mode
+        // Use same chain-based logic as Lite mode - check parent probabilities first
         const incomingEdges = node.incomers('edge');
         const validHeavyEdges = incomingEdges.filter(e => {
-          const cpt = e.data('cpt');
+          // Edge is valid if parent has heavyProb AND edge has complete CPT
           const parentProb = e.source().data('heavyProb');
-          
-          // Three-category system: edge is valid if it has CPT AND parent has probability
-          const hasCPT = cpt && 
-                         typeof cpt.baseline === 'number' && 
-                         typeof cpt.condTrue === 'number' && 
-                         typeof cpt.condFalse === 'number';
-          const hasParentProb = typeof parentProb === 'number';
-          
-          return hasCPT && hasParentProb;
+          const cpt = e.data('cpt') || {};
+          const hasCompleteCST = cpt.baseline !== undefined && 
+                                 cpt.condTrue !== undefined && 
+                                 cpt.condFalse !== undefined;
+          return typeof parentProb === "number" && hasCompleteCST;
         });
 
         const heavyProb = node.data('heavyProb');
         let pPct;
         
         if (validHeavyEdges.length === 0) {
-          // No valid heavy edges - show as virgin
+          // No valid heavy edges - show as virgin (same as Lite mode logic)
           pPct = null;
           label += `\n—`;
         } else {
@@ -359,7 +360,7 @@ export function computeVisuals(cy) {
     else if (nodeType === NODE_TYPE_AND || nodeType === NODE_TYPE_OR) {
       let pct;
       if (bayesMode === 'heavy') {
-        // Check if node has valid parent edges in heavy mode using three-category system
+        // Check if node has valid parent edges in heavy mode (same logic as lite mode)
         const incomingEdges = node.incomers('edge');
         const hasValidParents = incomingEdges.length > 0 && 
           incomingEdges.every(edge => typeof edge.source().data('heavyProb') === "number");
@@ -425,67 +426,39 @@ export function computeVisuals(cy) {
     let edgeType = 'supports';
 
     if (bayesMode === 'heavy') {
-      // HEAVY MODE: Three-category edge system parallel to Lite mode
-      const cpt = edge.data('cpt');
+      // HEAVY MODE: Use identical virgin logic to Lite mode, just with different data
+      const parentProb = edge.source().data('heavyProb'); // Use heavyProb instead of prob
+      const cpt = edge.data('cpt') || {};
       const targetType = edge.target().data('type');
-      const parentProb = edge.source().data('heavyProb');
       
-      // Special handling for edges to AND/OR nodes
+      // Same logic as Lite mode but using Heavy mode data
       if (targetType === NODE_TYPE_AND || targetType === NODE_TYPE_OR) {
-        // For logic nodes, virginity is based only on parent having probability
+        // Logic nodes: virgin only if parent has no probability
         isVirgin = typeof parentProb !== "number";
-        
         if (!isVirgin) {
           absWeight = 1; // Full weight since logic is deterministic
-          // Check for inverse relationship (NOT) for visual styling - heavy mode only uses cpt.inverse
           const isInverse = !!(cpt && cpt.inverse);
           edgeType = isInverse ? 'opposes' : 'supports';
-          edge.data('heavyType', edgeType);
         }
       } else {
-        // Standard assertion node logic: Three-category system
-        const hasCPT = cpt && 
-                       typeof cpt.baseline === 'number' && 
-                       typeof cpt.condTrue === 'number' && 
-                       typeof cpt.condFalse === 'number';
-        const hasParentProb = typeof parentProb === "number";
+        // Assertion nodes: virgin if parent has no prob OR no complete CPT
+        isVirgin = typeof parentProb !== "number" || 
+                   !cpt || 
+                   typeof cpt.baseline !== 'number' || 
+                   typeof cpt.condTrue !== 'number' || 
+                   typeof cpt.condFalse !== 'number';
         
-        if (!hasCPT) {
-          // Category 1: Unassigned Virgin - no CPT data
-          isVirgin = true;
-          if (DEBUG) {
-            console.log(`Heavy Edge ${edge.id()}: Category 1 - Unassigned Virgin (no CPT)`);
-          }
-        } else if (!hasParentProb) {
-          // Category 2: Assigned Virgin - has CPT but parent has no probability
-          isVirgin = true;
-          // Store that this is an assigned virgin for hover display
-          edge.data('assignedVirgin', true);
-          if (DEBUG) {
-            console.log(`Heavy Edge ${edge.id()}: Category 2 - Assigned Virgin (has CPT, no parent prob)`);
-          }
-        } else {
-          // Category 3: Non-Virgin - has CPT and parent has probability
-          isVirgin = false;
-          edge.removeData('assignedVirgin');
-          if (DEBUG) {
-            console.log(`Heavy Edge ${edge.id()}: Category 3 - Non-Virgin (has CPT and parent prob)`);
-          }
-          
-          // Calculate visual weight from CPT data
-          if (cpt.condFalse > 0) {
-            const logRatio = Math.log(cpt.condTrue / cpt.condFalse);
-            absWeight = Math.min(1, Math.abs(logRatio / 3));
-            edgeType = logRatio < 0 ? 'opposes' : 'supports';
-          } else {
-            // condFalse = 0 case
-            absWeight = 0.5;
-            edgeType = 'supports';
-          }
-          // Store heavy-specific type without polluting lite mode
-          edge.data('heavyType', edgeType);
+        if (!isVirgin && cpt.condFalse > 0) {
+          const logRatio = Math.log(cpt.condTrue / cpt.condFalse);
+          absWeight = Math.min(1, Math.abs(logRatio / 3));
+          edgeType = logRatio < 0 ? 'opposes' : 'supports';
+        } else if (!isVirgin) {
+          absWeight = 0.5;
+          edgeType = 'supports';
         }
       }
+      
+      edge.data('heavyType', edgeType);
     } else {
       // LITE MODE: Use completely separate data namespace
       const parentProb = edge.source().data('prob');
@@ -783,20 +756,15 @@ export function showModifierBox(cy, edge) {
   let isVirgin = false;
   
   if (bayesMode === 'heavy') {
-    const cpt = edge.data('cpt');
+    // Heavy mode: original logic
     const parentProb = edge.source().data('heavyProb');
+    const cpt = edge.data('cpt') || {};
+    const hasCompleteCPT = cpt.baseline !== undefined && 
+                          cpt.condTrue !== undefined && 
+                          cpt.condFalse !== undefined;
     
-    if (edgeTargetType === NODE_TYPE_AND || edgeTargetType === NODE_TYPE_OR) {
-      isVirgin = typeof parentProb !== "number";
-    } else {
-      const hasCPT = cpt && 
-                     typeof cpt.baseline === 'number' && 
-                     typeof cpt.condTrue === 'number' && 
-                     typeof cpt.condFalse === 'number';
-      const hasParentProb = typeof parentProb === "number";
-      
-      isVirgin = !hasCPT || !hasParentProb;
-    }
+    // Virgin if parent has no probability OR edge has no complete CPT
+    isVirgin = typeof parentProb !== "number" || !hasCompleteCPT;
   } else {
     const parentProb = edge.source().data('prob');
     const edgeWeight = edge.data('weight');
@@ -813,31 +781,24 @@ export function showModifierBox(cy, edge) {
     if (edgeTargetType === NODE_TYPE_AND || edgeTargetType === NODE_TYPE_OR) {
       box.innerHTML = `<i>Parent node has no probability.</i>`;
     } else {
-      // Handle both Heavy and Lite mode virgin edge displays
       if (bayesMode === 'heavy') {
-        const cpt = edge.data('cpt');
-        const hasCPT = cpt && 
-                       typeof cpt.baseline === 'number' && 
-                       typeof cpt.condTrue === 'number' && 
-                       typeof cpt.condFalse === 'number';
-        
-        if (hasCPT) {
-          // Assigned virgin - show the preserved CPT data
-          const ratio = cpt.condFalse > 0 ? (cpt.condTrue / cpt.condFalse).toFixed(1) : "∞";
-          const baseline = Math.round(cpt.baseline);
-          box.innerHTML = `<div style="color: #666;"><b>CPT:</b> ${cpt.condTrue}% | ${cpt.condFalse}% (${ratio}:1)</div>`;
-          box.innerHTML += `<div style="color: #666;"><b>Baseline:</b> ${baseline}%</div>`;
-          box.innerHTML += `<div style="color: #666; font-size: 12px; margin-top: 4px;"><i>Parent has no probability</i></div>`;
+        // Heavy mode: check if this is an assigned virgin (has CPT but edge is dormant)
+        const cpt = edge.data('cpt') || {};
+        if (cpt.baseline !== undefined && cpt.condTrue !== undefined && cpt.condFalse !== undefined) {
+          // Assigned virgin - show the CPT ratio
+          const ratio = cpt.condTrue / cpt.condFalse;
+          const ratioStr = ratio % 1 === 0 ? ratio.toString() : ratio.toFixed(1);
+          box.innerHTML = `<div style="color: #666;"><b>CPT Ratio:</b> ${ratioStr}</div>`;
         } else {
           // Unassigned virgin - show em dash
           box.innerHTML = `<div style="color: #999;"><b>CPT:</b> —</div>`;
           box.innerHTML += `<div style="color: #666; font-size: 12px;"><i>Not configured</i></div>`;
         }
       } else {
-        // Lite mode logic (unchanged)
+        // Lite mode: check if this is an assigned virgin (user set weight but edge is dormant)
         const userAssignedWeight = edge.data('userAssignedWeight');
         if (userAssignedWeight !== undefined) {
-          // Assigned virgin - show the preserved weight in orange
+          // Assigned virgin - show the preserved weight
           const likert = weightToLikert(userAssignedWeight);
           const qualitativeLabel = likertDescriptor(likert);
           const isOpposing = edge.data('opposes') || edge.data('type') === 'opposes';
@@ -855,48 +816,29 @@ export function showModifierBox(cy, edge) {
     return;
   }
   
-  // Display different content based on target type and mode
+  // Display different content based on target type
   if (targetType === NODE_TYPE_AND || targetType === NODE_TYPE_OR) {
-    const parentProb = bayesMode === 'heavy' ? 
-      edge.source().data('heavyProb') : 
-      edge.source().data('prob');
+    const parentProb = edge.source().data('prob');
     const pct = typeof parentProb === "number" ? Math.round(parentProb * 100) : null;
     box.innerHTML = `<div><b>Logic:</b> ${baseLabel}</div>`;
     if (pct !== null) {
       box.innerHTML += `<div>Parent probability: <b>${pct}%</b></div>`;
     }
   } else {
-    // Assertion edge display - different for Heavy vs Lite mode
-    if (bayesMode === 'heavy') {
-      const cpt = edge.data('cpt');
-      const parentProb = edge.source().data('heavyProb');
-      const pct = typeof parentProb === "number" ? Math.round(parentProb * 100) : null;
-      
-      box.innerHTML = `<div><b>CPT:</b> ${cpt.condTrue}% | ${cpt.condFalse}%</div>`;
-      box.innerHTML += `<div><b>Baseline:</b> ${Math.round(cpt.baseline)}%</div>`;
-      if (pct !== null) {
-        box.innerHTML += `<div>Parent probability: <b>${pct}%</b></div>`;
-      }
-      
-      // Show ratio for quick reference
-      const ratio = cpt.condFalse > 0 ? (cpt.condTrue / cpt.condFalse).toFixed(1) : "∞";
-      box.innerHTML += `<div style="color: #666; font-size: 12px; margin-top: 4px;">Ratio: ${ratio}:1</div>`;
-    } else {
-      // Lite mode assertion edge display
-      box.innerHTML = `<div><b>Influence:</b> ${baseLabel}</div>`;
+    // Standard assertion edge display
+    box.innerHTML = `<div><b>Influence:</b> ${baseLabel}</div>`;
 
-      if (mods.length) {
-        box.innerHTML += `<hr style="margin:6px 0 3px 0">`;
-        mods.forEach(mod => {
-          let color = '#616161';
-          if (mod.likert > 0) color = '#2e7d32';
-          if (mod.likert < 0) color = '#c62828';
-          const val = mod.likert > 0 ? '+' + mod.likert : '' + mod.likert;
-          box.innerHTML += `<div style="color:${color};margin:2px 0;">
-            ${val}: ${mod.label}
-          </div>`;
-        });
-      }
+    if (mods.length) {
+      box.innerHTML += `<hr style="margin:6px 0 3px 0">`;
+      mods.forEach(mod => {
+        let color = '#616161';
+        if (mod.likert > 0) color = '#2e7d32';
+        if (mod.likert < 0) color = '#c62828';
+        const val = mod.likert > 0 ? '+' + mod.likert : '' + mod.likert;
+        box.innerHTML += `<div style="color:${color};margin:2px 0;">
+          ${val}: ${mod.label}
+        </div>`;
+      });
     }
   }
 
@@ -947,7 +889,8 @@ export function registerVisualEventHandlers(cy) {
   });
 
   cy.on('mouseover', 'edge', evt => {
-    // Show edge hover in both modes now that Heavy mode has three-category system
+    // Only show in Lite mode (or when NOT heavy)
+    if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
     
     // Clear any existing timeout
     if (edgeHoverTimeout) {

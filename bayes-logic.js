@@ -5,10 +5,22 @@ export function propagateBayesHeavy(cy) {
     ['assertion', 'and', 'or', 'fact'].includes((n.data('type') || '').toLowerCase())
   );
 
-  // Initialize heavyProb if not already set
+  // Initialize heavyProb only for nodes that should have probabilities
   nodes.forEach(node => {
-    if (typeof node.data('heavyProb') !== 'number') {
-      node.data('heavyProb', 0.5);
+    const type = (node.data('type') || '').toLowerCase();
+    
+    if (type === 'fact') {
+      // Facts always get probability
+      const explicitProb = node.data('explicitHeavyProb');
+      if (typeof node.data('heavyProb') !== 'number') {
+        node.data('heavyProb', explicitProb !== undefined ? explicitProb : 0.995);
+      }
+    } else {
+      // Assertions, AND, OR nodes: only initialize if not already set
+      // Don't force 0.5 default - let them be virgin if they have no valid edges
+      if (typeof node.data('heavyProb') !== 'number') {
+        // Don't initialize - let calculateNodeMarginal determine if they should have probability
+      }
     }
   });
 
@@ -18,7 +30,12 @@ export function propagateBayesHeavy(cy) {
   // Single-pass calculation in dependency order
   sortedNodes.forEach(node => {
     const newProb = calculateNodeMarginal(node, cy);
-    node.data('heavyProb', Math.max(0, Math.min(1, newProb)));
+    if (newProb !== undefined) {
+      node.data('heavyProb', Math.max(0, Math.min(1, newProb)));
+    } else {
+      // Node should be virgin - remove heavyProb
+      node.removeData('heavyProb');
+    }
   });
 }
 
@@ -62,13 +79,16 @@ function calculateNodeMarginal(node, cy) {
     return 0.5; // Default for isolated AND/OR/ASSERTION nodes
   }
 
-  // Calculate based on node type
+  // Calculate based on node type using three-category edge filtering
   if (type === 'and') {
-    return calculateAndMarginal(parentEdges);
+    const result = calculateAndMarginal(parentEdges);
+    return result; // May be undefined if no valid parents
   } else if (type === 'or') {
-    return calculateOrMarginal(parentEdges);
+    const result = calculateOrMarginal(parentEdges);
+    return result; // May be undefined if no valid parents
   } else if (type === 'assertion') {
-    return calculateNaiveBayesMarginal(node, parentEdges);
+    const result = calculateNaiveBayesMarginal(node, parentEdges);
+    return result; // May be undefined if no valid edges
   }
   
   return 0.5; // Fallback
@@ -76,8 +96,15 @@ function calculateNodeMarginal(node, cy) {
 
 function calculateAndMarginal(parentEdges) {
   // AND node: product of parent probabilities
-  return parentEdges.toArray().reduce((acc, edge) => {
-    let parentProb = edge.source().data('heavyProb') ?? 0.5;
+  // Filter to only parents that have valid heavyProb
+  const validParents = parentEdges.toArray().filter(edge => {
+    return typeof edge.source().data('heavyProb') === 'number';
+  });
+  
+  if (validParents.length === 0) return undefined; // Virgin node
+  
+  return validParents.reduce((acc, edge) => {
+    let parentProb = edge.source().data('heavyProb');
     
     // Check for inverse relationship (NOT) - heavy mode uses cpt.inverse
     const cpt = edge.data('cpt') || {};
@@ -91,8 +118,15 @@ function calculateAndMarginal(parentEdges) {
 
 function calculateOrMarginal(parentEdges) {
   // OR node: 1 - product of (1 - parent probabilities)
-  return 1 - parentEdges.toArray().reduce((acc, edge) => {
-    let parentProb = edge.source().data('heavyProb') ?? 0.5;
+  // Filter to only parents that have valid heavyProb
+  const validParents = parentEdges.toArray().filter(edge => {
+    return typeof edge.source().data('heavyProb') === 'number';
+  });
+  
+  if (validParents.length === 0) return undefined; // Virgin node
+  
+  return 1 - validParents.reduce((acc, edge) => {
+    let parentProb = edge.source().data('heavyProb');
     
     // Check for inverse relationship (NOT) - heavy mode uses cpt.inverse
     const cpt = edge.data('cpt') || {};
@@ -105,12 +139,23 @@ function calculateOrMarginal(parentEdges) {
 }
 
 function calculateNaiveBayesMarginal(node, parentEdges) {
+  // Filter edges using three-category system:
+  // - Must have complete CPT data (condTrue, condFalse, baseline)
+  // - Must have parent with valid heavyProb (non-virgin parent)
   const validEdges = parentEdges.toArray().filter(edge => {
     const cpt = edge.data('cpt');
-    return cpt && typeof cpt.condTrue === 'number' && typeof cpt.condFalse === 'number';
+    const parentProb = edge.source().data('heavyProb');
+    
+    const hasCPT = cpt && 
+                   typeof cpt.condTrue === 'number' && 
+                   typeof cpt.condFalse === 'number' && 
+                   typeof cpt.baseline === 'number';
+    const hasParentProb = typeof parentProb === 'number';
+    
+    return hasCPT && hasParentProb;
   });
   
-  if (validEdges.length === 0) return 0.5;
+  if (validEdges.length === 0) return undefined; // Virgin node
   
   if (validEdges.length === 1) {
     // Single parent case: standard Bayesian calculation
@@ -284,13 +329,21 @@ export function debugBayesCalculations(cy) {
 function debugAssertionCalculation(node, parentEdges) {
   const validEdges = parentEdges.toArray().filter(edge => {
     const cpt = edge.data('cpt');
-    return cpt && typeof cpt.condTrue === 'number' && typeof cpt.condFalse === 'number';
+    const parentProb = edge.source().data('heavyProb');
+    
+    const hasCPT = cpt && 
+                   typeof cpt.condTrue === 'number' && 
+                   typeof cpt.condFalse === 'number' && 
+                   typeof cpt.baseline === 'number';
+    const hasParentProb = typeof parentProb === 'number';
+    
+    return hasCPT && hasParentProb;
   });
   
   console.log(`   🧮 ASSERTION CALCULATION:`);
   
   if (validEdges.length === 0) {
-    console.log("     ❌ No valid CPTs found, using default 0.5");
+    console.log("     ❌ No valid edges found (need both CPT and parent probability), using default 0.5");
     return;
   }
   
