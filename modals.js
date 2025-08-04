@@ -1,6 +1,6 @@
 // modals.js
 import { adjustNodeSize } from './script_current.js'; // or wherever it's defined
-import { NODE_TYPE_NOTE } from './config.js';
+import { NODE_TYPE_NOTE, NODE_TYPE_FACT, NODE_TYPE_ASSERTION, NODE_TYPE_AND, NODE_TYPE_OR } from './config.js';
 
 // All modal popup creation and event handling logic
 console.log("Loaded modals.js");
@@ -240,96 +240,208 @@ function openEditRegularNodeModal(node) {
   showModal(modal);
   displayInput.focus();
 }
-function applyFloretColor(node, color, cy) {
-  const floretNodes = node.predecessors('node').add(node);
-  floretNodes.forEach(n => {
-    n.data('floretColor', color);
-    console.log('Set floretColor on', n.id(), 'to', color);
+
+// Visual configuration constants
+const VISUAL_CONFIG = {
+  colors: {
+    presets: [
+      { name: 'Standard Shade', value: 'virgin' },
+      { name: 'Red', value: 'red' },
+      { name: 'Blue', value: 'blue' },
+      { name: 'Green', value: 'green' },
+      { name: 'Purple', value: 'purple' },
+      { name: 'Orange', value: '#f9a825' },
+      { name: 'Teal', value: '#00897b' },
+      { name: 'Magenta', value: '#d81b60' }
+    ],
+    nodeTypeDefaults: {
+      fact: { text: '#fff', floret: '#666' },
+      assertion: { text: '#000', floret: '#eceff1' },
+      and: { text: '#000', floret: '#eceff1' },
+      or: { text: '#000', floret: '#eceff1' },
+      note: { text: '#333', floret: '#fffacd' }
+    }
+  },
+  sizes: {
+    min: 1,
+    max: 20,
+    default: 3
+  }
+};
+
+// Get default colors for a node type
+function getNodeTypeDefaults(nodeType) {
+  return VISUAL_CONFIG.colors.nodeTypeDefaults[nodeType] || 
+         VISUAL_CONFIG.colors.nodeTypeDefaults.assertion;
+}
+
+function createColorPreview(color) {
+  const preview = document.createElement('div');
+  preview.className = 'color-preview';
+  preview.style.backgroundColor = color;
+  preview.title = `Current color: ${color}`;
+  return preview;
+}
+
+function createColorControl(labelText, currentValue, onchange, nodeType = 'assertion') {
+  const container = document.createElement('div');
+  container.className = 'color-control';
+  
+  const label = document.createElement('label');
+  label.textContent = labelText;
+  
+  const pickerContainer = document.createElement('div');
+  pickerContainer.className = 'color-picker-container';
+  
+  // Show current color or default for node type
+  const isTextColor = labelText.toLowerCase().includes('text');
+  const displayColor = currentValue === 'virgin' ? 
+    getNodeTypeDefaults(nodeType)[isTextColor ? 'text' : 'floret'] : 
+    currentValue;
+  
+  const preview = createColorPreview(displayColor);
+  
+  const select = document.createElement('select');
+  VISUAL_CONFIG.colors.presets.forEach(preset => {
+    const option = document.createElement('option');
+    option.value = preset.value;
+    option.textContent = preset.name;
+    if (preset.value === currentValue) option.selected = true;
+    select.appendChild(option);
   });
-  cy.style().update();
+  
+  select.onchange = (e) => {
+    const newColor = e.target.value;
+    const isTextColor = labelText.toLowerCase().includes('text');
+    const displayColor = newColor === 'virgin' ? 
+      getNodeTypeDefaults(nodeType)[isTextColor ? 'text' : 'floret'] : 
+      newColor;
+    preview.style.backgroundColor = displayColor;
+    onchange(newColor);
+  };
+  
+  pickerContainer.appendChild(preview);
+  pickerContainer.appendChild(select);
+  container.appendChild(label);
+  container.appendChild(pickerContainer);
+  
+  return container;
 }
 
 export function openVisualSignalsModal(node, cy) {
-  hideModal('visual-signals-modal'); // remove any existing modal
+  hideModal('visual-signals-modal');
 
   const modal = document.createElement('div');
   modal.id = 'visual-signals-modal';
   modal.className = 'hidden';
-  modal.style.position = 'fixed';
-  modal.style.background = '#fff';
-  modal.style.padding = '24px 20px 18px 20px';
-  modal.style.border = '2px solid #1976d2';
-  modal.style.borderRadius = '8px';
-  modal.style.zIndex = 10001;
-  modal.style.boxShadow = '0 6px 30px #1976d255';
-  modal.style.minWidth = '350px';
+
+  // Get current values - handle node type defaults properly
+  const nodeType = node.data('type') || 'assertion';
+  const currentTextColor = node.data('textColor') || 'virgin';
+  const currentBackgroundColor = node.data('floretColor') || 'virgin';
+  const currentSize = node.data('sizeIndex') || VISUAL_CONFIG.sizes.default;
 
   modal.innerHTML = `
-    <div class="modal-title" style="font-weight:bold; margin-bottom:14px; cursor:move;">
+    <div class="modal-title">
       Visual Signals for Node
-      <button id="closeVisualSignalsModal"
-              style="position:absolute; top:8px; right:8px; font-size:18px; background:none; border:none; cursor:pointer;">&times;</button>
+      <button class="close-btn" id="closeVisualSignalsModal">&times;</button>
     </div>
-    <button id="increaseNodeSize">+</button>
-    <button id="decreaseNodeSize">−</button>
-    <span style="margin-left:10px; font-size:0.95em; color:#666;">Node Size</span>
-    <br><br>
-    <label>Text Color:
-      <select id="textColorSelect">
-        <option value="virgin">Standard Shade</option>
-        <option value="red">Red</option>
-        <option value="blue">Blue</option>
-        <option value="purple">Purple</option>
-            <option value="#f9a825">Orange (Central)</option>
-    <option value="green">Green</option>
-    <option value="#00897b">Teal</option>
-    <option value="#d81b60">Magenta</option>
-      </select>
-    </label>
-    <br><br>
-    <label>Node Floret Color:
-      <select id="floretColorSelect">
-        <option value="virgin">Standard Shade</option>
-        <option value="red">Red</option>
-        <option value="blue">Blue</option>
-        <option value="purple">Purple</option>
-      </select>
-    </label>
+    
+    <div class="control-section">
+      <h4>Node Size</h4>
+      <div class="size-controls">
+        <button class="size-button" id="decreaseNodeSize">−</button>
+        <span id="sizeIndicator" style="margin: 0 10px; font-weight: 500;">Size: ${currentSize}</span>
+        <button class="size-button" id="increaseNodeSize">+</button>
+      </div>
+      <div style="font-size: 11px; color: #666; margin-top: 4px;">
+        Range: ${VISUAL_CONFIG.sizes.min}–${VISUAL_CONFIG.sizes.max} (default: ${VISUAL_CONFIG.sizes.default})
+      </div>
+    </div>
+    
+    <div class="control-section">
+      <h4>Colors</h4>
+      <div style="font-size: 12px; color: #666; margin-bottom: 8px;">
+        Node type: <strong>${nodeType}</strong> 
+        (default text: <span style="color: ${getNodeTypeDefaults(nodeType).text};">●</span>, 
+         default background: <span style="color: ${getNodeTypeDefaults(nodeType).floret};">●</span>)
+      </div>
+      <div id="textColorControl"></div>
+      <div id="backgroundColorControl"></div>
+      <button id="resetColors" class="reset-btn">Reset to Node Type Defaults</button>
+    </div>
   `;
 
   showModal(modal);
   centerModal(modal);
   makeDraggable(modal, '.modal-title');
 
-  // --- Ensure dropdowns reflect current node state ---
-  // Text color dropdown
-  const textColor = node.data('textColor') || 'virgin';
-  document.getElementById('textColorSelect').value = textColor;
-
-  // Floret color dropdown
-  const floretColor = node.data('floretColor');
-  if (!floretColor || floretColor === '#eee') {
-    document.getElementById('floretColorSelect').value = 'virgin';
-  } else {
-    document.getElementById('floretColorSelect').value = floretColor;
-  }
+  // Add color controls with proper node type context
+  const textColorControl = createColorControl('Text:', currentTextColor, (color) => {
+    applyVisualChange(node, 'textColor', color, cy);
+  }, nodeType);
+  
+  const backgroundColorControl = createColorControl('Background:', currentBackgroundColor, (color) => {
+    applyVisualChange(node, 'floretColor', color, cy);
+  }, nodeType);
+  
+  document.getElementById('textColorControl').appendChild(textColorControl);
+  document.getElementById('backgroundColorControl').appendChild(backgroundColorControl);
 
   // Close button handler
-  const closeBtn = document.getElementById('closeVisualSignalsModal');
-  closeBtn.onclick = () => hideModal(modal.id);
+  document.getElementById('closeVisualSignalsModal').onclick = () => hideModal(modal.id);
 
-  // Node size handlers
-  document.getElementById('increaseNodeSize').onclick = () => { adjustNodeSize(node, 1); computeVisuals(cy); };
-document.getElementById('decreaseNodeSize').onclick = () => { adjustNodeSize(node, -1); computeVisuals(cy); };
+  // Size control handlers with live updates and button state management
+  const sizeIndicator = document.getElementById('sizeIndicator');
+  const increaseBtn = document.getElementById('increaseNodeSize');
+  const decreaseBtn = document.getElementById('decreaseNodeSize');
+  let currentSizeValue = currentSize;
+  
+  function updateSizeButtons() {
+    decreaseBtn.disabled = currentSizeValue <= VISUAL_CONFIG.sizes.min;
+    increaseBtn.disabled = currentSizeValue >= VISUAL_CONFIG.sizes.max;
+    decreaseBtn.style.opacity = decreaseBtn.disabled ? '0.5' : '1';
+    increaseBtn.style.opacity = increaseBtn.disabled ? '0.5' : '1';
+  }
+  
+  updateSizeButtons(); // Set initial state
+  
+  increaseBtn.onclick = () => {
+    if (currentSizeValue < VISUAL_CONFIG.sizes.max) {
+      currentSizeValue++;
+      adjustNodeSize(node, 1);
+      sizeIndicator.textContent = `Size: ${currentSizeValue}`;
+      updateSizeButtons();
+      computeVisuals(cy);
+    }
+  };
+  
+  decreaseBtn.onclick = () => {
+    if (currentSizeValue > VISUAL_CONFIG.sizes.min) {
+      currentSizeValue--;
+      adjustNodeSize(node, -1);
+      sizeIndicator.textContent = `Size: ${currentSizeValue}`;
+      updateSizeButtons();
+      computeVisuals(cy);
+    }
+  };
 
-
-  // Text color handler
-  document.getElementById('textColorSelect').onchange = (e) => changeTextColor(node, e.target.value, cy);
-
-  // Floret color handler
-  document.getElementById('floretColorSelect').onchange = (e) => {
-    let val = e.target.value === 'virgin' ? '#eee' : e.target.value;
-    applyFloretColor(node, val, cy);
+  // Reset colors button
+  document.getElementById('resetColors').onclick = () => {
+    // Reset to node type defaults (not global defaults)
+    applyVisualChange(node, 'textColor', 'virgin', cy);
+    applyVisualChange(node, 'floretColor', 'virgin', cy);
+    
+    // Update the dropdowns
+    const textSelect = document.querySelector('#textColorControl select');
+    const backgroundSelect = document.querySelector('#backgroundColorControl select');
+    const textPreview = document.querySelector('#textColorControl .color-preview');
+    const backgroundPreview = document.querySelector('#backgroundColorControl .color-preview');
+    
+    if (textSelect) textSelect.value = 'virgin';
+    if (backgroundSelect) backgroundSelect.value = 'virgin';
+    if (textPreview) textPreview.style.backgroundColor = getNodeTypeDefaults(nodeType).text;
+    if (backgroundPreview) backgroundPreview.style.backgroundColor = getNodeTypeDefaults(nodeType).floret;
   };
 
   // Click outside modal closes it
@@ -342,18 +454,196 @@ document.getElementById('decreaseNodeSize').onclick = () => { adjustNodeSize(nod
   document.addEventListener('mousedown', outsideClickHandler);
 }
 
-function changeTextColor(node, color, cy) {
-  if (color === 'virgin') color = '#222'; // black (or use '#000' if you want true black)
-  node.data('textColor', color);
+// Centralized visual change handler
+function applyVisualChange(node, property, value, cy) {
+  const nodeType = node.data('type') || 'assertion';
+  
+  switch (property) {
+    case 'textColor':
+      const textColor = value === 'virgin' ? 
+        getNodeTypeDefaults(nodeType).text : 
+        value;
+      node.data('textColor', textColor);
+      // Set a flag to prevent computeVisuals from overriding user choice
+      node.data('userCustomTextColor', value !== 'virgin');
+      break;
+      
+    case 'floretColor':
+      // Legacy support - this just sets background color on current node
+      const floretColor = value === 'virgin' ? 
+        getNodeTypeDefaults(nodeType).floret : 
+        value;
+      node.data('floretColor', floretColor);
+      node.data('userCustomFloretColor', value !== 'virgin');
+      break;
+      
+    default:
+      console.warn(`Unknown visual property: ${property}`);
+      return;
+  }
+  
   computeVisuals(cy);
 }
 
-function changeFloretColor(node, color, cy) {
-  if (color === 'virgin') color = '#eee'; // light gray
-  node.data('floretColor', color);
-  computeVisuals(cy);
+// Multi-node visual signals modal
+export function openMultiVisualSignalsModal(nodes, cy) {
+  hideModal('multi-visual-signals-modal');
+
+  const modal = document.createElement('div');
+  modal.id = 'multi-visual-signals-modal';
+  modal.className = 'hidden';
+  modal.style.position = 'fixed';
+  modal.style.background = '#fff';
+  modal.style.padding = '24px 24px 18px 24px';
+  modal.style.border = '2px solid #1976d2';
+  modal.style.borderRadius = '8px';
+  modal.style.zIndex = 10001;
+  modal.style.boxShadow = '0 6px 30px #1976d255';
+  modal.style.minWidth = '400px';
+  modal.style.maxWidth = '500px';
+
+  // Get node type distribution
+  const nodeTypes = {};
+  nodes.forEach(node => {
+    const type = node.data('type') || 'assertion';
+    nodeTypes[type] = (nodeTypes[type] || 0) + 1;
+  });
+  
+  const typeText = Object.entries(nodeTypes)
+    .map(([type, count]) => `${count} ${type}${count > 1 ? 's' : ''}`)
+    .join(', ');
+
+  modal.innerHTML = `
+    <div class="modal-title">
+      Visual Signals for Multiple Nodes
+      <button class="close-btn" id="closeMultiVisualSignalsModal">&times;</button>
+    </div>
+    
+    <div style="margin-bottom: 16px; padding: 8px; background: #f5f5f5; border-radius: 4px;">
+      <strong>Selection:</strong> ${nodes.length} nodes (${typeText})
+    </div>
+    
+    <div class="control-section">
+      <h4>Node Size</h4>
+      <div class="size-controls">
+        <button class="size-button" id="multiDecreaseNodeSize">−</button>
+        <span style="margin: 0 10px; font-weight: 500;">Adjust All</span>
+        <button class="size-button" id="multiIncreaseNodeSize">+</button>
+      </div>
+      <div style="font-size: 11px; color: #666; margin-top: 4px;">
+        Range: ${VISUAL_CONFIG.sizes.min}–${VISUAL_CONFIG.sizes.max} (default: ${VISUAL_CONFIG.sizes.default})
+      </div>
+    </div>
+    
+    <div class="control-section">
+      <h4>Colors</h4>
+      <div style="font-size: 12px; color: #666; margin-bottom: 8px;">
+        Apply colors to all selected nodes (respects individual node type defaults for "Standard Shade")
+      </div>
+      <div id="multiTextColorControl"></div>
+      <div id="multiBackgroundColorControl"></div>
+      <button id="multiResetColors" class="reset-btn">Reset All to Node Type Defaults</button>
+    </div>
+  `;
+
+  showModal(modal);
+  centerModal(modal);
+  makeDraggable(modal, '.modal-title');
+
+  // Add color controls for multi-select (no specific node type since it's mixed)
+  const multiTextColorControl = createMultiColorControl('Text:', (color) => {
+    nodes.forEach(node => {
+      applyVisualChange(node, 'textColor', color, cy);
+    });
+  });
+  
+  const multiBackgroundColorControl = createMultiColorControl('Background:', (color) => {
+    nodes.forEach(node => {
+      applyVisualChange(node, 'floretColor', color, cy);
+    });
+  });
+  
+  document.getElementById('multiTextColorControl').appendChild(multiTextColorControl);
+  document.getElementById('multiBackgroundColorControl').appendChild(multiBackgroundColorControl);
+
+  // Close button handler
+  document.getElementById('closeMultiVisualSignalsModal').onclick = () => hideModal(modal.id);
+
+  // Size control handlers
+  document.getElementById('multiIncreaseNodeSize').onclick = () => {
+    nodes.forEach(node => {
+      const currentSize = node.data('sizeIndex') || VISUAL_CONFIG.sizes.default;
+      if (currentSize < VISUAL_CONFIG.sizes.max) {
+        adjustNodeSize(node, 1);
+      }
+    });
+    computeVisuals(cy);
+  };
+  
+  document.getElementById('multiDecreaseNodeSize').onclick = () => {
+    nodes.forEach(node => {
+      const currentSize = node.data('sizeIndex') || VISUAL_CONFIG.sizes.default;
+      if (currentSize > VISUAL_CONFIG.sizes.min) {
+        adjustNodeSize(node, -1);
+      }
+    });
+    computeVisuals(cy);
+  };
+
+  // Reset colors button
+  document.getElementById('multiResetColors').onclick = () => {
+    nodes.forEach(node => {
+      applyVisualChange(node, 'textColor', 'virgin', cy);
+      applyVisualChange(node, 'floretColor', 'virgin', cy);
+    });
+  };
+
+  // Click outside modal closes it
+  function outsideClickHandler(e) {
+    if (!modal.contains(e.target)) {
+      hideModal(modal.id);
+      document.removeEventListener('mousedown', outsideClickHandler);
+    }
+  }
+  document.addEventListener('mousedown', outsideClickHandler);
 }
 
+// Create color control for multi-node selection (no specific node type)
+function createMultiColorControl(labelText, onchange) {
+  const container = document.createElement('div');
+  container.className = 'color-control';
+  
+  const label = document.createElement('label');
+  label.textContent = labelText;
+  
+  const pickerContainer = document.createElement('div');
+  pickerContainer.className = 'color-picker-container';
+  
+  const preview = createColorPreview('#ccc'); // Neutral preview for multi-select
+  
+  const select = document.createElement('select');
+  VISUAL_CONFIG.colors.presets.forEach(preset => {
+    const option = document.createElement('option');
+    option.value = preset.value;
+    option.textContent = preset.name;
+    select.appendChild(option);
+  });
+  
+  select.onchange = (e) => {
+    const newColor = e.target.value;
+    // For multi-select, show a neutral color in preview
+    const displayColor = newColor === 'virgin' ? '#ccc' : newColor;
+    preview.style.backgroundColor = displayColor;
+    onchange(newColor);
+  };
+  
+  pickerContainer.appendChild(preview);
+  pickerContainer.appendChild(select);
+  container.appendChild(label);
+  container.appendChild(pickerContainer);
+  
+  return container;
+}
 
 
 // --- Notes Modal ---

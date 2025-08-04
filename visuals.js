@@ -240,10 +240,16 @@ export function computeVisuals(cy) {
       shape = 'rectangle';
       borderWidth = 2;
       borderColor = '#444';
-      node.data('textColor', '#fff');
+      // Only set default text color if user hasn't customized it
+      if (!node.data('userCustomTextColor')) {
+        node.data('textColor', '#fff');
+      }
     }
     else if (nodeType === NODE_TYPE_ASSERTION) {
-      node.data('textColor', '#000');
+      // Only set default text color if user hasn't customized it
+      if (!node.data('userCustomTextColor')) {
+        node.data('textColor', '#000');
+      }
 
       // HEAVY MODE: use only heavy fields with three-category edge system
       if (bayesMode === 'heavy') {

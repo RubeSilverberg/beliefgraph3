@@ -1,6 +1,14 @@
 // script_current.js
 
 import {
+  openEditNodeLabelModal,
+  openNotesModal,
+  openRationaleModal,
+  openVisualSignalsModal,
+  openMultiVisualSignalsModal,
+  openCPTModalTwoPerParent
+} from './modals.js';
+import {
   registerVisualEventHandlers,
   computeVisuals,
   drawModifierBoxes,
@@ -52,13 +60,6 @@ import {
   clearVisualOnlyData,
   // If you later add more, include here
 } from './logic.js';
-
-import {
-  openEditNodeLabelModal,
-  openNotesModal,
-  openRationaleModal,
-  openCPTModalTwoPerParent,
-} from './modals.js';
 
 import { setupMenuAndEdgeModals } from './menu.js';
 // --- Quick Guide Button Logic ---
@@ -319,7 +320,6 @@ document.addEventListener('DOMContentLoaded', () => {
     style: {
       'shape': 'rectangle',
       'background-color': '#666',
-      'color': '#fff',
       'border-color': '#666',
       'border-width': 2,
       'border-style': 'solid'
@@ -414,6 +414,26 @@ document.addEventListener('DOMContentLoaded', () => {
       'background-opacity': 0.18
     }
   },
+  // Selected nodes - blue border highlight
+  {
+    selector: 'node:selected',
+    style: {
+      'border-width': 4,
+      'border-color': '#1976d2',
+      'border-opacity': 0.8
+    }
+  },
+  // Selected edges - blue highlight
+  {
+    selector: 'edge:selected',
+    style: {
+      'line-color': '#1976d2',
+      'target-arrow-color': '#1976d2',
+      'source-arrow-color': '#1976d2',
+      'width': 4,
+      'opacity': 0.8
+    }
+  },
   // ---- VIRGIN EDGE STYLE: REMOVED - now using computed lineColor ----
 ],
 
@@ -425,6 +445,162 @@ document.addEventListener('DOMContentLoaded', () => {
   cy.on('dblclick', 'node', function(event) {
     const node = event.target;
     openEditNodeLabelModal(node);
+  });
+
+  // ===== MULTI-SELECT FUNCTIONALITY =====
+  let selectedNodes = new Set();
+  let multiSelectMode = false;
+  
+  // Enable box selection
+  cy.boxSelectionEnabled(true);
+  
+  // Create multi-select controls
+  const multiSelectControls = document.createElement('div');
+  multiSelectControls.className = 'multi-select-controls';
+  multiSelectControls.innerHTML = `
+    <div class="selection-count">0 nodes selected</div>
+    <div style="font-size: 11px; color: #666; margin-bottom: 8px;">
+      💡 Ctrl+Click nodes, drag to box select<br>
+      ⌨️ Delete key, Escape, Ctrl+A
+    </div>
+    <button id="multiSelectVisuals">Visual Signals</button>
+    <button id="multiSelectDelete">Delete Selected</button>
+    <button id="multiSelectClear">Clear Selection</button>
+  `;
+  document.body.appendChild(multiSelectControls);
+  
+  function updateSelectionUI() {
+    const count = selectedNodes.size;
+    const countDiv = multiSelectControls.querySelector('.selection-count');
+    countDiv.textContent = `${count} node${count !== 1 ? 's' : ''} selected`;
+    
+    if (count > 0) {
+      multiSelectControls.classList.add('active');
+    } else {
+      multiSelectControls.classList.remove('active');
+      multiSelectMode = false;
+    }
+    
+    // Update selection indicators on nodes
+    cy.nodes().forEach(node => {
+      const isSelected = selectedNodes.has(node.id());
+      if (isSelected && !node.hasClass('selected')) {
+        node.addClass('selected');
+        node.select();
+      } else if (!isSelected && node.hasClass('selected')) {
+        node.removeClass('selected'); 
+        node.unselect();
+      }
+    });
+  }
+  
+  // Multi-select click handler
+  cy.on('tap', 'node', function(event) {
+    // Check for Ctrl/Cmd key
+    if (event.originalEvent.ctrlKey || event.originalEvent.metaKey) {
+      const nodeId = event.target.id();
+      
+      if (selectedNodes.has(nodeId)) {
+        selectedNodes.delete(nodeId);
+      } else {
+        selectedNodes.add(nodeId);
+        multiSelectMode = true;
+      }
+      
+      updateSelectionUI();
+      event.stopPropagation();
+    }
+  });
+  
+  // Box selection support
+  cy.on('boxend', function(event) {
+    const boxSelectedNodes = cy.nodes(':selected');
+    
+    boxSelectedNodes.forEach(node => {
+      selectedNodes.add(node.id());
+    });
+    
+    if (selectedNodes.size > 0) {
+      multiSelectMode = true;
+      updateSelectionUI();
+    }
+  });
+  
+  // Clear selection on background click
+  cy.on('tap', function(event) {
+    if (event.target === cy && selectedNodes.size > 0) {
+      selectedNodes.clear();
+      updateSelectionUI();
+    }
+  });
+  
+  // Multi-select control handlers
+  document.getElementById('multiSelectVisuals').onclick = () => {
+    if (selectedNodes.size > 0) {
+      const nodes = Array.from(selectedNodes).map(id => cy.getElementById(id));
+      openMultiVisualSignalsModal(nodes, cy);
+    }
+  };
+  
+  document.getElementById('multiSelectDelete').onclick = () => {
+    if (selectedNodes.size > 0 && confirm(`Delete ${selectedNodes.size} selected nodes?`)) {
+      // Only allow in lite mode
+      if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
+      
+      selectedNodes.forEach(id => {
+        const node = cy.getElementById(id);
+        if (node.length) node.remove();
+      });
+      
+      selectedNodes.clear();
+      updateSelectionUI();
+      
+      if (window.convergeAll) window.convergeAll({ cy });
+      if (window.computeVisuals) window.computeVisuals(cy);
+    }
+  };
+  
+  document.getElementById('multiSelectClear').onclick = () => {
+    selectedNodes.clear();
+    updateSelectionUI();
+  };
+  
+  // Keyboard shortcuts for multi-select
+  document.addEventListener('keydown', (e) => {
+    // Delete key to delete selected nodes
+    if (e.key === 'Delete' && selectedNodes.size > 0) {
+      if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
+      
+      if (confirm(`Delete ${selectedNodes.size} selected nodes?`)) {
+        selectedNodes.forEach(id => {
+          const node = cy.getElementById(id);
+          if (node.length) node.remove();
+        });
+        
+        selectedNodes.clear();
+        updateSelectionUI();
+        
+        if (window.convergeAll) window.convergeAll({ cy });
+        if (window.computeVisuals) window.computeVisuals(cy);
+      }
+    }
+    
+    // Escape key to clear selection
+    if (e.key === 'Escape' && selectedNodes.size > 0) {
+      selectedNodes.clear();
+      updateSelectionUI();
+    }
+    
+    // Ctrl+A to select all nodes
+    if ((e.ctrlKey || e.metaKey) && e.key === 'a' && !e.target.tagName.match(/INPUT|TEXTAREA/)) {
+      e.preventDefault();
+      selectedNodes.clear();
+      cy.nodes().forEach(node => {
+        selectedNodes.add(node.id());
+      });
+      multiSelectMode = true;
+      updateSelectionUI();
+    }
   });
 
   // Make cy global if needed elsewhere
