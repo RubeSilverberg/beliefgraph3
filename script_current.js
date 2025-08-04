@@ -110,6 +110,44 @@ document.addEventListener('DOMContentLoaded', () => {
 let mode = 'lite'; // Tracks current Bayes mode globally
 window.getBayesMode = () => mode;
 
+function flipArrowDirections(mode) {
+  if (!window.cy) return;
+  
+  console.log(`Flipping arrow directions for ${mode} mode`);
+  
+  if (mode === 'heavy') {
+    // Heavy mode: flip arrows to point from target to source (reverse of edge direction)
+    window.cy.style()
+      .selector('edge')
+      .style({
+        'mid-target-arrow-shape': 'none',
+        'mid-source-arrow-shape': 'triangle',
+        'mid-source-arrow-color': 'data(lineColor)'
+      })
+      .selector('edge[displayType="opposes"]')
+      .style({
+        'mid-source-arrow-shape': 'triangle',
+        'mid-source-arrow-color': '#d32f2f'
+      })
+      .update();
+  } else {
+    // Lite mode: arrows point from source to target (follows edge direction)
+    window.cy.style()
+      .selector('edge')
+      .style({
+        'mid-source-arrow-shape': 'none',
+        'mid-target-arrow-shape': 'triangle',
+        'mid-target-arrow-color': 'data(lineColor)'
+      })
+      .selector('edge[displayType="opposes"]')
+      .style({
+        'mid-target-arrow-shape': 'triangle',
+        'mid-target-arrow-color': '#d32f2f'
+      })
+      .update();
+  }
+}
+
 // === Bayes Mode Switch Logic - Complete Isolation ===
 function setBayesMode(newMode) {
   if (newMode !== 'lite' && newMode !== 'heavy') return;
@@ -132,6 +170,11 @@ function setBayesMode(newMode) {
   }
   
   mode = newMode;
+  
+  // Flip arrow directions based on mode
+  if (window.cy) {
+    flipArrowDirections(newMode);
+  }
   
   // Use unified convergence for both modes (handles mode-specific propagation internally)
   if (window.convergeAll && window.cy) {
@@ -318,10 +361,12 @@ document.addEventListener('DOMContentLoaded', () => {
     selector: 'edge',
     style: {
       'curve-style': 'bezier',
-      'mid-target-arrow-shape': 'triangle',
+      'mid-target-arrow-shape': 'triangle',  // Default for lite mode
+      'mid-source-arrow-shape': 'none',
       'width': 'mapData(absWeight, 0, 1, 2, 8)',
       'line-color': 'data(lineColor)',
       'mid-target-arrow-color': 'data(lineColor)',
+      'mid-source-arrow-color': 'data(lineColor)',
       'opacity': 1,
       // Edge labels for virgin edges - positioned to float away from arrow
       'label': 'data(label)',
@@ -342,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
     selector: 'edge[displayType="supports"]',
     style: {
       'line-style': 'solid',
-      'mid-target-arrow-shape': 'triangle'
+      'mid-target-arrow-shape': 'triangle'  // Will be overridden by mode switch
     }
   },
   // Edge opposes: use displayType to avoid cross-mode conflicts  
@@ -350,7 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
     selector: 'edge[displayType="opposes"]',
     style: {
       'line-style': 'dotted',
-      'mid-target-arrow-shape': 'triangle',
+      'mid-target-arrow-shape': 'triangle',  // Will be overridden by mode switch
       'mid-target-arrow-color': '#d32f2f'  // Red triangle for NOT relationships
     }
   },
@@ -384,6 +429,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Make cy global if needed elsewhere
   window.cy = cy;
+
+  // Set initial arrow directions based on current mode (default is lite)
+  flipArrowDirections(mode);
 
   // Ensure right-click suppression on the Cytoscape canvas (for browsers that don't respect document-level handler)
   setTimeout(() => {

@@ -46,10 +46,11 @@ function topologicalSort(nodes, cy) {
   function dfsVisit(node) {
     if (visited.has(node.id())) return;
     
-    // Visit all children first (post-order traversal)
-    node.outgoers('edge').targets().forEach(child => {
-      if (nodes.includes(child)) {
-        dfsVisit(child);
+    // Visit all dependencies first (post-order traversal)
+    // Use incomers() to find parent dependencies
+    node.incomers('edge').sources().forEach(dependency => {
+      if (nodes.includes(dependency)) {
+        dfsVisit(dependency);
       }
     });
     
