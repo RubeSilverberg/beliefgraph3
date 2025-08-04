@@ -297,8 +297,8 @@ setCondFalseBtn.onclick = () => {
       let falseCondition = condFalse; // P(Child | Parent is false)
       
       let msg = `<b>Baseline:</b> ${baseline}%<br>
-      <b>P(${childLabel} | ${parentLabel} is true):</b> ${trueCondition}%<br>
-      <b>P(${childLabel} | ${parentLabel} is false):</b> ${falseCondition}%<br><br>`;
+      <b>P("${childLabel}" | "${parentLabel}" is true):</b> ${trueCondition}%<br>
+      <b>P("${childLabel}" | "${parentLabel}" is false):</b> ${falseCondition}%<br><br>`;
       let ratio = falseCondition === 0 ? (trueCondition === 0 ? 1 : 99) : trueCondition / falseCondition;
       msg += `Conditional likelihood ratio: <b>${ratio.toFixed(2)}×</b><br>`;
       msg += qualitativeRatio(ratio);
@@ -436,21 +436,21 @@ function updateModalLabels() {
   const parentLabel = window._modalParentLabel || 'Parent';
   const childLabel = window._modalChildLabel || 'Child';
   
-  // Update step titles
+  // Update step titles - add quotation marks around node labels
   document.querySelector('#step-cond-true .step-title').innerHTML = 
-    `2. If <b>${parentLabel}</b> is <span id="parent-true-word">true</span>`;
+    `2. If <b>"${parentLabel}"</b> is <span id="parent-true-word">true</span>`;
   document.querySelector('#step-cond-false .step-title').innerHTML = 
-    `3. If <b>${parentLabel}</b> is <span id="parent-false-word">false</span>`;
+    `3. If <b>"${parentLabel}"</b> is <span id="parent-false-word">false</span>`;
   
-  // Update step descriptions
+  // Update step descriptions - add quotation marks around node labels
   document.querySelector('#step-baseline .step-sub').textContent = 
-    `Chance ${childLabel} is true if nothing is known about ${parentLabel}.`;
+    `Chance "${childLabel}" is true if nothing is known about "${parentLabel}".`;
   
   document.querySelector('#step-cond-true .step-sub').innerHTML = 
-    `Chance <b>${childLabel}</b> is true if <b>${parentLabel}</b> is <span id="parent-true-word2">true</span>.`;
+    `Chance <b>"${childLabel}"</b> is true if <b>"${parentLabel}"</b> is <span id="parent-true-word2">true</span>.`;
     
   document.querySelector('#step-cond-false .step-sub').innerHTML = 
-    `Chance <b>${childLabel}</b> is true if <b>${parentLabel}</b> is <span id="parent-false-word2">false</span>.`;
+    `Chance <b>"${childLabel}"</b> is true if <b>"${parentLabel}"</b> is <span id="parent-false-word2">false</span>.`;
     
   // Update the inverse checkbox label (preserve the existing checkbox element)
   const inverseLabel = document.querySelector('#step-baseline label');
@@ -459,9 +459,9 @@ function updateModalLabels() {
     const existingCheckbox = inverseLabel.querySelector('#inverse-checkbox');
     const checkboxChecked = existingCheckbox ? existingCheckbox.checked : false;
     
-    // Update the label text while preserving the checkbox
+    // Update the label text while preserving the checkbox - add quotation marks around node labels
     inverseLabel.innerHTML = `<input type="checkbox" id="inverse-checkbox" ${checkboxChecked ? 'checked' : ''}>
-      Inverse relationship: ${childLabel} more likely if ${parentLabel} is <b>false</b>`;
+      Inverse relationship: "${childLabel}" more likely if "${parentLabel}" is <b>false</b>`;
     
     // Re-attach the event listener since we recreated the element
     const newCheckbox = document.getElementById('inverse-checkbox');
