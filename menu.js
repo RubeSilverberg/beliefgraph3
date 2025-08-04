@@ -192,12 +192,13 @@ window.cy.on('doubleTap', 'node', function(event) {
 
       // === Regular node menu items (non-notes) ===
 
+      // NOTE: "Connect to..." functionality replaced by edgehandles extension
       // Only allow connections for non-note nodes
-      const startEdge = document.createElement('li');
-      startEdge.textContent = 'Connect to...';
-      startEdge.style.cursor = 'pointer';
-      startEdge.onclick = () => { pendingEdgeSource = node; hideMenu(); };
-      list.appendChild(startEdge);
+      // const startEdge = document.createElement('li');
+      // startEdge.textContent = 'Connect to...';
+      // startEdge.style.cursor = 'pointer';
+      // startEdge.onclick = () => { pendingEdgeSource = node; hideMenu(); };
+      // list.appendChild(startEdge);
 
       // Logic node type conversion (AND/OR)
       if (nodeType === NODE_TYPE_AND || nodeType === NODE_TYPE_OR) {
@@ -316,7 +317,9 @@ window.cy.on('doubleTap', 'node', function(event) {
     }
   });
 
+  // NOTE: Edge creation handler replaced by edgehandles extension
   // Handle edge creation after "Connect to..." is activated
+  /*
   cy.on('tap', evt => {
     if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
     if (!pendingEdgeSource) return;
@@ -367,6 +370,7 @@ window.cy.on('doubleTap', 'node', function(event) {
     });
     computeVisuals(cy);
   });
+  */
 
   // --- Double-Tap Edge for Editing Influence/Modifier ---
 // --- Double-Click Edge for Editing Influence/Modifier ---
