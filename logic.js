@@ -1280,8 +1280,8 @@ export function addStatement() {
     group: 'nodes',
     data: {
       id: 'assertion' + Date.now(),
-      label: 'New Fact',
-      origLabel: 'New Fact',
+      label: 'New Belief',
+      origLabel: 'New Belief',
       type: 'assertion',
       width: 60,
       height: 36
@@ -1291,8 +1291,8 @@ export function addStatement() {
   
   console.log(`Created assertion node with type: ${newNode.data('type')}`);
   
-  // Trigger visuals update and automatically open edit dialog
-  if (window.computeVisuals) window.computeVisuals(cy);
+  // Trigger convergence (which includes auto-updating node types) and visuals update
+  convergeAll({ cy });
   console.log('Statement added');
   
   // Auto-open edit dialog for immediate editing

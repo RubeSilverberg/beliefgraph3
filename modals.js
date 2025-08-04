@@ -494,13 +494,13 @@ export function openMultiVisualSignalsModal(nodes, cy) {
   modal.className = 'hidden';
   modal.style.position = 'fixed';
   modal.style.background = '#fff';
-  modal.style.padding = '24px 24px 18px 24px';
+  modal.style.padding = '28px 28px 24px 28px';
   modal.style.border = '2px solid #1976d2';
   modal.style.borderRadius = '8px';
   modal.style.zIndex = 10001;
   modal.style.boxShadow = '0 6px 30px #1976d255';
-  modal.style.minWidth = '400px';
-  modal.style.maxWidth = '500px';
+  modal.style.minWidth = '420px';
+  modal.style.maxWidth = '520px';
 
   // Get node type distribution
   const nodeTypes = {};
@@ -519,7 +519,7 @@ export function openMultiVisualSignalsModal(nodes, cy) {
       <button class="close-btn" id="closeMultiVisualSignalsModal">&times;</button>
     </div>
     
-    <div style="margin-bottom: 16px; padding: 8px; background: #f5f5f5; border-radius: 4px;">
+    <div style="margin-bottom: 20px; padding: 10px; background: #f5f5f5; border-radius: 4px;">
       <strong>Selection:</strong> ${nodes.length} nodes (${typeText})
     </div>
     
@@ -530,19 +530,19 @@ export function openMultiVisualSignalsModal(nodes, cy) {
         <span style="margin: 0 10px; font-weight: 500;">Adjust All</span>
         <button class="size-button" id="multiIncreaseNodeSize">+</button>
       </div>
-      <div style="font-size: 11px; color: #666; margin-top: 4px;">
+      <div style="font-size: 11px; color: #666; margin-top: 6px;">
         Range: ${VISUAL_CONFIG.sizes.min}–${VISUAL_CONFIG.sizes.max} (default: ${VISUAL_CONFIG.sizes.default})
       </div>
     </div>
     
     <div class="control-section">
       <h4>Colors</h4>
-      <div style="font-size: 12px; color: #666; margin-bottom: 8px;">
+      <div style="font-size: 12px; color: #666; margin-bottom: 10px;">
         Apply colors to all selected nodes (respects individual node type defaults for "Standard Shade")
       </div>
       <div id="multiTextColorControl"></div>
-      <div id="multiBackgroundColorControl"></div>
-      <button id="multiResetColors" class="reset-btn">Reset All to Node Type Defaults</button>
+      <div id="multiBackgroundColorControl" style="margin-top: 10px;"></div>
+      <button id="multiResetColors" class="reset-btn" style="margin-top: 8px;">Reset All to Node Type Defaults</button>
     </div>
   `;
 

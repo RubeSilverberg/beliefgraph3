@@ -62,6 +62,7 @@ import {
 } from './logic.js';
 
 import { setupMenuAndEdgeModals } from './menu.js';
+import { setupCustomEdgeHandles, initializeCustomEdgeHandlesModeMonitoring } from './custom-edge-handles.js';
 // --- Quick Guide Button Logic ---
 document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('quick-guide-btn');
@@ -609,6 +610,18 @@ document.addEventListener('DOMContentLoaded', () => {
   // Set initial arrow directions based on current mode (default is lite)
   flipArrowDirections(mode);
 
+  // Initialize edgehandles extension
+  try {
+    const edgehandles = setupEdgeHandles(cy);
+    if (edgehandles) {
+      console.log('✅ Edgehandles extension loaded successfully');
+      // Store reference for mode switching
+      window.edgehandles = edgehandles;
+    }
+  } catch (error) {
+    console.warn('⚠️ Edgehandles extension failed to load:', error);
+  }
+
   // Ensure right-click suppression on the Cytoscape canvas (for browsers that don't respect document-level handler)
   setTimeout(() => {
     cy.container().addEventListener('contextmenu', e => {
@@ -619,6 +632,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Register all hover/visual event handlers
   registerVisualEventHandlers(cy);
+
+  // Setup custom edge handles for intuitive edge creation
+  setupCustomEdgeHandles(cy);
+  initializeCustomEdgeHandlesModeMonitoring();
 
   // Register custom context menu, edge modals, etc.
   setupMenuAndEdgeModals({
