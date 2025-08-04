@@ -1,6 +1,5 @@
 // Network Logger for pgmpy Testing
-// This function extracts and logs the complete Bayesian network structure
-// for mathematical verification in pgmpy
+// Simplified for compatibility with refactored Bayes Heavy code
 
 function logNetworkForPgmpy(cy) {
   console.log("=== GENERATING PGMPY PYTHON SCRIPT ===");
@@ -25,59 +24,18 @@ from pgmpy.inference import VariableElimination
 import itertools
 import numpy as np
 
-def build_naive_joint_cpt(parents, per_parent_cpts, baseline):
+def create_cpd(node, parents, probabilities):
     """
-    Given:
-      - parents: list of parent node names
-      - per_parent_cpts: list of dicts, one per parent, each with keys:
-           'T' (prob child True | parent True)
-           'F' (prob child True | parent False)
-      - baseline: marginal P(child True) with no parents
-    Returns:
-      - List of joint probabilities (P(child=True|parent combo)) for all 2^N parent combos,
-        ordered lexicographically (pgmpy order).
+    Create a CPD for a node with given parents and probability table.
+    probabilities: list of P(node=True | parent_combination) for all 2^N combinations
     """
-    combos = list(itertools.product([0, 1], repeat=len(parents)))  # 0=True, 1=False
-    probs = []
-    for combo in combos:
-        prod = 1.0
-        for idx, val in enumerate(combo):
-            p = per_parent_cpts[idx]['T'] if val == 0 else per_parent_cpts[idx]['F']
-            prod *= p
-        p_true = prod / (baseline ** (len(parents) - 1))
-        p_true = max(0.0, min(1.0, p_true))
-        probs.append(p_true)
-    return probs
-
-def create_cpd(node, cpt_info):
-    """
-    cpt_info requires:
-      - 'parents': list of parent names (can be empty for roots)
-      - if 'style' == 'naive':
-          - 'per_parent': list of dicts for each parent as above
-          - 'baseline': baseline probability (float)
-      - if 'style' == 'joint':
-          - 'table': explicit list of joint probabilities (2^N entries)
-    """
-    if not cpt_info or 'parents' not in cpt_info or not cpt_info['parents']:
+    if not parents:
         return None  # Root node, handled separately
-
-    parents = cpt_info['parents']
-    style = cpt_info.get('style', 'joint')
-
-    if style == 'joint':
-        true_probs = cpt_info['table']
-    elif style == 'naive':
-        per_parent = cpt_info['per_parent']
-        baseline = cpt_info['baseline']
-        true_probs = build_naive_joint_cpt(parents, per_parent, baseline)
-    else:
-        raise ValueError(f"Unknown CPT style {style} for node {node}")
-
+    
     cpd = TabularCPD(
         variable=node,
         variable_card=2,
-        values=[true_probs, [1 - p for p in true_probs]],
+        values=[probabilities, [1 - p for p in probabilities]],
         evidence=parents,
         evidence_card=[2] * len(parents)
     )
@@ -86,7 +44,7 @@ def create_cpd(node, cpt_info):
 def build_bayesian_network(nodes, edges, priors, cpts):
     model = DiscreteBayesianNetwork(edges)
 
-    # Add priors for root nodes (priors must be 2D lists: [[P(True)], [P(False)]])
+    # Add priors for root nodes
     for node in nodes:
         if node in priors:
             model.add_cpds(TabularCPD(node, 2, priors[node]))
@@ -94,7 +52,8 @@ def build_bayesian_network(nodes, edges, priors, cpts):
     # Add CPDs for non-root nodes
     for node in nodes:
         if node in cpts:
-            cpd = create_cpd(node, cpts[node])
+            parents, probabilities = cpts[node]
+            cpd = create_cpd(node, parents, probabilities)
             if cpd:
                 model.add_cpds(cpd)
 
@@ -103,16 +62,11 @@ def build_bayesian_network(nodes, edges, priors, cpts):
 
 def run_inference(model, nodes, priors):
     infer = VariableElimination(model)
-    query_nodes = [n for n in nodes if n not in priors]
 
-    print("=== Joint distribution of non-root nodes ===")
-    joint = infer.query(variables=query_nodes)
-    print(joint)
-
-    print("\\n=== Marginal probabilities ===")
-    for var in query_nodes:
+    print("=== Marginal probabilities ===")
+    for var in nodes:
         res = infer.query(variables=[var])
-        print(f"{var}: P(True) = {res.values[0]:.4f}, P(False) = {res.values[1]:.4f}")
+        print(f"{var}: P(True) = {res.values[0]:.4f}")
 
 # === USER INPUT SECTION ===
 # Generated from Belief Graph on ${new Date().toLocaleString()}
@@ -127,8 +81,7 @@ def run_inference(model, nodes, priors):
   const edgeList = edges.map(e => [e.data.source, e.data.target]);
   pythonScript += `edges = ${JSON.stringify(edgeList)}\n\n`;
   
-  // Generate priors for root nodes
-  pythonScript += "# Priors must be 2D lists: [[P(True)], [P(False)]]\n";
+  // Generate priors for root nodes (2D lists: [[P(True)], [P(False)]])
   pythonScript += "priors = {\n";
   nodes.forEach(node => {
     const nodeId = node.data.id;
@@ -148,57 +101,61 @@ def run_inference(model, nodes, priors):
   pythonScript += "}\n\n";
   
   // Generate CPTs for non-root nodes
-  pythonScript += "# CPTs for non-root nodes\n";
+  // Format: node_id: [parent_list, probability_list]
+  pythonScript += "# CPTs: {node: [parents, probabilities]}\n";
   pythonScript += "cpts = {\n";
   nodes.forEach(node => {
     const nodeId = node.data.id;
     const incomingEdges = edges.filter(e => e.data.target === nodeId);
     
     if (incomingEdges.length > 0) {
-      // This node has parents
       const parentIds = incomingEdges.map(e => e.data.source);
-      pythonScript += `    '${nodeId}': {\n`;
-      pythonScript += `        'parents': ${JSON.stringify(parentIds)},\n`;
       
-      if (incomingEdges.length === 1) {
-        // Single parent - use joint style
-        const edge = incomingEdges[0];
-        const cpt = edge.data.cpt;
-        if (cpt) {
-          const pTrueGivenFalse = Number((cpt.condFalse / 100).toFixed(4));
-          const pTrueGivenTrue = Number((cpt.condTrue / 100).toFixed(4));
-          
-          pythonScript += `        'style': 'joint',\n`;
-          pythonScript += `        'table': [${pTrueGivenFalse}, ${pTrueGivenTrue}]  # P(T|F), P(T|T)\n`;
-        } else {
-          // No CPT data, use default
-          pythonScript += `        'style': 'joint',\n`;
-          pythonScript += `        'table': [0.5, 0.5]  # P(T|F), P(T|T)\n`;
-        }
-      } else {
-        // Multiple parents - use naive style
-        pythonScript += `        'style': 'naive',\n`;
-        
-        pythonScript += `        'per_parent': [\n`;
-        incomingEdges.forEach((edge, i) => {
+      // Calculate probability table for all parent combinations
+      // For N parents, we need 2^N probabilities in pgmpy order
+      const numCombinations = Math.pow(2, parentIds.length);
+      const probabilities = [];
+      
+      for (let combo = 0; combo < numCombinations; combo++) {
+        if (incomingEdges.length === 1) {
+          // Single parent case: straightforward
+          const edge = incomingEdges[0];
           const cpt = edge.data.cpt;
           if (cpt) {
-            const pT = Number((cpt.condTrue / 100).toFixed(3));
-            const pF = Number((cpt.condFalse / 100).toFixed(3));
-            pythonScript += `            {'T': ${pT}, 'F': ${pF}},\n`;
+            // pgmpy order: parent=False first, then parent=True
+            const prob = combo === 0 ? (cpt.condFalse / 100) : (cpt.condTrue / 100);
+            probabilities.push(Number(prob.toFixed(4)));
           } else {
-            pythonScript += `            {'T': 0.5, 'F': 0.5},\n`;
+            probabilities.push(0.5); // default
           }
-        });
-        pythonScript += `        ],\n`;
-        
-        // Get baseline from first CPT (they should be consistent)
-        const firstCpt = incomingEdges[0].data.cpt;
-        const baseline = firstCpt ? Number((firstCpt.baseline / 100 || 0.5).toFixed(3)) : 0.5;
-        pythonScript += `        'baseline': ${baseline}\n`;
+        } else {
+          // Multi-parent case: use standard Naive Bayes
+          // This should match exactly what calculateNaiveBayesMarginal does
+          let likelihood = 1.0;
+          let baseline = 0.5; // default
+          
+          for (let i = 0; i < parentIds.length; i++) {
+            const parentIsTrue = !!(combo & (1 << i));
+            const edge = incomingEdges[i];
+            const cpt = edge.data.cpt;
+            
+            if (cpt) {
+              baseline = (cpt.baseline || 50) / 100; // use first edge's baseline
+              const prob = parentIsTrue ? (cpt.condTrue / 100) : (cpt.condFalse / 100);
+              likelihood *= prob;
+            } else {
+              likelihood *= 0.5; // default
+            }
+          }
+          
+          // Naive Bayes normalization: divide by baseline^(N-1)
+          const normalization = Math.pow(baseline, parentIds.length - 1);
+          const finalProb = Math.max(0, Math.min(1, likelihood / normalization));
+          probabilities.push(Number(finalProb.toFixed(4)));
+        }
       }
       
-      pythonScript += `    },\n`;
+      pythonScript += `    '${nodeId}': [${JSON.stringify(parentIds)}, ${JSON.stringify(probabilities)}],\n`;
     }
   });
   pythonScript += "}\n\n";
@@ -221,8 +178,8 @@ if __name__ == "__main__":
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
   
-  console.log("✅ Downloaded complete pgmpy script: belief_graph_pgmpy.py");
-  console.log("📁 Ready to run in any Python environment with pgmpy installed!");
+  console.log("✅ Downloaded simplified pgmpy script: belief_graph_pgmpy.py");
+  console.log("📁 Now matches the refactored Bayes Heavy implementation!");
 }
 
 // Make it available globally
