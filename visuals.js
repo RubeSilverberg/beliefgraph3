@@ -1,5 +1,5 @@
-// visuals.js
-console.log("Loaded visuals.js");
+// visuals.js - Updated styling for tooltips
+console.log("Loaded visuals.js - Version 2.0");
 import {
   NODE_TYPE_FACT,
   NODE_TYPE_ASSERTION,
@@ -693,6 +693,7 @@ export function showNodeHoverBox(cy, node) {
         box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${combinedLabel}</div>
                          <div style="margin-bottom: 6px;">Current: <b style="font-size: 18px; color: #1565c0;">${Math.round(100 * lp)}%</b></div>`;
       }
+      // Apply robustness styling with dynamic color matching border
       const rlabel = node.data('robustnessLabel');
       if (rlabel) {
         const robust = node.data('robustness');
@@ -860,39 +861,41 @@ export function showModifierBox(cy, edge) {
     const parentProb = bayesMode === 'heavy' ? 
       edge.source().data('heavyProb') : 
       edge.source().data('prob');
-    const pct = typeof parentProb === "number" ? Math.round(parentProb * 100) : null;
+    const decimal = typeof parentProb === "number" ? parentProb.toFixed(1) : null;
     box.innerHTML = `<div><b>Logic:</b> ${baseLabel}</div>`;
-    if (pct !== null) {
-      box.innerHTML += `<div>Parent probability: <b>${pct}%</b></div>`;
+    if (decimal !== null) {
+      box.innerHTML += `<div><span style="font-size: 1.2em; font-weight: bold;">${decimal}</span></div>`;
     }
   } else {
     // Assertion edge display - different for Heavy vs Lite mode
     if (bayesMode === 'heavy') {
       const cpt = edge.data('cpt');
-      const parentProb = edge.source().data('heavyProb');
-      const pct = typeof parentProb === "number" ? Math.round(parentProb * 100) : null;
       
-      box.innerHTML = `<div><b>CPT:</b> ${cpt.condTrue}% | ${cpt.condFalse}%</div>`;
-      box.innerHTML += `<div><b>Baseline:</b> ${Math.round(cpt.baseline)}%</div>`;
-      if (pct !== null) {
-        box.innerHTML += `<div>Parent probability: <b>${pct}%</b></div>`;
-      }
+      // Convert percentages to decimals
+      const condTrueDecimal = (cpt.condTrue / 100).toFixed(1);
+      const condFalseDecimal = (cpt.condFalse / 100).toFixed(1);
       
-      // Show ratio for quick reference
+      box.innerHTML = `<div><b>True/False:</b> ${condTrueDecimal} | ${condFalseDecimal}</div>`;
+      
+      // Show ratio as likelihood ratio
       const ratio = cpt.condFalse > 0 ? (cpt.condTrue / cpt.condFalse).toFixed(1) : "∞";
-      box.innerHTML += `<div style="color: #666; font-size: 12px; margin-top: 4px;">Ratio: ${ratio}:1</div>`;
+      box.innerHTML += `<div style="font-size: 14px; font-weight: bold; margin-top: 6px; color: #333;">Likelihood ratio = ${ratio}</div>`;
     } else {
       // Lite mode assertion edge display
-      box.innerHTML = `<div><b>Influence:</b> ${baseLabel}</div>`;
+      const cpt = edge.data('cpt') || {};
+      const isInverse = !!(cpt.inverse || edge.data('opposes') || edge.data('type') === 'opposes');
+      const displayLabel = isInverse ? `(${baseLabel})` : baseLabel;
+      
+      box.innerHTML = `<div style="color: #333; font-weight: 500;">Influence: <span style="font-weight: 600;">${displayLabel}</span></div>`;
 
       if (mods.length) {
-        box.innerHTML += `<hr style="margin:6px 0 3px 0">`;
+        box.innerHTML += `<hr style="margin: 8px 0 6px 0; border: none; border-top: 1px solid #ddd;">`;
         mods.forEach(mod => {
-          let color = '#616161';
+          let color = '#666';
           if (mod.likert > 0) color = '#2e7d32';
           if (mod.likert < 0) color = '#c62828';
           const val = mod.likert > 0 ? '+' + mod.likert : '' + mod.likert;
-          box.innerHTML += `<div style="color:${color};margin:2px 0;">
+          box.innerHTML += `<div style="color: ${color}; margin: 3px 0; font-weight: 500;">
             ${val}: ${mod.label}
           </div>`;
         });
