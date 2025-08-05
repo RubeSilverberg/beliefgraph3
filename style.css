@@ -159,27 +159,30 @@ html, body {
   background-color: #f0f0f0;
 }
 
-/* Modal (popup) styling - applies only to modifier modal */
-/* If you have other modals (e.g. .edge-modal), add their classes as needed */
+/* Enhanced Modal Styling */
 .modifier-modal {
   position: fixed;
-  left: 0;
-  top: 0;
-  /* REMOVED: transform: translate(-50%, -50%); */
-  background: #fff !important;
-  color: #111 !important;
-  padding: 22px 18px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px #0008;
-  z-index: 100000 !important;
-  min-width: 260px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffffff;
+  color: #2c3e50;
+  padding: 24px 28px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+  z-index: 100000;
+  min-width: 280px;
   text-align: center;
-  opacity: 1 !important;
+  opacity: 1;
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .modifier-modal-title {
-  font-weight: bold;
-  margin-bottom: 10px;
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 16px;
+  color: #2c3e50;
+  cursor: move;
 }
 
 .modifier-modal-row {
@@ -192,27 +195,39 @@ html, body {
 
 .modifier-modal input,
 .modifier-modal select {
-  background: #fff !important;
-  color: #111 !important;
-  border: 1px solid #aaa !important;
-  border-radius: 4px !important;
-  padding: 4px 8px !important;
-  box-sizing: border-box !important;
-  outline: none !important;
+  background: #ffffff;
+  color: #2c3e50;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  outline: none;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
 }
+
+.modifier-modal input:focus,
+.modifier-modal select:focus {
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
 .modifier-modal button {
-  background: #f4f4f4 !important;
-  color: #222 !important;
-  border: 1px solid #888 !important;
-  border-radius: 4px !important;
-  padding: 4px 16px !important;
-  margin: 0 5px !important;
+  background: #f8f9fa;
+  color: #495057;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  padding: 8px 20px;
+  margin: 8px 6px 0 6px;
   cursor: pointer;
-  transition: background 0.15s;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
 .modifier-modal button:hover {
-  background: #e0e0e0 !important;
+  background: #e9ecef;
+  border-color: #adb5bd;
+  transform: translateY(-1px);
 }
 
 .modifier-modal .danger {
@@ -274,39 +289,43 @@ html, body {
   background: #e0e0e0;
 }
 
-/* Visual Signals Modal */
+/* Enhanced Visual Signals Modal */
 #visual-signals-modal {
   position: fixed;
-  background: #fff;
-  padding: 24px 20px 18px 20px;
-  border: 2px solid #1976d2;
-  border-radius: 8px;
+  background: #ffffff;
+  padding: 28px 32px 24px 32px;
+  border: none;
+  border-radius: 16px;
   z-index: 10001;
-  box-shadow: 0 6px 30px #1976d255;
-  min-width: 380px;
-  max-width: 450px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.1);
+  min-width: 420px;
+  max-width: 480px;
 }
 
 #visual-signals-modal .modal-title {
-  font-weight: bold;
-  margin-bottom: 14px;
+  font-weight: 600;
+  font-size: 18px;
+  margin-bottom: 20px;
   cursor: move;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: #2c3e50;
+  border-bottom: 2px solid #f1f3f4;
+  padding-bottom: 12px;
 }
 
 #visual-signals-modal .control-section {
-  margin-bottom: 20px;
-  padding: 12px;
+  margin-bottom: 24px;
+  padding: 16px;
   background: #f8f9fa;
-  border-radius: 6px;
+  border-radius: 12px;
   border: 1px solid #e9ecef;
 }
 
 #visual-signals-modal .control-section h4 {
-  margin: 0 0 10px 0;
-  font-size: 14px;
+  margin: 0 0 12px 0;
+  font-size: 15px;
   font-weight: 600;
   color: #495057;
 }
@@ -318,23 +337,25 @@ html, body {
 }
 
 #visual-signals-modal .size-button {
-  width: 32px;
-  height: 32px;
-  border: 1px solid #ced4da;
-  background: #fff;
-  border-radius: 4px;
-  font-size: 18px;
+  width: 36px;
+  height: 36px;
+  border: 2px solid #ced4da;
+  background: #ffffff;
+  border-radius: 8px;
+  font-size: 20px;
   font-weight: bold;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
+  color: #495057;
 }
 
 #visual-signals-modal .size-button:hover {
   background: #e9ecef;
   border-color: #adb5bd;
+  transform: translateY(-1px);
 }
 
 #visual-signals-modal .size-button:active {
@@ -342,12 +363,12 @@ html, body {
 }
 
 #visual-signals-modal .size-button:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 #visual-signals-modal .size-button:disabled:hover {
-  background: #fff;
+  background: #ffffff;
   border-color: #ced4da;
   transform: none;
 }
@@ -381,149 +402,231 @@ html, body {
 
 #visual-signals-modal select {
   flex: 1;
-  padding: 6px 8px;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  background: #fff;
+  padding: 8px 12px;
+  border: 2px solid #ced4da;
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 14px;
+  color: #495057;
+  transition: border-color 0.2s ease;
+}
+
+#visual-signals-modal select:focus {
+  border-color: #4a90e2;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
 }
 
 #visual-signals-modal .close-btn {
   background: none;
   border: none;
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
   color: #6c757d;
-  padding: 0;
-  width: 24px;
-  height: 24px;
+  padding: 4px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s ease;
 }
 
 #visual-signals-modal .close-btn:hover {
   color: #495057;
+  background: #f8f9fa;
 }
 
 #visual-signals-modal .reset-btn {
-  margin-top: 8px;
-  padding: 6px 12px;
+  margin-top: 12px;
+  padding: 8px 16px;
   background: #f8f9fa;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
+  border: 2px solid #ced4da;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 13px;
-  transition: all 0.15s ease;
+  font-weight: 500;
+  color: #495057;
+  transition: all 0.2s ease;
 }
 
 #visual-signals-modal .reset-btn:hover {
   background: #e9ecef;
   border-color: #adb5bd;
+  transform: translateY(-1px);
 }
 #bayes-modal.modal {
   position: fixed;
-  top: 10vh;         /* Start higher on screen */
-  left: 50vw;
-  transform: none;   /* REMOVE the translate(-50%, -50%) for draggability */
-  min-width: 410px;
-  max-width: 98vw;
-  max-height: 85vh;  /* Prevent modal from exceeding screen height */
-  background: #fff;
-  color: #111;
-  padding: 18px 24px 16px 24px;  /* Reduced from 28px 28px 20px 28px */
-  border-radius: 10px;
-  box-shadow: 0 4px 40px #0007, 0 0 0 1.5px #ddd;
+  top: 8vh;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 440px;
+  max-width: 95vw;
+  max-height: 88vh;
+  background: #ffffff;
+  color: #2c3e50;
+  padding: 20px 28px 16px 28px;  /* Reduced top/bottom padding */
+  border-radius: 16px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.1);
   z-index: 1002;
-  opacity: 1 !important;
-  overflow-y: auto;  /* Add scrolling if content exceeds height */
+  opacity: 1;
+  overflow-y: auto;
   overflow-x: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-/* Bayes Modal Step Styling */
+/* Compact step styling for better vertical space usage */
 #bayes-modal .step {
-  margin-bottom: 12px;    /* Reduced from 15px */
-  padding-bottom: 8px;    /* Reduced from 10px */
-  border-bottom: 1px solid #eee;
+  margin-bottom: 14px;  /* Reduced from 20px */
+  padding-bottom: 10px;  /* Reduced from 16px */
+  border-bottom: 1px solid #f1f3f4;
 }
 
 #bayes-modal .step:last-child {
   border-bottom: none;
-  margin-bottom: 6px;     /* Reduced from 8px */
+  margin-bottom: 6px;
 }
 
 #bayes-modal .step-title {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
-  color: #333;
-  margin-bottom: 5px;     /* Reduced from 6px */
+  color: #2c3e50;
+  margin-bottom: 6px;  /* Reduced from 8px */
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-/* Make the first step title draggable but not overly prominent */
+/* Baseline step styling with reduced spacing */
 #bayes-modal #step-baseline .step-title {
-  font-size: 15px;         /* Same as other steps */
-  font-weight: 600;        /* Same as other steps */
-  color: #333;             /* Same neutral color */
-  padding: 4px 0;
-  border-bottom: 1px solid #e0e0e0;
-  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+  padding: 4px 0;  /* Reduced from 6px */
+  border-bottom: 2px solid #e9ecef;
+  margin-bottom: 8px;  /* Reduced from 12px */
+  cursor: move;
 }
 
 #bayes-modal .step-sub {
-  font-size: 13px;
-  color: #666;
-  margin-bottom: 6px;     /* Reduced from 8px */
-  line-height: 1.3;
+  font-size: 14px;
+  color: #6c757d;
+  margin-bottom: 8px;  /* Reduced from 12px */
+  line-height: 1.4;
 }
 
 #bayes-modal .slider-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 5px;     /* Reduced from 6px */
+  gap: 12px;
+  margin-bottom: 6px;  /* Reduced from 8px */
 }
 
 #bayes-modal .region-label,
 #bayes-modal .ratio-label {
-  font-size: 12px;
-  color: #777;
-  margin-bottom: 3px;
+  font-size: 13px;
+  color: #6c757d;
+  margin-bottom: 4px;  /* Reduced from 6px */
 }
 
 #bayes-modal .ratio-label {
   font-weight: 500;
+  color: #495057;
 }
 
 #bayes-modal .warning {
-  color: #d32f2f;
-  font-size: 12px;
-  margin-bottom: 6px;
-  min-height: 16px;
+  color: #dc3545;
+  font-size: 13px;
+  margin-bottom: 6px;  /* Reduced from 8px */
+  min-height: 16px;    /* Reduced from 18px */
+  font-weight: 500;
 }
 
 #bayes-modal .actions {
-  margin-top: 8px;
+  margin-top: 8px;  /* Reduced from 12px */
+}
+
+#bayes-modal .actions button {
+  background: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;  /* Slightly reduced padding */
+  margin-right: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+#bayes-modal .actions button:hover {
+  background: #357abd;
+  transform: translateY(-1px);
 }
 
 #bayes-modal .locked {
   background: #f8f9fa;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid #e9ecef;
-  font-size: 13px;
-}
-
-/* Summary section specific styling */
-#bayes-modal .summary {
-  background: #f8f9fa;
-  padding: 12px;
+  padding: 10px 14px;  /* Reduced from 12px 16px */
   border-radius: 8px;
   border: 1px solid #e9ecef;
-  line-height: 1.5;
-  font-size: 13px;
+  font-size: 14px;
+}
+
+/* Summary section with reduced spacing */
+#bayes-modal .summary {
+  background: #f8f9fa;
+  padding: 12px 16px;  /* Reduced from 16px 20px */
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  line-height: 1.5;    /* Reduced from 1.6 */
+  font-size: 14px;
+  margin-top: 6px;     /* Reduced from 8px */
 }
 
 #bayes-modal .summary b {
-  color: #333;
+  color: #2c3e50;
+}
+
+/* Enhanced checkbox styling */
+#bayes-modal input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  cursor: pointer;
+  accent-color: #4a90e2;
+}
+
+/* Enhanced slider styling with reduced margins */
+#bayes-modal input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: #e9ecef;
+  outline: none;
+  margin: 6px 0;  /* Reduced from 8px */
+}
+
+#bayes-modal input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #4a90e2;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#bayes-modal input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #4a90e2;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Modal header styling */
