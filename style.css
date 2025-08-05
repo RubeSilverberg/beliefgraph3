@@ -35,6 +35,12 @@ html, body {
   border-radius: 4px;
 }
 
+/* Primary control group gets subtle emphasis */
+.control-group.primary {
+  border-color: #4a90e2;
+  box-shadow: 0 1px 3px rgba(74, 144, 226, 0.1);
+}
+
 /* Simple Button Styles */
 #controls button {
   padding: 6px 12px;
@@ -72,6 +78,52 @@ html, body {
 
 .btn-danger {
   color: #d32f2f;
+}
+
+/* File operation buttons */
+.btn-file {
+  background: #f8f9fa !important;
+  border-color: #6c757d !important;
+  color: #495057;
+  font-weight: 500;
+}
+
+.btn-file:hover {
+  background: #e9ecef !important;
+  border-color: #5a6268 !important;
+}
+
+.btn-file-secondary {
+  background: #ffffff !important;
+  border-color: #6c757d !important;
+  color: #6c757d;
+}
+
+.btn-file-secondary:hover {
+  background: #f8f9fa !important;
+  color: #495057;
+}
+
+/* View control buttons */
+.btn-view {
+  background: #ffffff !important;
+  border-color: #ccc !important;
+  color: #333;
+}
+
+.btn-view:hover {
+  background: #f5f5f5 !important;
+}
+
+/* Help and documentation buttons */
+.btn-help {
+  background: #ffffff !important;
+  border-color: #ccc !important;
+  color: #333;
+}
+
+.btn-help:hover {
+  background: #f5f5f5 !important;
 }
 
 /* Selection Styles */
