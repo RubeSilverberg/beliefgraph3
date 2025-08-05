@@ -37,6 +37,8 @@ import {
   // ...any other needed config exports
 } from './config.js';
 
+import { showExamplesMenu } from './examples.js';
+
 import {
   resetLayout,
   clearGraph,
@@ -769,6 +771,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnClearGraph').addEventListener('click', clearGraphWithAnnotations);
   document.getElementById('btnSaveGraph').addEventListener('click', saveGraphWithAnnotations);
   document.getElementById('btnLoadGraph').addEventListener('click', loadGraphWithAnnotations);
+  document.getElementById('btnLoadExample').addEventListener('click', showExamplesMenu);
   // document.getElementById('btnAddStatement').addEventListener('click', addStatement);
   // document.getElementById('btnAddNote').addEventListener('click', addTextAnnotation); // Moved to right-click menu
   
