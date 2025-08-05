@@ -63,6 +63,7 @@ import {
 
 import { setupMenuAndEdgeModals } from './menu.js';
 import { setupCustomEdgeHandles, initializeCustomEdgeHandlesModeMonitoring } from './custom-edge-handles.js';
+import { TextAnnotations } from './text-annotations.js';
 // --- Quick Guide Button Logic ---
 document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('quick-guide-btn');
@@ -98,6 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
           });
           if (inList) html += '</ul>';
           modal.innerHTML = html;
+
           const closeBtn = document.createElement('button');
           closeBtn.textContent = 'Close';
           closeBtn.style.marginTop = '16px';
@@ -108,6 +110,124 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 });
+
+// --- Text Annotation Functions (Global Scope) ---
+function addTextAnnotation() {
+  if (!window.cy || !window.textAnnotations) {
+    alert('Graph not loaded.');
+    return;
+  }
+  
+  // Add annotation to center of current viewport
+  const viewport = window.cy.extent();
+  const centerX = (viewport.x1 + viewport.x2) / 2;
+  const centerY = (viewport.y1 + viewport.y2) / 2;
+  
+  const annotation = window.textAnnotations.createAnnotation(centerX, centerY, 'New note');
+  
+  // Auto-edit the new annotation
+  setTimeout(() => {
+    window.textAnnotations.editAnnotation(annotation);
+  }, 10);
+  
+  console.log('Text annotation added');
+}
+
+// Enhanced save function that includes text annotations
+function saveGraphWithAnnotations() {
+  const cy = window.cy;
+  if (typeof cy === 'undefined') {
+    alert('Graph not loaded.');
+    return;
+  }
+  try {
+    const elements = cy.elements().jsons();
+    const annotations = window.textAnnotations ? window.textAnnotations.exportAnnotations() : [];
+    
+    const data = {
+      graph: elements,
+      textAnnotations: annotations,
+      version: '1.0'
+    };
+    
+    const dataStr = JSON.stringify(data, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'graph.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    console.log('Graph with annotations downloaded as graph.json');
+  } catch (err) {
+    console.error('Save to file failed:', err);
+  }
+}
+
+// Enhanced load function that includes text annotations
+function loadGraphWithAnnotations() {
+  const cy = window.cy;
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = evt => {
+      try {
+        const fileContent = JSON.parse(evt.target.result);
+        
+        // Handle new format with annotations
+        if (fileContent.graph && fileContent.textAnnotations !== undefined) {
+          // Load graph elements
+          cy.elements().remove();
+          cy.add(fileContent.graph);
+          
+          // Load text annotations
+          if (window.textAnnotations) {
+            window.textAnnotations.importAnnotations(fileContent.textAnnotations);
+          }
+        } else {
+          // Handle legacy format (just graph elements)
+          cy.elements().remove();
+          cy.add(fileContent);
+        }
+        
+        convergeAll({ cy });
+        cy.layout({ name: 'preset' }).run();
+        window.computeVisuals?.(cy);
+        cy.fit();
+        cy.resize();
+        window.resetLayout?.();
+        console.log(`Graph loaded from file: ${file.name}`);
+      } catch (err) {
+        console.error('Failed to load graph:', err);
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+// Enhanced clear function that includes text annotations
+function clearGraphWithAnnotations() {
+  const cy = window.cy;
+  if (!confirm('Are you sure you want to clear the graph?')) return;
+  
+  // Clear Cytoscape graph
+  cy.elements().remove();
+  
+  // Clear text annotations
+  if (window.textAnnotations) {
+    window.textAnnotations.clearAllAnnotations();
+  }
+  
+  if (window.computeVisuals) window.computeVisuals(cy);
+  console.log('Graph and annotations cleared');
+}
 
 let mode = 'lite'; // Tracks current Bayes mode globally
 window.getBayesMode = () => mode;
@@ -606,6 +726,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Make cy global if needed elsewhere
   window.cy = cy;
+  
+  // Initialize text annotations system
+  window.textAnnotations = new TextAnnotations(document.body);
 
   // Set initial arrow directions based on current mode (default is lite)
   flipArrowDirections(mode);
@@ -657,11 +780,11 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   document.getElementById('btnRestoreAutosave').addEventListener('click', restoreAutosave);
   document.getElementById('btnResetLayout').addEventListener('click', resetLayout);
-  document.getElementById('btnClearGraph').addEventListener('click', clearGraph);
-  document.getElementById('btnSaveGraph').addEventListener('click', saveGraph);
-  document.getElementById('btnLoadGraph').addEventListener('click', loadGraph);
+  document.getElementById('btnClearGraph').addEventListener('click', clearGraphWithAnnotations);
+  document.getElementById('btnSaveGraph').addEventListener('click', saveGraphWithAnnotations);
+  document.getElementById('btnLoadGraph').addEventListener('click', loadGraphWithAnnotations);
   document.getElementById('btnAddStatement').addEventListener('click', addStatement);
-  document.getElementById('btnAddNote').addEventListener('click', addNote);
+  document.getElementById('btnAddNote').addEventListener('click', addTextAnnotation);
   document.getElementById('btnDebugCalculations').addEventListener('click', () => {
     if (window.debugBayesCalculations && window.cy) {
       window.debugBayesCalculations(window.cy);
