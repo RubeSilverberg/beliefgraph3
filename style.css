@@ -458,11 +458,11 @@ html, body {
   margin-bottom: 5px;     /* Reduced from 6px */
 }
 
-/* Make the first step title look more like a header */
+/* Make the first step title draggable but not overly prominent */
 #bayes-modal #step-baseline .step-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #2c5aa0;
+  font-size: 15px;         /* Same as other steps */
+  font-weight: 600;        /* Same as other steps */
+  color: #333;             /* Same neutral color */
   padding: 4px 0;
   border-bottom: 1px solid #e0e0e0;
   margin-bottom: 8px;
