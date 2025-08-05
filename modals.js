@@ -246,6 +246,7 @@ const VISUAL_CONFIG = {
   colors: {
     presets: [
       { name: 'Standard Shade', value: 'virgin' },
+      { name: 'Black', value: 'black' },
       { name: 'Red', value: 'red' },
       { name: 'Blue', value: 'blue' },
       { name: 'Green', value: 'green' },

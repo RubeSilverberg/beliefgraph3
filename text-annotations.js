@@ -59,7 +59,11 @@ class TextAnnotations {
     element.style.cursor = 'move';
     element.style.pointerEvents = 'auto'; // This element should receive events
     element.style.wordWrap = 'break-word';
-    element.textContent = annotation.text;
+    element.style.whiteSpace = 'pre-wrap'; // Preserve line breaks and spaces
+    
+    // Set content with line break support
+    const displayText = annotation.text.replace(/\n/g, '<br>');
+    element.innerHTML = displayText;
     
     // Make it draggable
     this.makeDraggable(element, annotation);
@@ -161,7 +165,9 @@ class TextAnnotations {
       const newText = textarea.value.trim();
       if (newText) {
         annotation.text = newText;
-        element.textContent = newText;
+        // For display, convert line breaks to HTML breaks for better formatting
+        const displayText = newText.replace(/\n/g, '<br>');
+        element.innerHTML = displayText;
         // Reset container height to auto
         element.style.height = 'auto';
       } else {
@@ -179,9 +185,12 @@ class TextAnnotations {
         e.preventDefault();
         this.isEditingAnnotation = false;
         annotation.text = originalText;
-        element.textContent = originalText;
+        // Restore original text with line breaks
+        const displayText = originalText.replace(/\n/g, '<br>');
+        element.innerHTML = displayText;
         element.style.height = 'auto';
       }
+      // Shift+Enter allows line breaks - no special handling needed
     });
   }
   
