@@ -535,26 +535,6 @@ document.addEventListener('DOMContentLoaded', () => {
       'background-opacity': 0.18
     }
   },
-  // Selected nodes - blue border highlight
-  {
-    selector: 'node:selected',
-    style: {
-      'border-width': 4,
-      'border-color': '#1976d2',
-      'border-opacity': 0.8
-    }
-  },
-  // Selected edges - blue highlight
-  {
-    selector: 'edge:selected',
-    style: {
-      'line-color': '#1976d2',
-      'target-arrow-color': '#1976d2',
-      'source-arrow-color': '#1976d2',
-      'width': 4,
-      'opacity': 0.8
-    }
-  },
   // ---- VIRGIN EDGE STYLE: REMOVED - now using computed lineColor ----
 ],
 
