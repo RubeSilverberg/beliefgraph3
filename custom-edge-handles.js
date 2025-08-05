@@ -75,6 +75,26 @@ export function setupCustomEdgeHandles(cy) {
       hideHandle();
     }
   });
+  
+  // Add global document mousedown listener to hide handle when clicking elsewhere
+  document.addEventListener('mousedown', function(e) {
+    // Only hide if we're not currently dragging an edge and a handle is visible
+    if (!isDragging && currentHandle) {
+      // Check if the click was on the handle itself
+      const isClickOnHandle = e.target.classList.contains('custom-edge-handle');
+      
+      // Hide handle if click is NOT on the handle itself
+      if (!isClickOnHandle) {
+        hideHandle();
+        
+        // Also clean up any existing drag line (edge case)
+        if (dragLine && dragLine.parentNode) {
+          dragLine.parentNode.removeChild(dragLine);
+          dragLine = null;
+        }
+      }
+    }
+  });
 }
 
 function showHandle(cy, node) {
