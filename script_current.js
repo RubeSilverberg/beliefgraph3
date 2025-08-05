@@ -702,6 +702,12 @@ document.addEventListener('DOMContentLoaded', () => {
       multiSelectMode = true;
       updateSelectionUI();
     }
+    
+    // 'n' key to add new statement (same as Add Statement button)
+    if (e.key === 'n' && !e.target.tagName.match(/INPUT|TEXTAREA/) && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      addStatement();
+    }
   });
 
   // Make cy global if needed elsewhere
@@ -763,7 +769,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnClearGraph').addEventListener('click', clearGraphWithAnnotations);
   document.getElementById('btnSaveGraph').addEventListener('click', saveGraphWithAnnotations);
   document.getElementById('btnLoadGraph').addEventListener('click', loadGraphWithAnnotations);
-  document.getElementById('btnAddStatement').addEventListener('click', addStatement);
+  // document.getElementById('btnAddStatement').addEventListener('click', addStatement);
   // document.getElementById('btnAddNote').addEventListener('click', addTextAnnotation); // Moved to right-click menu
   document.getElementById('btnDebugCalculations').addEventListener('click', () => {
     if (window.debugBayesCalculations && window.cy) {

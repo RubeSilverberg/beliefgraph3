@@ -95,7 +95,7 @@ window.cy.on('doubleTap', 'node', function(event) {
     if (evt.target === cy) {
       [
         {
-          label: 'Add Statement Here', action: () => {
+          label: 'Add Statement Here (N)', action: () => {
             if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
             cy.add({
               group: 'nodes',
