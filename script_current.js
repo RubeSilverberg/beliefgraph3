@@ -784,7 +784,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnSaveGraph').addEventListener('click', saveGraphWithAnnotations);
   document.getElementById('btnLoadGraph').addEventListener('click', loadGraphWithAnnotations);
   document.getElementById('btnAddStatement').addEventListener('click', addStatement);
-  document.getElementById('btnAddNote').addEventListener('click', addTextAnnotation);
+  // document.getElementById('btnAddNote').addEventListener('click', addTextAnnotation); // Moved to right-click menu
   document.getElementById('btnDebugCalculations').addEventListener('click', () => {
     if (window.debugBayesCalculations && window.cy) {
       window.debugBayesCalculations(window.cy);

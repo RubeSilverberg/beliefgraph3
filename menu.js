@@ -95,7 +95,7 @@ window.cy.on('doubleTap', 'node', function(event) {
     if (evt.target === cy) {
       [
         {
-          label: 'Add Node Here', action: () => {
+          label: 'Add Statement Here', action: () => {
             if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
             cy.add({
               group: 'nodes',
@@ -122,7 +122,7 @@ window.cy.on('doubleTap', 'node', function(event) {
           }
         },
         {
-          label: 'Add logic', action: () => {
+          label: 'Add Logic', action: () => {
             if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
             cy.add({
               group: 'nodes',
@@ -135,6 +135,21 @@ window.cy.on('doubleTap', 'node', function(event) {
             });
             convergeAll({ cy });
             computeVisuals(cy);
+          }
+        },
+        {
+          label: 'Add Note Here', action: () => {
+            if (window.textAnnotations) {
+              // Convert Cytoscape position to screen coordinates
+              const annotation = window.textAnnotations.createAnnotation(evt.position.x, evt.position.y, 'New note');
+              
+              // Auto-edit the new annotation
+              setTimeout(() => {
+                window.textAnnotations.editAnnotation(annotation);
+              }, 10);
+            } else {
+              console.warn('Text annotations system not available');
+            }
           }
         }
       ].forEach(({ label, action }) => {
