@@ -771,21 +771,38 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnLoadGraph').addEventListener('click', loadGraphWithAnnotations);
   // document.getElementById('btnAddStatement').addEventListener('click', addStatement);
   // document.getElementById('btnAddNote').addEventListener('click', addTextAnnotation); // Moved to right-click menu
-  document.getElementById('btnDebugCalculations').addEventListener('click', () => {
-    if (window.debugBayesCalculations && window.cy) {
-      window.debugBayesCalculations(window.cy);
-    } else {
-      console.log("Debug function not available or no graph loaded");
-    }
-  });
+  
+  // Debug button - only add listener if button exists
+  const debugBtn = document.getElementById('btnDebugCalculations');
+  if (debugBtn) {
+    debugBtn.addEventListener('click', () => {
+      if (window.debugBayesCalculations && window.cy) {
+        window.debugBayesCalculations(window.cy);
+      } else {
+        console.log("Debug function not available or no graph loaded");
+      }
+    });
+  }
 
   // ====== Tooltip Setup ======
   // Simple placeholder tooltip for Toggle Bayes button
   attachTooltip(document.getElementById('btnBayesTime'), TOOLTIP_TEXTS.toggleBayes);
 
-  attachTooltip(document.getElementById('btnDebugCalculations'), TOOLTIP_TEXTS.debugCalculations);
-  attachTooltip(document.querySelector('button[onclick*="logNetworkForPgmpy"]'), TOOLTIP_TEXTS.exportPgmpy);
-  attachTooltip(document.querySelector('button[onclick*="colab.research.google.com"]'), TOOLTIP_TEXTS.mathDocs);
+  // Only attach tooltip if debug button exists
+  if (debugBtn) {
+    attachTooltip(debugBtn, TOOLTIP_TEXTS.debugCalculations);
+  }
+  
+  // Only attach tooltips if buttons exist
+  const exportBtn = document.querySelector('button[onclick*="logNetworkForPgmpy"]');
+  if (exportBtn) {
+    attachTooltip(exportBtn, TOOLTIP_TEXTS.exportPgmpy);
+  }
+  
+  const mathDocsBtn = document.querySelector('button[onclick*="colab.research.google.com"]');
+  if (mathDocsBtn) {
+    attachTooltip(mathDocsBtn, TOOLTIP_TEXTS.mathDocs);
+  }
 
   // ====== Smart Auto-Backup Timer ======
   setInterval(autosave, 10 * 1000); // Every 10 seconds

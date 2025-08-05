@@ -1080,7 +1080,7 @@ export function getAvailableRestorePoints() {
   // Add recent snapshots with cleaner labels
   recentSnapshots.forEach((snapshot, index) => {
     const secondsAgo = Math.round((now - snapshot.timestamp) / 1000);
-    if (secondsAgo >= 10) { // Don't show very recent ones
+    if (secondsAgo >= 3) { // Don't show very recent ones (reduced from 10 to 3 seconds)
       // Round to nearest 10 seconds for cleaner display
       const roundedSeconds = Math.round(secondsAgo / 10) * 10;
       points.push({
