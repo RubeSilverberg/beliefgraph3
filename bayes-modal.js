@@ -438,19 +438,19 @@ function updateModalLabels() {
   
   // Update step titles - add quotation marks around node labels
   document.querySelector('#step-cond-true .step-title').innerHTML = 
-    `2. If <b>"${parentLabel}"</b> is <span id="parent-true-word">true</span>`;
+    `Conditional (True):`;
   document.querySelector('#step-cond-false .step-title').innerHTML = 
-    `3. If <b>"${parentLabel}"</b> is <span id="parent-false-word">false</span>`;
+    `Conditional (False):`;
   
   // Update step descriptions - add quotation marks around node labels
   document.querySelector('#step-baseline .step-sub').textContent = 
     `Chance "${childLabel}" is true if nothing is known about "${parentLabel}".`;
   
   document.querySelector('#step-cond-true .step-sub').innerHTML = 
-    `Chance <b>"${childLabel}"</b> is true if <b>"${parentLabel}"</b> is <span id="parent-true-word2">true</span>.`;
+    `Chance <b>"${childLabel}"</b> is true when <b>"${parentLabel}"</b> is <span id="parent-true-word2">true</span>.`;
     
   document.querySelector('#step-cond-false .step-sub').innerHTML = 
-    `Chance <b>"${childLabel}"</b> is true if <b>"${parentLabel}"</b> is <span id="parent-false-word2">false</span>.`;
+    `Chance <b>"${childLabel}"</b> is true when <b>"${parentLabel}"</b> is <span id="parent-false-word2">false</span>.`;
     
   // Update the inverse checkbox label (preserve the existing checkbox element)
   const inverseLabel = document.querySelector('#step-baseline label');

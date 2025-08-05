@@ -97,8 +97,8 @@
     </div>
     <!-- Step 2: Conditional (Parent True/False) -->
     <div id="step-cond-true" class="step hidden">
-      <div class="step-title">When <b>[Parent]</b> is <span id="parent-true-word">true</span></div>
-      <div class="step-sub">Chance <b>[Child]</b> is true if <b>[Parent]</b> is <span id="parent-true-word2">true</span>.</div>
+      <div class="step-title">Conditional (True):<span id="parent-true-word" style="display:none;">true</span></div>
+      <div class="step-sub">Chance <b>[Child]</b> is true when <b>[Parent]</b> is <span id="parent-true-word2">true</span>.</div>
       <div id="cond-true-input-row">
         <div class="slider-row">
           <input type="range" min="0" max="100" value="50" step="1" id="cond-true-slider">
@@ -118,8 +118,8 @@
     </div>
     <!-- Step 3: Conditional (Parent False/True, inverse) -->
     <div id="step-cond-false" class="step hidden">
-      <div class="step-title">When <b>[Parent]</b> is <span id="parent-false-word">false</span></div>
-      <div class="step-sub">Chance <b>[Child]</b> is true if <b>[Parent]</b> is <span id="parent-false-word2">false</span>.</div>
+      <div class="step-title">Conditional (False):<span id="parent-false-word" style="display:none;">false</span></div>
+      <div class="step-sub">Chance <b>[Child]</b> is true when <b>[Parent]</b> is <span id="parent-false-word2">false</span>.</div>
       <div id="cond-false-input-row">
         <div class="slider-row">
           <input type="range" min="0" max="100" value="50" step="1" id="cond-false-slider">
