@@ -810,5 +810,4 @@ document.addEventListener('DOMContentLoaded', () => {
   // ====== Smart Auto-Backup Timer ======
   setInterval(autosave, 10 * 1000); // Every 10 seconds
 
-
 });

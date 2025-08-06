@@ -1,0 +1,111 @@
+{
+  "nodes": [
+    {
+      "id": "witness_testimony",
+      "label": "Witness saw suspect at scene",
+      "description": "Multiple witnesses independently identified the suspect at the crime scene",
+      "textColor": "#ffffff",
+      "sizeIndex": 4,
+      "position": { "x": 100, "y": 100 }
+    },
+    {
+      "id": "dna_evidence", 
+      "label": "DNA match found",
+      "description": "DNA sample matches suspect with 99.9% certainty",
+      "textColor": "#ffffff",
+      "sizeIndex": 5,
+      "floretColor": "#4CAF50",
+      "position": { "x": 400, "y": 100 }
+    },
+    {
+      "id": "alibi_weak",
+      "label": "Suspect's alibi is weak",
+      "description": "The suspect's alibi has several inconsistencies and cannot be verified",
+      "position": { "x": 700, "y": 100 }
+    },
+    {
+      "id": "logic_and",
+      "type": "and",
+      "label": "Strong Evidence Combined",
+      "description": "Both DNA and witness testimony together",
+      "position": { "x": 250, "y": 250 }
+    },
+    {
+      "id": "logic_or",
+      "type": "or", 
+      "label": "Any Supporting Evidence",
+      "description": "Either the combined evidence OR the weak alibi",
+      "position": { "x": 450, "y": 350 }
+    },
+    {
+      "id": "guilty_verdict",
+      "label": "Suspect is guilty",
+      "description": "Based on the overwhelming evidence, the suspect committed the crime",
+      "textColor": "#ffeb3b",
+      "sizeIndex": 6,
+      "position": { "x": 450, "y": 500 }
+    },
+    {
+      "id": "investigation_note",
+      "type": "note",
+      "label": "Investigation Notes",
+      "description": "Key findings from the investigation:\n- Crime occurred at 10:30 PM\n- Suspect was seen nearby at 10:25 PM\n- DNA found on murder weapon\n- Suspect changed story twice",
+      "textColor": "#E1F5FE",
+      "position": { "x": 100, "y": 350 }
+    },
+    {
+      "id": "methodology_note",
+      "type": "note",
+      "label": "Analysis Method",
+      "description": "This graph uses Bayesian reasoning to combine evidence. Each edge represents the strength of logical support between statements.",
+      "textColor": "#F3E5F5",
+      "sizeIndex": 2,
+      "position": { "x": 700, "y": 350 }
+    }
+  ],
+  "edges": [
+    {
+      "source": "witness_testimony",
+      "target": "logic_and",
+      "weight": 0.8,
+      "type": "supports",
+      "rationale": "Witness testimony is a strong input to the combined evidence"
+    },
+    {
+      "source": "dna_evidence", 
+      "target": "logic_and",
+      "weight": 0.9,
+      "type": "supports",
+      "rationale": "DNA evidence is extremely reliable input to the combined evidence"
+    },
+    {
+      "source": "logic_and",
+      "target": "logic_or",
+      "weight": 0.85,
+      "type": "supports",
+      "rationale": "Strong combined evidence feeds into the overall case"
+    },
+    {
+      "source": "alibi_weak",
+      "target": "logic_or", 
+      "weight": 0.6,
+      "type": "supports",
+      "rationale": "Weak alibi provides additional support, even if not as strong"
+    },
+    {
+      "source": "logic_or",
+      "target": "guilty_verdict",
+      "weight": 0.9,
+      "type": "supports",
+      "rationale": "The combined logical evidence strongly supports guilt"
+    },
+    {
+      "source": "alibi_weak",
+      "target": "guilty_verdict",
+      "weight": 0.4,
+      "type": "supports", 
+      "rationale": "Weak alibi provides some direct support, but not overwhelming"
+    }
+  ],
+  "layoutType": "custom"
+}

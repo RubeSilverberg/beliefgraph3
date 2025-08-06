@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Minimal JSON Test</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+    .output { background: #f5f5f5; padding: 10px; margin: 10px 0; font-family: monospace; white-space: pre-wrap; }
+    button { padding: 10px 15px; margin: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Minimal JSON Format Test</h1>
+  
+  <div class="test-section">
+    <h2>1. Load Minimal JSON File</h2>
+    <button onclick="loadMinimalJson()">Load test-minimal.json (Complex)</button>
+    <button onclick="loadUltraMinimal()">Load test-ultra-minimal.json (Simple)</button>
+    <button onclick="loadAdnanCase()">Load Adnan.json (Your Case)</button>
+    <div id="minimal-output" class="output"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>2. Convert to Full Format</h2>
+    <button onclick="convertToFull()">Convert to Full JSON</button>
+    <div id="full-output" class="output"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>3. Test Simple Minimal Format</h2>
+    <button onclick="testSimpleMinimal()">Test Ultra-Minimal Format</button>
+    <div id="simple-output" class="output"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>4. Test Built-in Examples</h2>
+    <button onclick="testAllExamples()">Test All Example Formats</button>
+    <div id="examples-output" class="output"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>5. Test with Belief Graph Tool</h2>
+    <button onclick="testWithBeliefGraph()">Open in Belief Graph</button>
+    <div id="test-output" class="output"></div>
+  </div>
+
+  <script src="../../minimal-format-analysis.js"></script>
+  <script>
+    let minimalData = null;
+    let fullData = null;
+    
+    async function loadMinimalJson() {
+      try {
+        const response = await fetch('test-minimal.json');
+        minimalData = await response.json();
+        document.getElementById('minimal-output').textContent = 
+          'Loaded minimal JSON:\n' + JSON.stringify(minimalData, null, 2);
+      } catch (error) {
+        document.getElementById('minimal-output').textContent = 
+          'Error loading minimal JSON: ' + error.message;
+      }
+    }
+    
+    async function loadUltraMinimal() {
+      try {
+        const response = await fetch('test-ultra-minimal.json');
+        minimalData = await response.json();
+        document.getElementById('minimal-output').textContent = 
+          'Loaded ultra-minimal JSON:\n' + JSON.stringify(minimalData, null, 2);
+      } catch (error) {
+        document.getElementById('minimal-output').textContent = 
+          'Error loading ultra-minimal JSON: ' + error.message;
+      }
+    }
+    
+    async function loadAdnanCase() {
+      try {
+        const response = await fetch('Adnan.json');
+        minimalData = await response.json();
+        document.getElementById('minimal-output').textContent = 
+          'Loaded Adnan case JSON:\n' + JSON.stringify(minimalData, null, 2);
+      } catch (error) {
+        document.getElementById('minimal-output').textContent = 
+          'Error loading Adnan JSON: ' + error.message;
+      }
+    }
+    
+    function convertToFull() {
+      if (!minimalData) {
+        document.getElementById('full-output').textContent = 
+          'Please load minimal JSON first';
+        return;
+      }
+      
+      try {
+        fullData = window.createFullJsonFromMinimalInput(minimalData);
+        document.getElementById('full-output').textContent = 
+          'Converted to full JSON:\n' + JSON.stringify(fullData, null, 2);
+      } catch (error) {
+        document.getElementById('full-output').textContent = 
+          'Error converting: ' + error.message;
+      }
+    }
+    
+    function testSimpleMinimal() {
+      console.log("🧪 Testing simple minimal format with missing information");
+      
+      // Ultra-minimal format - just IDs and connections
+      const ultraMinimal = {
+        nodes: [
+          { id: 'a' },
+          { id: 'b' }, 
+          { id: 'c' }
+        ],
+        edges: [
+          { source: 'a', target: 'b' },
+          { source: 'b', target: 'c', weight: 0.7 }
+        ]
+      };
+      
+      try {
+        const result = window.createFullJsonFromMinimalInput(ultraMinimal);
+        document.getElementById('simple-output').textContent = 
+          '✅ Ultra-minimal conversion successful!\n\n' +
+          'Input (ultra-minimal):\n' + JSON.stringify(ultraMinimal, null, 2) + 
+          '\n\nOutput (full format):\n' + JSON.stringify(result, null, 2);
+          
+        console.log("✅ Ultra-minimal test passed!", result);
+      } catch (error) {
+        document.getElementById('simple-output').textContent = 
+          '❌ Ultra-minimal conversion failed:\n' + error.message;
+        console.error("❌ Ultra-minimal test failed:", error);
+      }
+    }
+    
+    function testAllExamples() {
+      console.log("🧪 Testing all built-in examples");
+      
+      const results = [];
+      
+      if (window.MINIMAL_INPUT_EXAMPLES) {
+        Object.entries(window.MINIMAL_INPUT_EXAMPLES).forEach(([name, example]) => {
+          try {
+            const result = window.createFullJsonFromMinimalInput(example);
+            const nodeCount = result.graph.filter(el => el.group === 'nodes').length;
+            const edgeCount = result.graph.filter(el => el.group === 'edges').length;
+            
+            results.push(`✅ ${name}: ${nodeCount} nodes, ${edgeCount} edges`);
+            console.log(`✅ Example "${name}" converted successfully`);
+          } catch (error) {
+            results.push(`❌ ${name}: ${error.message}`);
+            console.error(`❌ Example "${name}" failed:`, error);
+          }
+        });
+      } else {
+        results.push('❌ MINIMAL_INPUT_EXAMPLES not available');
+      }
+      
+      document.getElementById('examples-output').textContent = 
+        'Built-in Examples Test Results:\n\n' + results.join('\n');
+    }
+    
+    function testWithBeliefGraph() {
+      if (!fullData) {
+        document.getElementById('test-output').textContent = 
+          'Please convert to full JSON first';
+        return;
+      }
+      
+      // Save the full data to localStorage so the main tool can load it
+      localStorage.setItem('testGraphData', JSON.stringify(fullData));
+      document.getElementById('test-output').textContent = 
+        'Full JSON saved to localStorage as "testGraphData"\n' +
+        'You can now open the main tool and load this data';
+      
+      // Open the main tool
+      window.open('../../index.html', '_blank');
+    }
+  </script>
+</body>
+</html>

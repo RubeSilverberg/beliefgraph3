@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Belief Graph Tests</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      max-width: 800px; 
+      margin: 50px auto; 
+      padding: 20px; 
+      line-height: 1.6;
+    }
+    .test-section { 
+      margin: 30px 0; 
+      padding: 20px; 
+      border: 1px solid #ddd; 
+      border-radius: 8px; 
+      background: #f9f9f9;
+    }
+    .test-links { margin: 15px 0; }
+    .test-links a { 
+      display: inline-block; 
+      margin: 5px 10px 5px 0; 
+      padding: 8px 15px; 
+      background: #007cba; 
+      color: white; 
+      text-decoration: none; 
+      border-radius: 4px; 
+    }
+    .test-links a:hover { background: #005a8b; }
+    .main-app { 
+      background: #28a745; 
+      font-weight: bold; 
+    }
+    .main-app:hover { background: #1e7e34; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 6px; 
+      border-radius: 3px; 
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 Belief Graph Test Suite</h1>
+  
+  <div class="test-section">
+    <h2>📱 Main Application</h2>
+    <p>The primary belief graph tool with all features.</p>
+    <div class="test-links">
+      <a href="../index.html" class="main-app">Open Belief Graph Tool</a>
+    </div>
+    <p><strong>Console Commands:</strong></p>
+    <ul>
+      <li><code>window.testMinimalJson()</code> - Test complex minimal format</li>
+      <li><code>window.testUltraMinimalJson()</code> - Test simple minimal format</li>
+      <li><code>window.testMinimalInputConverter()</code> - Test all examples</li>
+    </ul>
+  </div>
+
+  <div class="test-section">
+    <h2>📄 Minimal JSON Format Tests</h2>
+    <p>Test the minimal JSON input format and converter functionality.</p>
+    <div class="test-links">
+      <a href="minimal-json/test-minimal-converter.html">Interactive Converter Test</a>
+    </div>
+    <p><strong>Test Data:</strong></p>
+    <ul>
+      <li><a href="minimal-json/test-minimal.json">Complex Format Example</a> - Full-featured test with styling, logic nodes, notes</li>
+      <li><a href="minimal-json/test-ultra-minimal.json">Ultra-Minimal Example</a> - Absolute minimum required data</li>
+    </ul>
+  </div>
+
+  <div class="test-section">
+    <h2>📝 Text Annotations Tests</h2>
+    <p>Test the text annotation system for adding notes and comments.</p>
+    <div class="test-links">
+      <a href="annotations/test-annotations.html">Annotations Test Page</a>
+    </div>
+    <p><strong>Features:</strong> Create, edit, delete, and position text annotations</p>
+  </div>
+
+  <div class="test-section">
+    <h2>🔧 Development Tests</h2>
+    <p>Additional development and debugging tools.</p>
+    <div class="test-links">
+      <a href="quick_test.html">Quick Test</a>
+      <a href="test_restore.html">Restore Test</a>
+    </div>
+    <p><strong>Files:</strong></p>
+    <ul>
+      <li><code>test_validation.py</code> - Python validation scripts</li>
+      <li><code>README.md</code> - Detailed test documentation</li>
+    </ul>
+  </div>
+
+  <div class="test-section">
+    <h2>📚 Documentation</h2>
+    <p>Project documentation and guides.</p>
+    <div class="test-links">
+      <a href="../README.md">Main README</a>
+      <a href="../quick_guide.txt">Quick Guide</a>
+      <a href="../VERSION.md">Version History</a>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>💡 Quick Start</h2>
+    <ol>
+      <li><strong>Try the main app:</strong> <a href="../index.html">Open Belief Graph Tool</a></li>
+      <li><strong>Test minimal format:</strong> <a href="minimal-json/test-minimal-converter.html">Converter Test</a></li>
+      <li><strong>Run console tests:</strong> Open main app → F12 → run <code>window.testMinimalJson()</code></li>
+    </ol>
+  </div>
+</body>
+</html>

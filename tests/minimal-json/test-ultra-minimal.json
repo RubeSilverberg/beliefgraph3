@@ -1,0 +1,9 @@
+{
+  "nodes": [
+    { "id": "evidence" },
+    { "id": "conclusion" }
+  ],
+  "edges": [
+    { "source": "evidence", "target": "conclusion" }
+  ]
+}

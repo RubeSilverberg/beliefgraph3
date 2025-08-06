@@ -1,0 +1,55 @@
+{
+  "nodes": [
+    { "id": "n1", "label": "Jay's testimony", "type": "fact" },
+    { "id": "n2", "label": "Cell tower evidence", "type": "fact" },
+    { "id": "n3", "label": "No physical evidence against Adnan", "type": "fact" },
+    { "id": "n4", "label": "Asia alibi uncertain", "type": "fact" },
+    { "id": "n5", "label": "Jay is inconsistent", "type": "fact" },
+    { "id": "n6", "label": "Motive is weak", "type": "fact" },
+    { "id": "n7", "label": "Adnan is guilty" }
+  ],
+  "edges": [
+    { 
+      "source": "n1", 
+      "target": "n7", 
+      "type": "supports", 
+      "weight": 0.6,
+      "rationale": "Jay places Adnan at the crime and describes the burial."
+    },
+    { 
+      "source": "n2", 
+      "target": "n7", 
+      "type": "supports", 
+      "weight": 0.35,
+      "rationale": "Some cell tower pings match Jay's story, but coverage and timing are disputed."
+    },
+    { 
+      "source": "n3", 
+      "target": "n7", 
+      "type": "opposes", 
+      "weight": 0.6,
+      "rationale": "No DNA or physical evidence directly ties Adnan to the crime scene or burial."
+    },
+    { 
+      "source": "n4", 
+      "target": "n7", 
+      "type": "opposes", 
+      "weight": 0.35,
+      "rationale": "Asia's alibi introduces reasonable doubt, though reliability is debated."
+    },
+    { 
+      "source": "n5", 
+      "target": "n1", 
+      "type": "opposes", 
+      "weight": 0.6,
+      "rationale": "Jay's timeline and details change across statements, undermining his credibility."
+    },
+    { 
+      "source": "n6", 
+      "target": "n7", 
+      "type": "opposes", 
+      "weight": 0.35,
+      "rationale": "Prosecution's theory of a breakup motive is speculative and weak."
+    }
+  ]
+}
