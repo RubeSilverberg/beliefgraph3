@@ -60,7 +60,9 @@ export function getEdgeLabel(edge) {
       if (isVirgin) {
         return "—"; // Em dash for unassigned logic edges
       } else {
-        return ""; // No label for active logic edges
+        // Show parent probability as percentage for active logic edges
+        const pct = Math.round(parentProb * 100);
+        return `${Math.min(Math.max(pct, 1), 99)}%`;
       }
     }
     
@@ -91,6 +93,19 @@ export function getEdgeLabel(edge) {
   const parentProb = parentNode.data('prob');
   const edgeWeight = edge.data('weight');
   const hasUserWeight = edge.data('userAssignedWeight') !== undefined;
+  const targetType = targetNode.data('type');
+  
+  // Special case for AND/OR nodes in Lite mode - they only need parent probability
+  if (targetType === NODE_TYPE_AND || targetType === NODE_TYPE_OR) {
+    const isVirgin = typeof parentProb !== "number";
+    if (isVirgin) {
+      return "—"; // Em dash for unassigned logic edges
+    } else {
+      // Show parent probability as percentage for active logic edges
+      const pct = Math.round(parentProb * 100);
+      return `${Math.min(Math.max(pct, 1), 99)}%`;
+    }
+  }
   
   // Check if this is a virgin edge (no parent prob OR no weight)
   const isVirgin = typeof parentProb !== "number" || !edgeWeight || edgeWeight === 0;
@@ -363,6 +378,11 @@ export function computeVisuals(cy) {
     }
     // AND/OR nodes
     else if (nodeType === NODE_TYPE_AND || nodeType === NODE_TYPE_OR) {
+      // Only set default text color if user hasn't customized it
+      if (!node.data('userCustomTextColor')) {
+        node.data('textColor', '#000');
+      }
+
       let pct;
       if (bayesMode === 'heavy') {
         // Check if node has valid parent edges in heavy mode using three-category system
@@ -375,6 +395,7 @@ export function computeVisuals(cy) {
       } else {
         pct = typeof node.data('prob') === "number" ? Math.round(node.data('prob') * 100) : null;
       }
+      
       let typeLabel = nodeType === NODE_TYPE_AND ? "AND" : "OR";
       if (pct !== null) {
         if (pct > 0 && pct < 1) pct = 1;
@@ -386,8 +407,11 @@ export function computeVisuals(cy) {
       shape = nodeType === NODE_TYPE_AND ? "diamond" : "ellipse";
       borderWidth = 3;
       borderColor = "#bbb";
+      
+      // Always clear robustness data for AND/OR nodes
       node.removeData('robustness');
       node.removeData('robustnessLabel');
+      
       if (!node.data('hoverLabel') && displayLabel !== typeLabel) {
         node.data('hoverLabel', displayLabel);
       }
@@ -555,7 +579,9 @@ export function drawModifierBoxes(cy) {
   document.querySelectorAll('.modifier-box').forEach(el => el.remove());
   cy.edges().forEach(edge => {
     const targetNode = edge.target();
-    if (targetNode.data('type') !== NODE_TYPE_ASSERTION) return;
+    const targetType = targetNode.data('type');
+    // Include AND/OR nodes in addition to assertion nodes
+    if (targetType !== NODE_TYPE_ASSERTION && targetType !== NODE_TYPE_AND && targetType !== NODE_TYPE_OR) return;
     const mods = edge.data('modifiers') ?? [];
     if (!mods.length) return;
     const mid = edge.midpoint();
@@ -677,13 +703,37 @@ export function showNodeHoverBox(cy, node) {
     if (nodeType === NODE_TYPE_AND || nodeType === NODE_TYPE_OR) {
       const hp = node.data('heavyProb');
       let typeLabel = nodeType === NODE_TYPE_AND ? 'AND' : 'OR';
-      let logicDescription = nodeType === NODE_TYPE_AND 
-        ? 'AND logic node (product of heavy parent probs)'
-        : 'OR logic node (sum-minus-product of heavy parent probs)';
+      
+      // Build logical statement from parent nodes
+      const incomingEdges = node.incomers('edge');
+      const parentLabels = incomingEdges.map(edge => {
+        const parentNode = edge.source();
+        const parentLabel = parentNode.data('displayLabel') || parentNode.data('origLabel') || parentNode.id();
+        // Clean the label (remove probability displays)
+        const cleanLabel = parentLabel.split('\n')[0].trim();
+        
+        // Check for inverse relationship (heavy mode uses cpt.inverse)
+        const cpt = edge.data('cpt') || {};
+        const isInverse = !!cpt.inverse;
+        
+        return isInverse ? `NOT ${cleanLabel}` : cleanLabel;
+      });
+      
+      let logicStatement;
+      if (parentLabels.length === 0) {
+        logicStatement = 'No parent statements';
+      } else if (parentLabels.length === 1) {
+        logicStatement = parentLabels[0];
+      } else {
+        const connector = nodeType === NODE_TYPE_AND ? ' AND ' : ' OR ';
+        logicStatement = parentLabels.join(connector);
+      }
       
       box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${typeLabel}</div>
                        <div style="margin-bottom: 6px;">Current: ${formatProb(hp)}</div>
-                       <div style="color: #666; font-style: italic;">${logicDescription}</div>`;
+                       <div style="color: #666; font-style: italic; margin-bottom: 8px;">
+                         <b>Statement:</b> ${logicStatement}
+                       </div>`;
       container.parentElement.appendChild(box);
       return;
     }
@@ -714,13 +764,39 @@ export function showNodeHoverBox(cy, node) {
     if (nodeType === NODE_TYPE_AND || nodeType === NODE_TYPE_OR) {
       let typeLabel = nodeType === NODE_TYPE_AND ? 'AND' : 'OR';
       const lp = node.data('prob');
-      let logicDescription = nodeType === NODE_TYPE_AND 
-        ? 'AND logic node (product of parent probs)'
-        : 'OR logic node (sum-minus-product of parent probs)';
+      
+      // Build logical statement from parent nodes
+      const incomingEdges = node.incomers('edge');
+      const parentLabels = incomingEdges.map(edge => {
+        const parentNode = edge.source();
+        const parentLabel = parentNode.data('displayLabel') || parentNode.data('origLabel') || parentNode.id();
+        // Clean the label (remove probability displays)
+        const cleanLabel = parentLabel.split('\n')[0].trim();
+        
+        // Check for inverse relationship
+        const cpt = edge.data('cpt') || {};
+        const opposes = edge.data('opposes');
+        const isInverse = !!cpt.inverse || !!opposes;
+        
+        return isInverse ? `NOT ${cleanLabel}` : cleanLabel;
+      });
+      
+      let logicStatement;
+      if (parentLabels.length === 0) {
+        logicStatement = 'No parent statements';
+      } else if (parentLabels.length === 1) {
+        logicStatement = parentLabels[0];
+      } else {
+        const connector = nodeType === NODE_TYPE_AND ? ' AND ' : ' OR ';
+        logicStatement = parentLabels.join(connector);
+      }
       
       box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${typeLabel}</div>
                        <div style="margin-bottom: 6px;">Current: ${formatProb(lp)}</div>
-                       <div style="color: #666; font-style: italic;">${logicDescription}</div>`;
+                       <div style="color: #666; font-style: italic; margin-bottom: 8px;">
+                         <b>Statement:</b> ${logicStatement}
+                       </div>`;
+      
       container.parentElement.appendChild(box);
       return;
     }

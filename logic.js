@@ -759,6 +759,14 @@ export function initializeNodeData(node, nodeType) {
     if (typeof node.data('heavyProb') !== 'number') {
       node.data('heavyProb', 0.5); // 50%
     }
+  } else if (nodeType === 'and' || nodeType === 'or') {
+    // AND/OR nodes behave like assertions but with deterministic logic
+    node.removeData('prob'); // Clear any existing lite mode probability to make it virgin
+    node.data('isVirgin', true); // Mark as virgin for lite mode
+    // Only set heavy mode default if not already calculated
+    if (typeof node.data('heavyProb') !== 'number') {
+      node.data('heavyProb', 0.5); // 50%
+    }
   }
 }
 
@@ -1234,10 +1242,14 @@ export function addNote() {
     return;
   }
   
-  // Add note node to center of current viewport
+  // Add note node to center of current viewport with small offset to avoid stacking
   const viewport = cy.extent();
   const centerX = (viewport.x1 + viewport.x2) / 2;
   const centerY = (viewport.y1 + viewport.y2) / 2;
+  
+  // Add small random offset (±30 pixels) to prevent nodes from stacking exactly on top of each other
+  const offsetX = (Math.random() - 0.5) * 60; // -30 to +30 pixels
+  const offsetY = (Math.random() - 0.5) * 60; // -30 to +30 pixels
   
   const newNode = cy.add({
     group: 'nodes',
@@ -1249,7 +1261,7 @@ export function addNote() {
       width: 120,
       height: 40
     },
-    position: { x: centerX, y: centerY }
+    position: { x: centerX + offsetX, y: centerY + offsetY }
   });
   
   console.log(`Created note node with type: ${newNode.data('type')}`);
@@ -1271,10 +1283,14 @@ export function addStatement() {
     return;
   }
   
-  // Add assertion node to center of current viewport
+  // Add assertion node to center of current viewport with small offset to avoid stacking
   const viewport = cy.extent();
   const centerX = (viewport.x1 + viewport.x2) / 2;
   const centerY = (viewport.y1 + viewport.y2) / 2;
+  
+  // Add small random offset (±30 pixels) to prevent nodes from stacking exactly on top of each other
+  const offsetX = (Math.random() - 0.5) * 60; // -30 to +30 pixels
+  const offsetY = (Math.random() - 0.5) * 60; // -30 to +30 pixels
   
   const newNode = cy.add({
     group: 'nodes',
@@ -1286,7 +1302,7 @@ export function addStatement() {
       width: 60,
       height: 36
     },
-    position: { x: centerX, y: centerY }
+    position: { x: centerX + offsetX, y: centerY + offsetY }
   });
   
   console.log(`Created assertion node with type: ${newNode.data('type')}`);
