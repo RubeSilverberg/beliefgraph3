@@ -300,6 +300,14 @@ html, body {
   font-family: inherit;
 }
 
+#contributing-factors-modal {
+  z-index: 10001 !important;
+}
+#contributing-factors-modal textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+
 #edit-label-modal {
   position: fixed;
   left: 0;

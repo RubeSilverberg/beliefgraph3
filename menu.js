@@ -1,12 +1,13 @@
 console.log("Loaded menu.js");
 import { wouldCreateCycle } from './logic.js';
-import { openVisualSignalsModal } from './modals.js';
+import { openVisualSignalsModal, openContributingFactorsModal } from './modals.js';
 export function setupMenuAndEdgeModals({
   cy,
   convergeAll,
   computeVisuals,
   openNotesModal,
   openRationaleModal,
+  openContributingFactorsModal,
   NODE_TYPE_ASSERTION,
   NODE_TYPE_FACT,
   NODE_TYPE_AND,
@@ -273,6 +274,15 @@ window.cy.on('doubleTap', 'node', function(event) {
         hideMenu();
       };
       list.appendChild(rationaleItem);
+
+      const contributingFactorsItem = document.createElement('li');
+      contributingFactorsItem.textContent = 'Edit Contributing Factors...';
+      contributingFactorsItem.style.cursor = 'pointer';
+      contributingFactorsItem.onclick = () => {
+        openContributingFactorsModal(edge);
+        hideMenu();
+      };
+      list.appendChild(contributingFactorsItem);
 
       const del = document.createElement('li');
       del.textContent = 'Delete This Edge';

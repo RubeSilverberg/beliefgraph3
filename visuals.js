@@ -985,6 +985,22 @@ export function showModifierBox(cy, edge) {
     }
   }
 
+  // Display contributing factors if they exist
+  const contributingFactors = edge.data('contributingFactors');
+  if (contributingFactors && contributingFactors.length > 0) {
+    box.innerHTML += `<div style="margin-top: 8px; border-top: 1px solid #ddd; padding-top: 6px;">`;
+    box.innerHTML += `<div style="font-weight: 500; color: #333; margin-bottom: 4px;">Contributing factors:</div>`;
+    contributingFactors.forEach(factor => {
+      // Clean up the factor text and add bullet if it doesn't have one
+      let displayFactor = factor.trim();
+      if (!displayFactor.startsWith('•') && !displayFactor.startsWith('-') && !displayFactor.startsWith('*')) {
+        displayFactor = '• ' + displayFactor;
+      }
+      box.innerHTML += `<div style="margin: 2px 0; font-size: 13px; color: #555; line-height: 1.3;">${displayFactor}</div>`;
+    });
+    box.innerHTML += `</div>`;
+  }
+
   // Check if edge has rationale text and add indicator
   const rationale = edge.data('rationale');
   if (rationale && rationale.trim().length > 0) {

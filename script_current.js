@@ -4,6 +4,7 @@ import {
   openEditNodeLabelModal,
   openNotesModal,
   openRationaleModal,
+  openContributingFactorsModal,
   openVisualSignalsModal,
   openMultiVisualSignalsModal,
   openCPTModalTwoPerParent
@@ -755,6 +756,7 @@ document.addEventListener('DOMContentLoaded', () => {
     computeVisuals,
     openNotesModal,
     openRationaleModal,
+    openContributingFactorsModal,
     NODE_TYPE_ASSERTION,
     NODE_TYPE_FACT,
     NODE_TYPE_AND,

@@ -922,3 +922,99 @@ function makeDraggable(modal, handleSelector = null) {
     document.body.style.userSelect = "";
   };
 }
+
+// --- Contributing Factors Modal (for edges) ---
+export function openContributingFactorsModal(edge) {
+  hideModal('contributing-factors-modal');
+
+  const modal = document.createElement('div');
+  modal.id = 'contributing-factors-modal';
+  modal.className = 'hidden';
+  modal.style.position = 'fixed';
+  modal.style.background = '#fff';
+  modal.style.padding = '24px 20px 18px 20px';
+  modal.style.border = '2px solid #2e7d32';
+  modal.style.borderRadius = '8px';
+  modal.style.zIndex = 10001;
+  modal.style.boxShadow = '0 6px 30px #2e7d3255';
+  modal.style.minWidth = '400px';
+  modal.style.maxWidth = '500px';
+
+  // Title
+  const title = document.createElement('div');
+  title.textContent = 'Edit Contributing Factors';
+  title.className = 'modal-title';
+  title.style.fontWeight = 'bold';
+  title.style.marginBottom = '12px';
+  modal.appendChild(title);
+  makeDraggable(modal, ".modal-title");
+
+  // Instructions
+  const instructions = document.createElement('div');
+  instructions.textContent = 'Enter key considerations that influence this weight (one per line):';
+  instructions.style.fontSize = '14px';
+  instructions.style.color = '#666';
+  instructions.style.marginBottom = '10px';
+  modal.appendChild(instructions);
+
+  // Textarea
+  const textarea = document.createElement('textarea');
+  textarea.style.width = '100%';
+  textarea.style.minHeight = '120px';
+  textarea.style.fontSize = '14px';
+  textarea.style.border = '1px solid #bbb';
+  textarea.style.borderRadius = '4px';
+  textarea.style.padding = '8px';
+  textarea.style.lineHeight = '1.4';
+  textarea.placeholder = 'Example:\n• Reason A\n• Caveat B';
+  
+  // Get existing contributing factors (stored as array of strings)
+  const existingFactors = edge.data('contributingFactors') || [];
+  textarea.value = existingFactors.join('\n');
+  modal.appendChild(textarea);
+
+  // Button container
+  const buttonContainer = document.createElement('div');
+  buttonContainer.style.marginTop = '14px';
+  
+  // Save button
+  const saveBtn = document.createElement('button');
+  saveBtn.textContent = 'Save';
+  saveBtn.style.marginRight = '10px';
+  saveBtn.onclick = function() {
+    const text = textarea.value.trim();
+    if (text) {
+      // Split by lines and filter out empty lines
+      const factors = text.split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0);
+      edge.data('contributingFactors', factors);
+    } else {
+      edge.removeData('contributingFactors');
+    }
+    hideModal(modal.id);
+  };
+  buttonContainer.appendChild(saveBtn);
+
+  // Cancel button
+  const cancelBtn = document.createElement('button');
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.onclick = function() {
+    hideModal(modal.id);
+  };
+  buttonContainer.appendChild(cancelBtn);
+  
+  modal.appendChild(buttonContainer);
+
+  // ESC key closes modal
+  const escListener = (e) => {
+    if (e.key === "Escape") {
+      hideModal(modal.id);
+      window.removeEventListener('keydown', escListener);
+    }
+  };
+  window.addEventListener('keydown', escListener);
+
+  showModal(modal);
+  textarea.focus();
+}
