@@ -5,6 +5,11 @@ export const EXAMPLE_GRAPHS = [
     name: "Investigative Example",
     description: "Credibility focused forensic investigation, lite mode",
     filename: "investigative-example.json"
+  },
+  {
+    name: "Simple Milk Example",
+    description: "Basic everyday reasoning: Is the milk spoiled?",
+    filename: "Simple milk example.json"
   }
   // Add more examples here as needed
 ];
