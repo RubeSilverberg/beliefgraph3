@@ -951,7 +951,7 @@ export function openContributingFactorsModal(edge) {
 
   // Instructions
   const instructions = document.createElement('div');
-  instructions.textContent = 'Enter key considerations that influenced this connection (one per line):';
+  instructions.textContent = 'Enter contributing factors (one per line):';
   instructions.style.fontSize = '14px';
   instructions.style.color = '#666';
   instructions.style.marginBottom = '10px';
@@ -966,7 +966,7 @@ export function openContributingFactorsModal(edge) {
   textarea.style.borderRadius = '4px';
   textarea.style.padding = '8px';
   textarea.style.lineHeight = '1.4';
-  textarea.placeholder = 'Example:\n• Historical precedent shows strong correlation\n• Expert testimony supports this link\n• Statistical data from 2020-2023 study';
+  textarea.placeholder = 'Example:\n• Additional consideration A\n• Caveat B';
   
   // Get existing contributing factors (stored as array of strings)
   const existingFactors = edge.data('contributingFactors') || [];
