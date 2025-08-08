@@ -61,29 +61,34 @@ let stepIndex = 0; // 0 = baseline, 1 = condTrue, 2 = condFalse, 3 = summary
     const modal = document.getElementById('bayes-modal');
 let isDragging = false, dragOffsetX = 0, dragOffsetY = 0;
 
-// Make the first step title draggable
-const firstStepTitle = document.querySelector('#step-baseline .step-title');
-firstStepTitle.style.cursor = 'move';
-firstStepTitle.style.userSelect = 'none';
+// Helper to attach dragging behavior to a handle element
+function attachDragHandle(handleEl) {
+  if (!handleEl) return;
+  handleEl.style.cursor = 'move';
+  handleEl.style.userSelect = 'none';
+  handleEl.addEventListener('mousedown', function(e) {
+    e.preventDefault();
+    isDragging = true;
 
-firstStepTitle.addEventListener('mousedown', function(e) {
-  e.preventDefault();
-  isDragging = true;
-  
-  // Get the current computed position of the modal
-  const rect = modal.getBoundingClientRect();
-  dragOffsetX = e.clientX - rect.left;
-  dragOffsetY = e.clientY - rect.top;
-  
-  // Convert to pixel-based positioning immediately
-  modal.style.left = rect.left + 'px';
-  modal.style.top = rect.top + 'px';
-  modal.style.transform = 'none';
-  modal.style.position = 'fixed';
-  
-  document.body.style.userSelect = 'none';
-  document.body.style.cursor = 'move';
-});
+    // Get the current computed position of the modal
+    const rect = modal.getBoundingClientRect();
+    dragOffsetX = e.clientX - rect.left;
+    dragOffsetY = e.clientY - rect.top;
+
+    // Convert to pixel-based positioning immediately
+    modal.style.left = rect.left + 'px';
+    modal.style.top = rect.top + 'px';
+    modal.style.transform = 'none';
+    modal.style.position = 'fixed';
+
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'move';
+  });
+}
+
+// Make both the top modal title and the step title draggable
+attachDragHandle(document.querySelector('#bayes-modal .modal-title'));
+attachDragHandle(document.querySelector('#step-baseline .step-title'));
 
 document.addEventListener('mouseup', function() {
   if (isDragging) {
