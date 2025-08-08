@@ -517,23 +517,9 @@ function updateModalLabels() {
     return text.replace(/\[([^\]]+)\]/g, '[<em>$1</em>]');
   }
   
-  // Update the baseline sub description with italicized content and tooltip at the end
+  // Update the baseline sub description with italicized content (no tooltip here to avoid redundancy)
   const baselineSub = document.querySelector('#step-baseline .step-sub');
-  baselineSub.innerHTML = italicizeBrackets(`Chance [${childLabel}] is true if nothing is known about [${parentLabel}]`) + 
-    ` <span id="baseline-info-icon" style="cursor:pointer; margin-left:8px; display:inline-block;">
-      <svg width="16" height="16" style="vertical-align:middle;" viewBox="0 0 20 20">
-        <circle cx="10" cy="10" r="9" fill="#0074D9"/>
-        <text x="10" y="15" text-anchor="middle" font-size="14" fill="white" font-family="Arial" font-weight="bold">?</text>
-      </svg>
-    </span>`;
-  
-  // Attach tooltip to the newly created icon
-  setTimeout(() => {
-    const newIcon = document.getElementById('baseline-info-icon');
-    if (newIcon) {
-      attachTooltip(newIcon, TOOLTIP_TEXTS.baseline);
-    }
-  }, 0);
+  baselineSub.innerHTML = italicizeBrackets(`Chance [${childLabel}] is true if nothing is known about [${parentLabel}]`);
   
   // Update the conditional step descriptions with italicized brackets and styled true/false
 document.querySelector('#step-cond-true .step-sub').innerHTML = 

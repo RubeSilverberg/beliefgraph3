@@ -477,8 +477,8 @@ html, body {
 #bayes-modal .step-sub {
   font-size: 15px;
   color: #3a4a5a;
-  margin-bottom: 8px;
-  line-height: 1.45;
+  margin-bottom: 10px;
+  line-height: 1.55;
 }
 #bayes-modal .step.collapsed .step-sub { display: none; }
 
@@ -486,7 +486,8 @@ html, body {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 6px;  /* Reduced from 8px */
+  margin-bottom: 8px;
+  padding: 4px 0; /* add breathing room so thumb isn't clipped */
 }
 
 #bayes-modal .region-label,
@@ -573,11 +574,11 @@ html, body {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 6px;
-  border-radius: 3px;
+  height: 8px; /* was 6px */
+  border-radius: 4px;
   background: #e9ecef;
   outline: none;
-  margin: 6px 0;  /* Reduced from 8px */
+  margin: 8px 0;
 }
 
 #bayes-modal input[type="range"]::-webkit-slider-thumb {
