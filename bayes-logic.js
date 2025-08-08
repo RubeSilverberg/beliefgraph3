@@ -238,24 +238,6 @@ function calculateNaiveBayesMarginal(node, parentEdges) {
   }
 }
 
-// Helper unchanged, just reprinted for clarity:
-export function getConditionalProbs(edge) {
-  const cpt = edge.data('cpt') || {};
-  if (cpt.inverse) {
-    return {
-      parentTrue: cpt.condFalse,
-      parentFalse: cpt.condTrue,
-      baseline: cpt.baseline,
-    };
-  } else {
-    return {
-      parentTrue: cpt.condTrue,
-      parentFalse: cpt.condFalse,
-      baseline: cpt.baseline,
-    };
-  }
-}
-
 window.propagateBayesHeavy = propagateBayesHeavy;
 
 // Debug function to show detailed calculation steps

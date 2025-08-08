@@ -254,7 +254,7 @@ html, body {
   padding: 8px 12px;
   box-sizing: border-box;
   outline: none;
-  font-size: 14px;
+  font-size: 16px;
   transition: border-color 0.2s ease;
 }
 
@@ -312,7 +312,6 @@ html, body {
   position: fixed;
   left: 0;
   top: 0;
-  /* REMOVED: transform: translate(-50%, -50%); */
   background: #fff;
   color: #111;
   padding: 24px 24px 18px 24px;
@@ -330,7 +329,7 @@ html, body {
   padding: 4px 8px;
   box-sizing: border-box;
   outline: none;
-  font-size: 14px;
+  font-size: 16px;
   font-family: inherit;
   width: 100%;
 }
@@ -375,147 +374,39 @@ html, body {
   padding-bottom: 12px;
 }
 
-#visual-signals-modal .control-section {
-  margin-bottom: 24px;
-  padding: 16px;
-  background: #f8f9fa;
-  border-radius: 12px;
-  border: 1px solid #e9ecef;
+/* ---- FIX: match checkbox label size, darken top text, tooltip alignment ---- */
+#bayes-modal .step-sub {
+  font-size: 15px;       /* same as label */
+  font-weight: 500;      /* same emphasis as label */
+  color: #1a1a1a;        /* keep your darker text color */
+  margin-bottom: 8px;
+  line-height: 1.4;
 }
 
-#visual-signals-modal .control-section h4 {
-  margin: 0 0 12px 0;
-  font-size: 15px;
-  font-weight: 600;
-  color: #495057;
-}
-
-#visual-signals-modal .size-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-#visual-signals-modal .size-button {
-  width: 36px;
-  height: 36px;
-  border: 2px solid #ced4da;
-  background: #ffffff;
-  border-radius: 8px;
-  font-size: 20px;
-  font-weight: bold;
+/* Resize and align checkbox to match text */
+#bayes-modal input[type="checkbox"] {
+  width: 15px;           /* proportional to 15px text */
+  height: 15px;
+  margin-right: 6px;
+  vertical-align: middle; /* centers with text baseline */
   cursor: pointer;
-  display: flex;
+  accent-color: #4a90e2;
+}
+
+.tooltip-icon {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  color: #495057;
+  margin-left: 6px;
+  vertical-align: middle;
 }
 
-#visual-signals-modal .size-button:hover {
-  background: #e9ecef;
-  border-color: #adb5bd;
-  transform: translateY(-1px);
+/* Keep invisible drag handle */
+#bayes-modal .modal-title {
+  height: 20px;
+  cursor: move;
+  user-select: none;
 }
 
-#visual-signals-modal .size-button:active {
-  transform: scale(0.95);
-}
-
-#visual-signals-modal .size-button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-#visual-signals-modal .size-button:disabled:hover {
-  background: #ffffff;
-  border-color: #ced4da;
-  transform: none;
-}
-
-#visual-signals-modal .color-control {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-#visual-signals-modal .color-control label {
-  min-width: 80px;
-  font-weight: 500;
-}
-
-#visual-signals-modal .color-picker-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-}
-
-#visual-signals-modal .color-preview {
-  width: 24px;
-  height: 24px;
-  border: 2px solid #dee2e6;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-#visual-signals-modal select {
-  flex: 1;
-  padding: 8px 12px;
-  border: 2px solid #ced4da;
-  border-radius: 8px;
-  background: #ffffff;
-  font-size: 14px;
-  color: #495057;
-  transition: border-color 0.2s ease;
-}
-
-#visual-signals-modal select:focus {
-  border-color: #4a90e2;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
-}
-
-#visual-signals-modal .close-btn {
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  color: #6c757d;
-  padding: 4px;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-}
-
-#visual-signals-modal .close-btn:hover {
-  color: #495057;
-  background: #f8f9fa;
-}
-
-#visual-signals-modal .reset-btn {
-  margin-top: 12px;
-  padding: 8px 16px;
-  background: #f8f9fa;
-  border: 2px solid #ced4da;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  color: #495057;
-  transition: all 0.2s ease;
-}
-
-#visual-signals-modal .reset-btn:hover {
-  background: #e9ecef;
-  border-color: #adb5bd;
-  transform: translateY(-1px);
-}
 #bayes-modal.modal {
   position: fixed;
   top: 8vh;
@@ -526,7 +417,7 @@ html, body {
   max-height: 88vh;
   background: #ffffff;
   color: #2c3e50;
-  padding: 20px 28px 16px 28px;  /* Reduced top/bottom padding */
+  padding: 20px 28px 16px 28px;
   border-radius: 16px;
   box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.1);
   z-index: 1002;
@@ -535,6 +426,15 @@ html, body {
   overflow-x: hidden;
   border: 1px solid rgba(0, 0, 0, 0.06);
 }
+
+/* Modal title spacing */
+#bayes-modal .modal-title {
+  height: 20px;
+  margin-bottom: 10px;
+}
+
+/* rest of your CSS unchanged ... */
+
 
 /* Compact step styling for better vertical space usage */
 #bayes-modal .step {
@@ -570,8 +470,8 @@ html, body {
 }
 
 #bayes-modal .step-sub {
-  font-size: 14px;
-  color: #6c757d;
+  font-size: 16px;
+  color: inherit;  /* Use normal text color instead of grey */
   margin-bottom: 8px;  /* Reduced from 12px */
   line-height: 1.4;
 }
@@ -629,7 +529,7 @@ html, body {
   padding: 10px 14px;  /* Reduced from 12px 16px */
   border-radius: 8px;
   border: 1px solid #e9ecef;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 /* Summary section with reduced spacing */
@@ -639,7 +539,7 @@ html, body {
   border-radius: 12px;
   border: 1px solid #e9ecef;
   line-height: 1.5;    /* Reduced from 1.6 */
-  font-size: 14px;
+  font-size: 16px;
   margin-top: 6px;     /* Reduced from 8px */
 }
 
@@ -736,6 +636,11 @@ html, body {
   pointer-events: none;
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   line-height: 1.4;
+}
+.false-highlight {
+  font-weight: bold;
+  font-style: italic;
+  color: red;
 }
 
 

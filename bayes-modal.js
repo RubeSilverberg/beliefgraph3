@@ -4,6 +4,32 @@ import { TOOLTIP_TEXTS, attachTooltip } from './config.js';
 
 let clickOutHandler = null;
 
+// Helper function to get the best label (longer hoverLabel if exists, otherwise cleaned displayLabel/origLabel)
+function getBestLabel(node) {
+  const hoverLabel = node.data('hoverLabel');
+  if (hoverLabel && hoverLabel.trim()) {
+    // Use hoverLabel but truncate at first period if it exists
+    const firstPeriod = hoverLabel.indexOf('.');
+    return firstPeriod > 0 ? hoverLabel.substring(0, firstPeriod) : hoverLabel;
+  }
+  
+  // Fall back to cleaned display label
+  const rawLabel = node.data('displayLabel') || node.data('origLabel') || node.data('label');
+  if (!rawLabel) return 'Node';
+  // Remove everything from the last newline onward (probability display)
+  const cleanedLabel = rawLabel.split('\n')[0].trim();
+  return cleanedLabel || 'Node';
+}
+
+// Helper function to get short labels for summary section
+function getShortLabel(node) {
+  const rawLabel = node.data('displayLabel') || node.data('origLabel') || node.data('label');
+  if (!rawLabel) return 'Node';
+  // Remove everything from the last newline onward (probability display)
+  const cleanedLabel = rawLabel.split('\n')[0].trim();
+  return cleanedLabel || 'Node';
+}
+
 // Centralized modal close function
 function closeModal() {
   document.getElementById('bayes-modal').classList.add('hidden');
@@ -102,7 +128,6 @@ document.addEventListener('mousemove', function(e) {
     const regionTrueLabel = document.getElementById('region-true-label');
     const ratioTrueLabel = document.getElementById('ratio-true-label');
     const condTrueWarning = document.getElementById('cond-true-warning');
-    const parentTrueWord = document.getElementById('parent-true-word');
     const parentTrueWord2 = document.getElementById('parent-true-word2');
 
     // Cond False
@@ -115,7 +140,6 @@ document.addEventListener('mousemove', function(e) {
     const regionFalseLabel = document.getElementById('region-false-label');
     const ratioFalseLabel = document.getElementById('ratio-false-label');
     const condFalseWarning = document.getElementById('cond-false-warning');
-    const parentFalseWord = document.getElementById('parent-false-word');
     const parentFalseWord2 = document.getElementById('parent-false-word2');
 
     // Summary
@@ -123,7 +147,12 @@ document.addEventListener('mousemove', function(e) {
     const okBtn = document.getElementById('ok-btn');
   
     const cancelBtn = document.getElementById('cancel-btn');
-attachTooltip(document.getElementById('baseline-info-icon'), TOOLTIP_TEXTS.baseline);
+
+    // Attach tooltip to baseline icon if it exists
+    const baselineIcon = document.getElementById('baseline-info-icon');
+    if (baselineIcon) {
+      attachTooltip(baselineIcon, TOOLTIP_TEXTS.baseline);
+    }
 
     // Qualitative labels
     function qualitativeRatio(ratio) {
@@ -158,10 +187,30 @@ document.getElementById('cancel-btn').addEventListener('click', function() {
     baselineSlider.addEventListener('input', updateBaseline);
     inverseCheckbox.addEventListener('change', () => {
       inverse = inverseCheckbox.checked;
-      parentTrueWord.textContent = inverse ? "false" : "true";
-      parentTrueWord2.textContent = inverse ? "false" : "true";
-      parentFalseWord.textContent = inverse ? "true" : "false";
-      parentFalseWord2.textContent = inverse ? "true" : "false";
+      
+      // Update text content for visible elements only
+      if (parentTrueWord2) {
+        parentTrueWord2.textContent = inverse ? "false" : "true";
+      }
+      if (parentFalseWord2) {
+        parentFalseWord2.textContent = inverse ? "true" : "false";
+      }
+      
+      // Apply styling to the visible elements
+      const parentTrueWord2El = document.getElementById('parent-true-word2');
+      const parentFalseWord2El = document.getElementById('parent-false-word2');
+      
+      if (parentTrueWord2El) {
+        // Don't override the color - keep the green color from updateModalLabels
+        parentTrueWord2El.style.fontStyle = 'italic';
+        parentTrueWord2El.style.fontWeight = 'bold';
+      }
+      
+      if (parentFalseWord2El) {
+        // Don't override the color - keep the red color from updateModalLabels
+        parentFalseWord2El.style.fontStyle = 'italic';
+        parentFalseWord2El.style.fontWeight = 'bold';
+      }
       
       // Note: Constraints will update when user clicks "Set Baseline"
     });
@@ -286,8 +335,11 @@ setCondFalseBtn.onclick = () => {
 
     // --- Summary ---
     function updateSummary() {
-      const parentLabel = window._modalParentLabel || 'Parent';
-      const childLabel = window._modalChildLabel || 'Child';
+      // Use short labels for summary section
+      const sourceNode = window._currentBayesEdge.source();
+      const targetNode = window._currentBayesEdge.target();
+      const parentLabel = getShortLabel(sourceNode);
+      const childLabel = getShortLabel(targetNode);
       
       // The summary should always show the direct mapping:
       // P(Child | Parent is true) = condTrue value
@@ -296,11 +348,11 @@ setCondFalseBtn.onclick = () => {
       let trueCondition = condTrue;   // P(Child | Parent is true)
       let falseCondition = condFalse; // P(Child | Parent is false)
       
-      let msg = `<b>Baseline:</b> ${baseline}%<br>
-      <b>P("${childLabel}" | "${parentLabel}" is true):</b> ${trueCondition}%<br>
-      <b>P("${childLabel}" | "${parentLabel}" is false):</b> ${falseCondition}%<br><br>`;
+      let msg = `Baseline: ${baseline}%<br>
+      P([${childLabel}] | [${parentLabel}] is <span style="color: #28a745; font-style: italic; font-weight: bold;">true</span>): ${trueCondition}%<br>
+      P([${childLabel}] | [${parentLabel}] is <span style="color: #dc3545; font-style: italic; font-weight: bold;">false</span>): ${falseCondition}%<br><br>`;
       let ratio = falseCondition === 0 ? (trueCondition === 0 ? 1 : 99) : trueCondition / falseCondition;
-      msg += `Conditional likelihood ratio: <b>${ratio.toFixed(2)}×</b><br>`;
+      msg += `Conditional likelihood ratio: ${ratio.toFixed(2)}×<br>`;
       msg += qualitativeRatio(ratio);
       summaryText.innerHTML = msg;
     }
@@ -359,16 +411,8 @@ window.openBayesModalForEdge = function(edge) {
   }
   
   // Continue with regular CPT modal for assertion nodes
-  // Extract clean labels by removing probability indicators
-  function cleanLabel(rawLabel) {
-    if (!rawLabel) return 'Node';
-    // Remove everything from the last newline onward (probability display)
-    const cleanedLabel = rawLabel.split('\n')[0].trim();
-    return cleanedLabel || 'Node';
-  }
-  
-  const parentLabel = cleanLabel(sourceNode.data('label'));
-  const childLabel = cleanLabel(targetNode.data('label'));
+  const parentLabel = getBestLabel(sourceNode);
+  const childLabel = getBestLabel(targetNode);
   
   // Store labels for use in modal text
   window._modalParentLabel = parentLabel;
@@ -408,11 +452,23 @@ window.openBayesModalForEdge = function(edge) {
   // Update the modal text with actual labels
   updateModalLabels();
   
-  // Update the true/false word displays (but don't call update functions yet to avoid loops)
-  parentTrueWord.textContent = inverse ? "false" : "true";
-  parentTrueWord2.textContent = inverse ? "false" : "true";
-  parentFalseWord.textContent = inverse ? "true" : "false";
-  parentFalseWord2.textContent = inverse ? "true" : "false";
+  // Update the true/false word displays with styling
+  const parentTrueWord2El = document.getElementById('parent-true-word2');
+  const parentFalseWord2El = document.getElementById('parent-false-word2');
+  
+  if (parentTrueWord2El) {
+    parentTrueWord2El.style.fontStyle = 'italic';
+    parentTrueWord2El.style.fontWeight = 'bold';
+    // Don't override the color - keep the green color from updateModalLabels
+    parentTrueWord2El.textContent = inverse ? "false" : "true";
+  }
+  
+  if (parentFalseWord2El) {
+    parentFalseWord2El.style.fontStyle = 'italic';
+    parentFalseWord2El.style.fontWeight = 'bold';
+    // Don't override the color - keep the red color from updateModalLabels
+    parentFalseWord2El.textContent = inverse ? "true" : "false";
+  }
 
   document.getElementById('bayes-modal').classList.remove('hidden');
   stepIndex = 0;
@@ -436,45 +492,38 @@ function updateModalLabels() {
   const parentLabel = window._modalParentLabel || 'Parent';
   const childLabel = window._modalChildLabel || 'Child';
   
-  // Update step titles - add quotation marks around node labels
-  document.querySelector('#step-cond-true .step-title').innerHTML = 
-    `Conditional (True):`;
-  document.querySelector('#step-cond-false .step-title').innerHTML = 
-    `Conditional (False):`;
-  
-  // Update step descriptions - add quotation marks around node labels
-  document.querySelector('#step-baseline .step-sub').textContent = 
-    `Chance "${childLabel}" is true if nothing is known about "${parentLabel}".`;
-  
-  document.querySelector('#step-cond-true .step-sub').innerHTML = 
-    `Chance <b>"${childLabel}"</b> is true when <b>"${parentLabel}"</b> is <span id="parent-true-word2">true</span>.`;
-    
-  document.querySelector('#step-cond-false .step-sub').innerHTML = 
-    `Chance <b>"${childLabel}"</b> is true when <b>"${parentLabel}"</b> is <span id="parent-false-word2">false</span>.`;
-    
-  // Update the inverse checkbox label (preserve the existing checkbox element)
-  const inverseLabel = document.querySelector('#step-baseline label');
-  if (inverseLabel) {
-    // Find the existing checkbox and preserve it
-    const existingCheckbox = inverseLabel.querySelector('#inverse-checkbox');
-    const checkboxChecked = existingCheckbox ? existingCheckbox.checked : false;
-    
-    // Update the label text while preserving the checkbox - add quotation marks around node labels
-    inverseLabel.innerHTML = `<input type="checkbox" id="inverse-checkbox" ${checkboxChecked ? 'checked' : ''}>
-      Inverse relationship: "${childLabel}" more likely if "${parentLabel}" is <b>false</b>`;
-    
-    // Re-attach the event listener since we recreated the element
-    const newCheckbox = document.getElementById('inverse-checkbox');
-    newCheckbox.addEventListener('change', () => {
-      inverse = newCheckbox.checked;
-      parentTrueWord.textContent = inverse ? "false" : "true";
-      parentTrueWord2.textContent = inverse ? "false" : "true";
-      parentFalseWord.textContent = inverse ? "true" : "false";
-      parentFalseWord2.textContent = inverse ? "true" : "false";
-      
-      // Note: Constraints will update when user clicks "Set Baseline"
-    });
+  // Helper function to italicize only text within brackets, not the brackets themselves
+  function italicizeBrackets(text) {
+    return text.replace(/\[([^\]]+)\]/g, '[<em>$1</em>]');
   }
+  
+  // Update the baseline sub description with italicized content and tooltip at the end
+  const baselineSub = document.querySelector('#step-baseline .step-sub');
+  baselineSub.innerHTML = italicizeBrackets(`Chance [${childLabel}] is true if nothing is known about [${parentLabel}]`) + 
+    ` <span id="baseline-info-icon" style="cursor:pointer; margin-left:8px; display:inline-block;">
+      <svg width="16" height="16" style="vertical-align:middle;" viewBox="0 0 20 20">
+        <circle cx="10" cy="10" r="9" fill="#0074D9"/>
+        <text x="10" y="15" text-anchor="middle" font-size="14" fill="white" font-family="Arial" font-weight="bold">?</text>
+      </svg>
+    </span>`;
+  
+  // Attach tooltip to the newly created icon
+  setTimeout(() => {
+    const newIcon = document.getElementById('baseline-info-icon');
+    if (newIcon) {
+      attachTooltip(newIcon, TOOLTIP_TEXTS.baseline);
+    }
+  }, 0);
+  
+  // Update the conditional step descriptions with italicized brackets and styled true/false
+document.querySelector('#step-cond-true .step-sub').innerHTML = 
+  italicizeBrackets(`Chance [${childLabel}] is true when [${parentLabel}] is `) +
+  `<span id="parent-true-word2" style="font-style: italic; font-weight: bold; color: #28a745;">true</span>.`;
+
+document.querySelector('#step-cond-false .step-sub').innerHTML = 
+  italicizeBrackets(`Chance [${childLabel}] is true when [${parentLabel}] is `) +
+  `<span id="parent-false-word2" style="font-style: italic; font-weight: bold; color: #dc3545;">false</span>.`;
+
 }
 function renderStep() {
   // Step visibility
@@ -495,8 +544,112 @@ function renderStep() {
   condFalseInputRow.classList.toggle('hidden', stepIndex !== 2);
   condFalseLockedRow.classList.toggle('hidden', stepIndex === 2 || stepIndex < 2);
 
+  // Show/hide step descriptions based on current step
+  const condTrueSub = document.querySelector('#step-cond-true .step-sub');
+  const condFalseSub = document.querySelector('#step-cond-false .step-sub');
+  
+  if (condTrueSub) {
+    condTrueSub.style.display = (stepIndex === 1) ? 'block' : 'none';
+  }
+  
+  if (condFalseSub) {
+    condFalseSub.style.display = (stepIndex === 2) ? 'block' : 'none';
+  }
+
+  // Dynamic step titles based on current step
+  updateStepTitles();
+
   // Summary
   if (stepIndex === 3) updateSummary();
+}
+
+function updateStepTitles() {
+  const parentLabel = window._modalParentLabel || 'Parent';
+  const childLabel = window._modalChildLabel || 'Child';
+  
+  const baselineTitle = document.querySelector('#step-baseline .step-title');
+  const baselineSub = document.querySelector('#step-baseline .step-sub');
+  const condTrueTitle = document.querySelector('#step-cond-true .step-title');
+  const condFalseTitle = document.querySelector('#step-cond-false .step-title');
+  const condTrueSub = document.querySelector('#step-cond-true .step-sub');
+  const condFalseSub = document.querySelector('#step-cond-false .step-sub');
+  
+  // Tooltip icon HTML for reuse
+  const tooltipIcon = `<span id="baseline-info-icon-title" style="cursor:pointer; margin-left:8px; display:inline-block;">
+    <svg width="16" height="16" style="vertical-align:middle;" viewBox="0 0 20 20">
+      <circle cx="10" cy="10" r="9" fill="#0074D9"/>
+      <text x="10" y="15" text-anchor="middle" font-size="14" fill="white" font-family="Arial" font-weight="bold">?</text>
+    </svg>
+  </span>`;
+  
+  switch (stepIndex) {
+    case 0:
+      // Step 0: Hide baseline title during setting, show description
+      baselineTitle.style.display = 'none';
+      if (baselineSub) baselineSub.style.display = 'block';
+      break;
+      
+    case 1:
+      // Step 1: Show baseline title with tooltip, hide description, HIDE True conditional title during setting
+      baselineTitle.innerHTML = `Baseline probability ${tooltipIcon}`;
+      baselineTitle.style.display = 'block';
+      if (baselineSub) baselineSub.style.display = 'none';
+      
+      // Attach tooltip to the new icon
+      setTimeout(() => {
+        const newIcon = document.getElementById('baseline-info-icon-title');
+        if (newIcon) {
+          attachTooltip(newIcon, TOOLTIP_TEXTS.baseline);
+        }
+      }, 0);
+      
+      // Hide the True conditional title during step 1 (while setting it)
+      condTrueTitle.style.display = 'none';
+      break;
+      
+    case 2:
+      // Step 2: Show True conditional title again, HIDE False conditional title during setting
+      baselineTitle.innerHTML = `Baseline probability ${tooltipIcon}`;
+      
+      // Reattach tooltip
+      setTimeout(() => {
+        const newIcon = document.getElementById('baseline-info-icon-title');
+        if (newIcon) {
+          attachTooltip(newIcon, TOOLTIP_TEXTS.baseline);
+        }
+      }, 0);
+      
+      condTrueTitle.innerHTML = `True conditional`;
+      condTrueTitle.style.display = 'block';
+      if (condTrueSub) condTrueSub.style.display = 'none';
+      
+      // Hide the False conditional title during step 2 (while setting it)
+      condFalseTitle.style.display = 'none';
+      break;
+      
+    case 3:
+      // Step 3: Show all titles, hide descriptions
+      baselineTitle.innerHTML = `Baseline probability ${tooltipIcon}`;
+      baselineTitle.style.display = 'block';
+      if (baselineSub) baselineSub.style.display = 'none';
+      
+      // Reattach tooltip
+      setTimeout(() => {
+        const newIcon = document.getElementById('baseline-info-icon-title');
+        if (newIcon) {
+          attachTooltip(newIcon, TOOLTIP_TEXTS.baseline);
+        }
+      }, 0);
+      
+      condTrueTitle.innerHTML = `True conditional`;
+      condTrueTitle.style.display = 'block';
+      if (condTrueSub) condTrueSub.style.display = 'none';
+      
+      condFalseTitle.innerHTML = `False conditional`;
+      condFalseTitle.style.display = 'block';
+      if (condFalseSub) condFalseSub.style.display = 'none';
+      break;
+  }
 }
 
 // Simplified modal for logic node edges (AND/OR) - only shows inverse checkbox

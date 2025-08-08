@@ -51,18 +51,13 @@
 
   <!-- Bayes Modal and Content -->
 <div id="bayes-modal" class="modal hidden">
+  <!-- Modal Title -->
+  <div class="modal-title">&nbsp;</div>
+  
   <!-- Step 1: Baseline -->
   <div id="step-baseline" class="step">
-      <div class="step-title">
-  Baseline Probability
-  <span id="baseline-info-icon" style="cursor:pointer; margin-left:6px; display:inline-block;">
-    <svg width="16" height="16" style="vertical-align:middle;" viewBox="0 0 20 20">
-      <circle cx="10" cy="10" r="9" fill="#0074D9"/>
-      <text x="10" y="15" text-anchor="middle" font-size="14" fill="white" font-family="Arial" font-weight="bold">?</text>
-    </svg>
-  </span>
-</div>
-      <div class="step-sub">Chance <b>[Child]</b> is true if nothing is known about <b>[Parent]</b>.</div>
+      <div class="step-title">Baseline probability</div>
+      <div class="step-sub">Chance <em>[Child]</em> is true if nothing is known about <em>[Parent]</em></div>
       <div id="baseline-input-row">
         <div class="slider-row">
           <input type="range" min="0" max="100" value="50" step="1" id="baseline-slider">
@@ -71,7 +66,8 @@
         <div class="checkbox">
           <label>
             <input type="checkbox" id="inverse-checkbox">
-            Inverse relationship: [Child] more likely if [Parent] is <b>false</b>
+              It's more likely to be true when the second statement is 
+  <span class="false-highlight">false</span>
           </label>
         </div>
         <div class="region-label">Allowed: 0%–100%</div>
@@ -88,8 +84,8 @@
     </div>
     <!-- Step 2: Conditional (Parent True/False) -->
     <div id="step-cond-true" class="step hidden">
-      <div class="step-title">Conditional (True):<span id="parent-true-word" style="display:none;">true</span></div>
-      <div class="step-sub">Chance <b>[Child]</b> is true when <b>[Parent]</b> is <span id="parent-true-word2">true</span>.</div>
+      <div class="step-title">True conditional</div>
+      <div class="step-sub">Chance [Child] is true when [Parent] is <span id="parent-true-word2" style="color: #228B22; font-style: italic; font-weight: bold;">true</span>.</div>
       <div id="cond-true-input-row">
         <div class="slider-row">
           <input type="range" min="0" max="100" value="50" step="1" id="cond-true-slider">
@@ -109,8 +105,8 @@
     </div>
     <!-- Step 3: Conditional (Parent False/True, inverse) -->
     <div id="step-cond-false" class="step hidden">
-      <div class="step-title">Conditional (False):<span id="parent-false-word" style="display:none;">false</span></div>
-      <div class="step-sub">Chance <b>[Child]</b> is true when <b>[Parent]</b> is <span id="parent-false-word2">false</span>.</div>
+      <div class="step-title">False conditional</div>
+      <div class="step-sub">Chance [Child] is true when [Parent] is <span id="parent-false-word2" style="color: #ff0000; font-style: italic; font-weight: bold;">false</span>.</div>
       <div id="cond-false-input-row">
         <div class="slider-row">
           <input type="range" min="0" max="100" value="50" step="1" id="cond-false-slider">
