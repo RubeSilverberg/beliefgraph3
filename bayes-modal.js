@@ -481,8 +481,9 @@ window.openBayesModalForEdge = function(edge) {
 
   // Add click-out functionality - use a more robust approach
   clickOutHandler = (e) => {
-    // Only close if clicking directly on the modal background, not on any child elements
-    if (e.target === document.getElementById('bayes-modal')) {
+    const modalEl = document.getElementById('bayes-modal');
+    // Close only when clicking outside modal, not on padding inside it
+    if (modalEl && !modalEl.contains(e.target)) {
       closeModal();
     }
   };
@@ -496,6 +497,20 @@ window.openBayesModalForEdge = function(edge) {
 function updateModalLabels() {
   const parentLabel = window._modalParentLabel || 'Parent';
   const childLabel = window._modalChildLabel || 'Child';
+  // Persistent modal header showing context (also acts as drag handle)
+  const modalTitleEl = document.querySelector('#bayes-modal .modal-title');
+  if (modalTitleEl) {
+    // Use short labels like the summary for less cognitive load
+    if (window._currentBayesEdge) {
+      const src = window._currentBayesEdge.source();
+      const tgt = window._currentBayesEdge.target();
+      const shortParent = getShortLabel(src);
+      const shortChild = getShortLabel(tgt);
+      modalTitleEl.textContent = `${shortParent} → ${shortChild}`;
+    } else {
+      modalTitleEl.textContent = `${parentLabel} → ${childLabel}`;
+    }
+  }
   
   // Helper function to italicize only text within brackets, not the brackets themselves
   function italicizeBrackets(text) {
@@ -532,9 +547,10 @@ document.querySelector('#step-cond-false .step-sub').innerHTML =
 }
 function renderStep() {
   // Step visibility
+  // Keep steps visible to maintain continuity; only the Summary panel toggles
   stepBaseline.classList.remove('hidden');
-  stepCondTrue.classList.toggle('hidden', stepIndex < 1);
-  stepCondFalse.classList.toggle('hidden', stepIndex < 2);
+  stepCondTrue.classList.remove('hidden');
+  stepCondFalse.classList.remove('hidden');
   stepSummary.classList.toggle('hidden', stepIndex !== 3);
 
   // Baseline row
@@ -549,19 +565,7 @@ function renderStep() {
   condFalseInputRow.classList.toggle('hidden', stepIndex !== 2);
   condFalseLockedRow.classList.toggle('hidden', stepIndex === 2 || stepIndex < 2);
 
-  // Show/hide step descriptions based on current step
-  const condTrueSub = document.querySelector('#step-cond-true .step-sub');
-  const condFalseSub = document.querySelector('#step-cond-false .step-sub');
-  
-  if (condTrueSub) {
-    condTrueSub.style.display = (stepIndex === 1) ? 'block' : 'none';
-  }
-  
-  if (condFalseSub) {
-    condFalseSub.style.display = (stepIndex === 2) ? 'block' : 'none';
-  }
-
-  // Dynamic step titles based on current step
+  // Dynamic step titles + emphasis based on current step
   updateStepTitles();
 
   // Summary
@@ -587,74 +591,38 @@ function updateStepTitles() {
     </svg>
   </span>`;
   
-  switch (stepIndex) {
-    case 0:
-      // Step 0: Hide baseline title during setting, show description
-      baselineTitle.style.display = 'none';
-      if (baselineSub) baselineSub.style.display = 'block';
-      break;
-      
-    case 1:
-      // Step 1: Show baseline title with tooltip, hide description, HIDE True conditional title during setting
-      baselineTitle.innerHTML = `Baseline probability ${tooltipIcon}`;
-      baselineTitle.style.display = 'block';
-      if (baselineSub) baselineSub.style.display = 'none';
-      
-      // Attach tooltip to the new icon
-      setTimeout(() => {
-        const newIcon = document.getElementById('baseline-info-icon-title');
-        if (newIcon) {
-          attachTooltip(newIcon, TOOLTIP_TEXTS.baseline);
-        }
-      }, 0);
-      
-      // Hide the True conditional title during step 1 (while setting it)
-      condTrueTitle.style.display = 'none';
-      break;
-      
-    case 2:
-      // Step 2: Show True conditional title again, HIDE False conditional title during setting
-      baselineTitle.innerHTML = `Baseline probability ${tooltipIcon}`;
-      
-      // Reattach tooltip
-      setTimeout(() => {
-        const newIcon = document.getElementById('baseline-info-icon-title');
-        if (newIcon) {
-          attachTooltip(newIcon, TOOLTIP_TEXTS.baseline);
-        }
-      }, 0);
-      
-      condTrueTitle.innerHTML = `True conditional`;
-      condTrueTitle.style.display = 'block';
-      if (condTrueSub) condTrueSub.style.display = 'none';
-      
-      // Hide the False conditional title during step 2 (while setting it)
-      condFalseTitle.style.display = 'none';
-      break;
-      
-    case 3:
-      // Step 3: Show all titles, hide descriptions
-      baselineTitle.innerHTML = `Baseline probability ${tooltipIcon}`;
-      baselineTitle.style.display = 'block';
-      if (baselineSub) baselineSub.style.display = 'none';
-      
-      // Reattach tooltip
-      setTimeout(() => {
-        const newIcon = document.getElementById('baseline-info-icon-title');
-        if (newIcon) {
-          attachTooltip(newIcon, TOOLTIP_TEXTS.baseline);
-        }
-      }, 0);
-      
-      condTrueTitle.innerHTML = `True conditional`;
-      condTrueTitle.style.display = 'block';
-      if (condTrueSub) condTrueSub.style.display = 'none';
-      
-      condFalseTitle.innerHTML = `False conditional`;
-      condFalseTitle.style.display = 'block';
-      if (condFalseSub) condFalseSub.style.display = 'none';
-      break;
-  }
+  // Keep titles persistent; emphasize current step, de-emphasize others
+  baselineTitle.innerHTML = `Baseline probability ${tooltipIcon}`;
+  condTrueTitle.innerHTML = `True conditional`;
+  condFalseTitle.innerHTML = `False conditional`;
+
+  // Attach tooltip to the baseline title icon (id recreated each time)
+  setTimeout(() => {
+    const newIcon = document.getElementById('baseline-info-icon-title');
+    if (newIcon) {
+      attachTooltip(newIcon, TOOLTIP_TEXTS.baseline);
+    }
+  }, 0);
+
+  // Step emphasis via classes
+  const stepBaselineEl = document.getElementById('step-baseline');
+  const stepCondTrueEl = document.getElementById('step-cond-true');
+  const stepCondFalseEl = document.getElementById('step-cond-false');
+
+  const setState = (el, isCurrent, isCollapsed) => {
+    if (!el) return;
+    el.classList.toggle('current', !!isCurrent);
+    el.classList.toggle('collapsed', !!isCollapsed);
+  };
+
+  setState(stepBaselineEl, stepIndex === 0, stepIndex > 0);
+  setState(stepCondTrueEl, stepIndex === 1, stepIndex !== 1 && stepIndex > 0);
+  setState(stepCondFalseEl, stepIndex === 2, stepIndex !== 2 && stepIndex > 1);
+
+  // Only show the sub-description for the current step
+  if (baselineSub) baselineSub.style.display = (stepIndex === 0) ? 'block' : 'none';
+  if (condTrueSub) condTrueSub.style.display = (stepIndex === 1) ? 'block' : 'none';
+  if (condFalseSub) condFalseSub.style.display = (stepIndex === 2) ? 'block' : 'none';
 }
 
 // Simplified modal for logic node edges (AND/OR) - only shows inverse checkbox

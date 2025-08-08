@@ -400,9 +400,16 @@ html, body {
   vertical-align: middle;
 }
 
-/* Keep invisible drag handle */
+/* Persistent modal header with context */
 #bayes-modal .modal-title {
-  height: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 24px;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #1f2d3d;
+  opacity: 0.9;
   cursor: move;
   user-select: none;
 }
@@ -417,7 +424,7 @@ html, body {
   max-height: 88vh;
   background: #ffffff;
   color: #2c3e50;
-  padding: 20px 28px 16px 28px;
+  padding: 16px 24px 14px 24px;
   border-radius: 16px;
   box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.1);
   z-index: 1002;
@@ -427,10 +434,10 @@ html, body {
   border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-/* Modal title spacing */
+/* Modal title spacing (aligned with header style) */
 #bayes-modal .modal-title {
-  height: 20px;
-  margin-bottom: 10px;
+  height: 24px;
+  margin-bottom: 6px;
 }
 
 /* rest of your CSS unchanged ... */
@@ -451,30 +458,29 @@ html, body {
 #bayes-modal .step-title {
   font-size: 16px;
   font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 6px;  /* Reduced from 8px */
+  color: #25364a;
+  margin-bottom: 6px;
   display: flex;
   align-items: center;
   gap: 8px;
 }
+#bayes-modal .step.current .step-title { color: #1a3e7a; }
+#bayes-modal .step.collapsed .step-title { color: #7b8a97; font-weight: 600; opacity: 0.85; }
 
 /* Baseline step styling with reduced spacing */
 #bayes-modal #step-baseline .step-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #2c3e50;
-  padding: 4px 0;  /* Reduced from 6px */
-  border-bottom: 2px solid #e9ecef;
-  margin-bottom: 8px;  /* Reduced from 12px */
-  cursor: move;
+  padding: 4px 0;
+  border-bottom: 2px solid #eef1f4;
+  margin-bottom: 8px;
 }
 
 #bayes-modal .step-sub {
-  font-size: 16px;
-  color: inherit;  /* Use normal text color instead of grey */
-  margin-bottom: 8px;  /* Reduced from 12px */
-  line-height: 1.4;
+  font-size: 15px;
+  color: #3a4a5a;
+  margin-bottom: 8px;
+  line-height: 1.45;
 }
+#bayes-modal .step.collapsed .step-sub { display: none; }
 
 #bayes-modal .slider-row {
   display: flex;
@@ -524,12 +530,18 @@ html, body {
   transform: translateY(-1px);
 }
 
+/* Current step callout on slider region for focus */
+#bayes-modal .step.current .slider-row { outline: 2px solid #e6f0ff; border-radius: 10px; }
+
+/* Ensure modal interior padding doesn’t look like background to avoid accidental close */
+#bayes-modal { background-clip: padding-box; }
+
 #bayes-modal .locked {
-  background: #f8f9fa;
-  padding: 10px 14px;  /* Reduced from 12px 16px */
+  background: #f7f9fb;
+  padding: 10px 14px;
   border-radius: 8px;
-  border: 1px solid #e9ecef;
-  font-size: 16px;
+  border: 1px solid #e6ebf0;
+  font-size: 15px;
 }
 
 /* Summary section with reduced spacing */
