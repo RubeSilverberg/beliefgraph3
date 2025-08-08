@@ -21,6 +21,12 @@ General test files:
 - `test_restore.html` - Autosave/restore testing
 - `test_validation.py` - Python validation scripts
 
+### `/tests/dev-tools/`
+Optional developer utilities (kept out of the app root):
+- `index.html` – Entry point with instructions
+- `autonomous-bug-hunter.js` – Automated in-browser checks for Heavy/Lite modes
+- `json-compatibility-checker.js` – Schema compatibility analyzer (manual use)
+
 ## How to Run Tests
 
 ### Minimal JSON Format Tests

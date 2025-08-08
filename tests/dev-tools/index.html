@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Belief Graph – Dev Tools</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; line-height: 1.6; }
+    h1 { margin-bottom: 0; }
+    .note { color: #555; margin-top: 4px; }
+    pre { background: #f6f8fa; padding: 12px; border-radius: 6px; overflow-x: auto; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .card { border: 1px solid #e1e4e8; border-radius: 8px; padding: 16px; margin: 20px 0; background: #fff; }
+    a.button { display: inline-block; background: #0366d6; color: #fff; padding: 8px 12px; border-radius: 4px; text-decoration: none; }
+    a.button:hover { background: #024faa; }
+    ul { margin-top: 8px; }
+  </style>
+  </head>
+  <body>
+  <h1>Developer Tools</h1>
+  <p class="note">File: tests/dev-tools/index.html (alias: tests/dev-tools/tools.html)</p>
+    <p class="note">These utilities are optional helpers for debugging and analysis. They are not needed for normal usage.</p>
+
+    <div class="card">
+      <h2>Autonomous Bug Hunter</h2>
+      <p>Runs a suite of automated checks against the main app (both Heavy and Lite modes) and reports issues in the console.</p>
+      <ol>
+        <li>Open the main app in a new tab: <a class="button" href="../../index.html" target="_blank" rel="noopener">Open Belief Graph</a></li>
+        <li>In the app tab, open DevTools (F12) and paste this snippet to inject the tester:</li>
+      </ol>
+      <pre><code>// Inject Autonomous Bug Hunter into the main app context
+(function(){
+  var s = document.createElement('script');
+  s.src = 'tests/dev-tools/autonomous-bug-hunter.js';
+  document.head.appendChild(s);
+})();</code></pre>
+      <p class="note">You'll see progress and any found issues logged in the console. Close/reload the page to stop.</p>
+    </div>
+
+    <div class="card">
+      <h2>JSON Compatibility Checker</h2>
+      <p>Analyzes loaded JSON elements for schema compatibility and suggests migration steps.</p>
+      <p>This tool is best used manually on specific data you provide to the page (to avoid noisy auto-fetches). To load it into the main app:</p>
+      <ol>
+        <li>Open the main app: <a class="button" href="../../index.html" target="_blank" rel="noopener">Open Belief Graph</a></li>
+        <li>In DevTools console, run:</li>
+      </ol>
+      <pre><code>// Inject JSON Compatibility Checker
+(function(){
+  var s = document.createElement('script');
+  s.src = 'tests/dev-tools/json-compatibility-checker.js';
+  document.head.appendChild(s);
+})();
+
+// Then, with your elements array available, run for analysis:
+//   analyzeJSONCompatibility(elements)
+// Or generate a migration helper snippet:
+//   generateMigrationScript([], [])</code></pre>
+      <p class="note">The checker exposes <code>analyzeJSONCompatibility</code>, <code>testExistingJSONFiles</code>, and <code>generateMigrationScript</code> on <code>window</code>.</p>
+    </div>
+
+    <div class="card">
+      <h2>Minimal JSON Converter – Where to work</h2>
+      <ul>
+        <li>Interactive test page: <a href="../minimal-json/test-minimal-converter.html">tests/minimal-json/test-minimal-converter.html</a></li>
+        <li>Examples: <code>tests/minimal-json/test-ultra-minimal.json</code>, <code>tests/minimal-json/test-minimal.json</code>, <code>tests/minimal-json/Adnan.json</code></li>
+        <li>Converter logic lives in: <code>minimal-format-analysis.js</code> (loaded by the test page)</li>
+      </ul>
+    </div>
+
+    <p class="note">Tip: Keeping dev-only scripts here avoids cluttering the app root and keeps <code>index.html</code> clean.</p>
+  </body>
+  </html>

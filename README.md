@@ -188,3 +188,15 @@ Complete structure with all visual properties:
 - **Examples**: Use main interface Examples button
 
 The converter handles all visual properties, positioning, and format requirements automatically.
+
+## Developer Tools (optional)
+
+- Developer utilities live under `tests/dev-tools/` to keep the app root clean.
+  - `autonomous-bug-hunter.js` – automated in-browser checks for Heavy/Lite modes
+  - `json-compatibility-checker.js` – schema analysis and migration hints
+  - See `tests/dev-tools/index.html` for instructions and loader snippets.
+
+Minimal JSON converter “side project” artifacts are grouped in `tests/minimal-json/`:
+- `test-ultra-minimal.json` – absolute-minimum example
+- `test-minimal.json` – richer example with visuals/logic
+- `test-minimal-converter.html` – interactive converter harness
