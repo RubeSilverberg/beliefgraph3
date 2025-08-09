@@ -189,14 +189,71 @@ Complete structure with all visual properties:
 
 The converter handles all visual properties, positioning, and format requirements automatically.
 
+### Minimal Format Schema & Module
+
+- Core module: `format-core.js` (attaches `BeliefGraphFormatCore`)
+- ES module wrapper: `format.js` (named exports)
+- JSON Schema: `minimal-format.schema.json` (draft-07) for validation or AI prompting
+
+Example (in browser console after cy initialized):
+```js
+const minimal = BeliefGraphFormat.exportMinimalGraph(window.cy);
+console.log(minimal);
+// To import (auto-detect any supported shape):
+BeliefGraphFormat.importAnyGraph(window.cy, minimal);
+// With validation (throws on structural/semantic errors):
+BeliefGraphFormat.importAnyGraph(window.cy, minimal, { validate: true });
+```
+
+### Validation Helper (Lightweight)
+
+File: `validation.js` adds a fast structural & semantic checker (no external libs).
+
+API:
+```js
+const { valid, errors, warnings } = BeliefGraphFormatValidate.validateMinimal(minimal, {
+  strict: false,        // if true, warn on missing inferred node types
+  checkCycles: true,    // detect directed cycles
+  allowNegativeWeights: true // if false, negative weights become errors
+});
+```
+
+Import with validation (throws if invalid):
+```js
+BeliefGraphFormat.importAnyGraph(cy, data, { validate: true });
+```
+
+Checks performed:
+- Required arrays (nodes, edges)
+- Unique node IDs
+- Edge endpoints reference existing nodes
+- Allowed node / edge types
+- Probability range 0..1
+- CPT numeric ranges 0..100
+- Weight range -1..1 (and negativity rule)
+- Notes isolated (no edges touching notes)
+- Duplicate source->target edge pairs (warning)
+- Directed cycle detection (error)
+
+Returns errors (blocking) and warnings (non-blocking) to aid AI self-audit.
+
 ## Developer Tools (optional)
 
-- Developer utilities live under `tests/dev-tools/` to keep the app root clean.
-  - `autonomous-bug-hunter.js` – automated in-browser checks for Heavy/Lite modes
-  - `json-compatibility-checker.js` – schema analysis and migration hints
-  - See `tests/dev-tools/index.html` for instructions and loader snippets.
+- Developer utilities live under `tests/dev-tools/` (no root stubs anymore).
+  - `autonomous-bug-hunter.js` – automated checks (inject via snippet in tools page)
+  - `json-compatibility-checker.js` – schema analysis & migration hints
+  - See `tests/dev-tools/index.html` for usage snippets.
 
-Minimal JSON converter “side project” artifacts are grouped in `tests/minimal-json/`:
+Minimal JSON converter prototype artifacts are grouped in `tests/minimal-json/` (prototype logic in `minimal-format-analysis.js`, core in `format-core.js`):
 - `test-ultra-minimal.json` – absolute-minimum example
 - `test-minimal.json` – richer example with visuals/logic
 - `test-minimal-converter.html` – interactive converter harness
+
+### Legacy Stub Files
+
+Remain only to avoid breaking stale references; inert and safe to delete later:
+
+- `autonomous-bug-hunter.js` (stub) – real tool: `tests/dev-tools/autonomous-bug-hunter.js`
+- `json-compatibility-checker.js` (stub) – real tool: `tests/dev-tools/json-compatibility-checker.js`
+
+Purpose: assist automated agents and contributors in ignoring obsolete entry points.

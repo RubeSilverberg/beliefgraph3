@@ -24,6 +24,7 @@
   <div class="test-section">
     <h2>2. Convert to Full Format</h2>
     <button onclick="convertToFull()">Convert to Full JSON</button>
+    <button onclick="validateMinimalNow()">Validate Minimal JSON</button>
     <div id="full-output" class="output"></div>
   </div>
   
@@ -45,6 +46,8 @@
     <div id="test-output" class="output"></div>
   </div>
 
+  <script src="../../format-core.js"></script>
+  <script src="../../validation.js"></script>
   <script src="../../minimal-format-analysis.js"></script>
   <script>
     let minimalData = null;
@@ -176,6 +179,20 @@
       
       // Open the main tool
       window.open('../../index.html', '_blank');
+    }
+
+    function validateMinimalNow(){
+      if(!minimalData){
+        document.getElementById('full-output').textContent = 'Please load minimal JSON first';
+        return;
+      }
+      if(!window.BeliefGraphFormatValidate){
+        document.getElementById('full-output').textContent = 'Validation module not loaded';
+        return;
+      }
+      const res = window.BeliefGraphFormatValidate.validateMinimal(minimalData, { checkCycles:true });
+      document.getElementById('full-output').textContent = 'Validation Result:\n' + JSON.stringify(res, null, 2);
+      console[res.valid? 'log':'warn']('[Validation]', res);
     }
   </script>
 </body>

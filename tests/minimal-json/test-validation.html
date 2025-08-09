@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Minimal Format Validation Tests</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    pre { background:#f5f5f5; padding:10px; white-space:pre-wrap; }
+    .case { border:1px solid #ccc; margin:15px 0; padding:10px; }
+    .valid { border-color:#4caf50; }
+    .invalid { border-color:#f44336; }
+  </style>
+</head>
+<body>
+  <h1>Validation Helper Smoke Tests</h1>
+  <p>This page exercises <code>validation.js</code> with a few crafted minimal graphs.</p>
+  <div id="results"></div>
+
+  <script src="../../validation.js"></script>
+  <script>
+    const cases = {
+      validSimple: {
+        nodes:[{id:'a', type:'fact'},{id:'b'}],
+        edges:[{source:'a', target:'b', type:'supports', weight:0.6}]
+      },
+      duplicateNodeIds: {
+        nodes:[{id:'x'},{id:'x'}],
+        edges:[]
+      },
+      badEdgeRef: {
+        nodes:[{id:'n1'}],
+        edges:[{source:'n1', target:'n2'}]
+      },
+      noteConnected: {
+        nodes:[{id:'note1', type:'note', description:'A note'},{id:'y'}],
+        edges:[{source:'note1', target:'y'}]
+      },
+      cycleGraph: {
+        nodes:[{id:'c1'},{id:'c2'}],
+        edges:[{source:'c1', target:'c2'},{source:'c2', target:'c1'}]
+      }
+    };
+
+    function render(){
+      const container = document.getElementById('results');
+      Object.entries(cases).forEach(([name, minimal])=>{
+        const res = BeliefGraphFormatValidate.validateMinimal(minimal, { checkCycles:true });
+        const div = document.createElement('div');
+        div.className = 'case ' + (res.valid ? 'valid':'invalid');
+        div.innerHTML = `<h3>${name}</h3>`+
+          `<strong>Status:</strong> ${res.valid? 'VALID':'INVALID'}<br/>`+
+          `<strong>Errors:</strong> ${res.errors.length? res.errors.join('<br/>'):'(none)'}<br/>`+
+          `<strong>Warnings:</strong> ${res.warnings.length? res.warnings.join('<br/>'):'(none)'}<br/>`+
+          `<details><summary>JSON</summary><pre>${JSON.stringify(minimal,null,2)}</pre></details>`;
+        container.appendChild(div);
+      });
+    }
+    render();
+  </script>
+</body>
+</html>

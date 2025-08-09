@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/beliefgraph/minimal-format.schema.json",
+  "title": "BeliefGraphMinimalFormat",
+  "type": "object",
+  "required": ["nodes", "edges"],
+  "properties": {
+    "version": { "type": ["string", "number"], "description": "Format version (e.g. '2')" },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": { "type": "string" },
+          "label": { "type": "string" },
+          "type": { "type": "string", "enum": ["fact", "assertion", "and", "or", "note" ] },
+          "description": { "type": "string" },
+          "prob": { "type": "number", "minimum": 0, "maximum": 1 },
+          "cpt": {
+            "type": "object",
+            "properties": {
+              "condTrue": { "type": "number", "minimum": 0, "maximum": 100 },
+              "condFalse": { "type": "number", "minimum": 0, "maximum": 100 },
+              "baseline": { "type": "number", "minimum": 0, "maximum": 100 },
+              "inverse": { "type": "boolean" }
+            },
+            "additionalProperties": false
+          },
+          "style": {
+            "type": "object",
+            "properties": {
+              "textColor": { "type": "string" },
+              "sizeIndex": { "type": "number", "minimum": 1, "maximum": 10 },
+              "floretColor": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source", "target"],
+        "properties": {
+          "id": { "type": "string" },
+          "source": { "type": "string" },
+          "target": { "type": "string" },
+          "type": { "type": "string", "enum": ["supports", "opposes"] },
+            "weight": { "type": "number", "minimum": -1, "maximum": 1 },
+          "rationale": { "type": "string" },
+          "cpt": {
+            "type": "object",
+            "properties": {
+              "condTrue": { "type": "number", "minimum": 0, "maximum": 100 },
+              "condFalse": { "type": "number", "minimum": 0, "maximum": 100 },
+              "baseline": { "type": "number", "minimum": 0, "maximum": 100 },
+              "inverse": { "type": "boolean" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "annotations": { "type": "array" },
+    "layout": {
+      "type": "object",
+      "properties": {
+        "positions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "x": { "type": "number" },
+              "y": { "type": "number" }
+            },
+            "required": ["x", "y"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
