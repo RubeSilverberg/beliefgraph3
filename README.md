@@ -51,11 +51,28 @@ Complete structure with all visual properties:
 ```json
 { 
   "id": "unique_id",
-  "label": "Display text",
+  "label": "Short label",
   "type": "fact"
 }
 ```
 (`"type"` needed only for `"fact"`, `"and"`, `"or"`, or `"note"`. Omit for normal assertions.)
+
+### Dual Node Text Fields
+
+Each node can carry two complementary textual forms:
+
+- `label`: 1–3 words (or a very short phrase) used for on-node display.
+- `description`: A full, self-contained sentence (ends with a period) used as hover text. It should restate or clarify the short label.
+
+Guidelines:
+- Keep `label` concise; avoid trailing punctuation.
+- Use `description` to add scope, qualifiers, or definitions.
+- Notes (`type: "note"`) typically use multi-line `description`.
+
+Example:
+```json
+{ "id": "dna1", "label": "DNA Match", "description": "Forensic testing found a high-confidence DNA match to the suspect." }
+```
 
 **Edges (minimum):**
 ```json
@@ -107,6 +124,8 @@ Complete structure with all visual properties:
 - `1.0` = Maximal influence
 
 **Required**: Edge `weight` must be specified for edges targeting assertion nodes. If omitted, converter assigns default minimal influence (0.15).
+**Polarity**: Prefer `type: "opposes"` over negative weights for clarity (negative weights still accepted if allowed).
+
 ## Optional Customizations
 
 **Node styling** (optional):
@@ -127,7 +146,32 @@ Complete structure with all visual properties:
   "source": "A", "target": "B",
   "type": "supports", 
   "weight": 0.6,
-  "rationale": "Explanation of this connection"
+  "contributingFactors": [
+    "Independent lab test",
+    "High sample quality",
+    "Chain-of-custody intact"
+  ],
+  "rationale": "(Optional) Longer narrative explanation if bullets insufficient"
+}
+```
+
+### Contributing Factors vs Rationale
+
+- `contributingFactors`: Preferred. Ordered array of short (≈3–7 word) phrases shown directly on hover. No periods; each is one distinct aspect.
+- `rationale`: Longer paragraph (legacy / deep dive). Provide only when necessary.
+
+Example edge:
+```json
+{
+  "source": "evidence1",
+  "target": "claim1",
+  "type": "supports",
+  "weight": 0.60,
+  "contributingFactors": [
+    "Consistent eyewitness reports",
+    "Timestamped video corroboration",
+    "No alibi contradictions"
+  ]
 }
 ```
 

@@ -36,6 +36,27 @@
         if(!allowNegativeWeights && e.weight<0) errors.push(`edges[${i}].weight negative not allowed`);
         if(e.weight < -1 || e.weight > 1) errors.push(`edges[${i}].weight must be -1..1`);
       }
+      // contributingFactors (optional array of short phrases)
+      if(e.contributingFactors !== undefined){
+        if(!Array.isArray(e.contributingFactors)){
+          errors.push(`edges[${i}].contributingFactors must be array if present`);
+        } else {
+          e.contributingFactors.forEach((f,fi)=>{
+            if(typeof f !== 'string') errors.push(`edges[${i}].contributingFactors[${fi}] must be string`);
+            else {
+              const trimmed=f.trim();
+              if(!trimmed) warnings.push(`edges[${i}].contributingFactors[${fi}] empty after trim`);
+              if(trimmed.length>80) warnings.push(`edges[${i}].contributingFactors[${fi}] unusually long (>80 chars)`);
+              if(/[.!?]$/.test(trimmed)) warnings.push(`edges[${i}].contributingFactors[${fi}] should not end with punctuation`);
+              if(/\s/.test(trimmed.charAt(0))){ /* already trimmed, ignore */ }
+              if(/\./.test(trimmed) && trimmed.split(/\./).length>2) warnings.push(`edges[${i}].contributingFactors[${fi}] appears to contain full sentence(s)`);
+            }
+          });
+          // duplicate detection
+          const seenCF=new Set();
+          e.contributingFactors.map(f=> (f||'').trim().toLowerCase()).forEach(cf=>{ if(cf && seenCF.has(cf)) warnings.push(`edges[${i}].contributingFactors contains duplicate phrase '${cf}'`); else if(cf) seenCF.add(cf); });
+        }
+      }
       if(e.cpt){ ['condTrue','condFalse','baseline'].forEach(k=>{ if(k in e.cpt && (typeof e.cpt[k] !=='number' || e.cpt[k]<0 || e.cpt[k]>100)) errors.push(`edges[${i}].cpt.${k} must be 0..100`); }); }
       const pair = `${e.source}->${e.target}`;
       if(edgePairs.has(pair)) warnings.push(`Duplicate edge pair ${pair}`); else edgePairs.add(pair);

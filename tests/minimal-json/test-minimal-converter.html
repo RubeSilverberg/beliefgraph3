@@ -103,7 +103,36 @@
         const obj = Function('return ( '+ src + ' )');
         return obj();
       } catch(e){
-        throw new Error('Could not parse as JSON or JS object literal');
+        // Fallback: detect separate var version/nodes/edges declarations
+        try {
+          const versionMatch = text.match(/var\s+version\s*=\s*(["'`])(.*?)\1/)
+                                 || text.match(/const\s+version\s*=\s*(["'`])(.*?)\1/)
+                                 || text.match(/let\s+version\s*=\s*(["'`])(.*?)\1/);
+        // Final fallback: try executing the whole snippet in an isolated function scope
+        try {
+          const wrapper = `return (function(){\n${text}\nreturn { version: (typeof version!=='undefined'?version:undefined), nodes: (typeof nodes!=='undefined'?nodes:[]), edges: (typeof edges!=='undefined'?edges:[]) };\n})();`;
+          const result = Function(wrapper)();
+          if(result && Array.isArray(result.nodes) && Array.isArray(result.edges)){
+            result.edges.forEach(e=>{ if(e && typeof e==='object'){ if(e.from && !e.source) e.source=e.from; if(e.to && !e.target) e.target=e.to; delete e.from; delete e.to; } });
+            return result;
+          }
+        } catch(execErr){ /* ignore; will throw generic error below */ }
+          const nodesMatch = text.match(/\b(var|let|const)\s+nodes\s*=\s*(\[[\s\S]*?\]);?/);
+          const edgesMatch = text.match(/\b(var|let|const)\s+edges\s*=\s*(\[[\s\S]*?\]);?/);
+          if(nodesMatch){
+            const nodesArr = Function('return ' + nodesMatch[2])();
+            const edgesArr = edgesMatch ? Function('return ' + edgesMatch[2])() : [];
+            const minimal = { version: versionMatch? versionMatch[2] : undefined, nodes: nodesArr, edges: edgesArr };
+            // Normalize edge field names (from/to -> source/target)
+            minimal.edges.forEach(e=>{
+              if(e.from && !e.source) e.source = e.from;
+              if(e.to && !e.target) e.target = e.to;
+              delete e.from; delete e.to;
+            });
+            return minimal;
+          }
+        } catch(fbErr){ /* swallow and throw generic error below */ }
+        throw new Error('Could not parse as JSON, JS object, or var nodes/edges snippet');
       }
     }
     function pasteClear(){

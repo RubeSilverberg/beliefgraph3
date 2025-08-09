@@ -15,7 +15,7 @@
           "id": { "type": "string" },
           "label": { "type": "string" },
           "type": { "type": "string", "enum": ["fact", "assertion", "and", "or", "note" ] },
-          "description": { "type": "string" },
+          "description": { "type": "string", "description": "Full sentence / long form of the node; short label stays in 'label'" },
           "prob": { "type": "number", "minimum": 0, "maximum": 1 },
           "cpt": {
             "type": "object",
@@ -51,7 +51,8 @@
           "target": { "type": "string" },
           "type": { "type": "string", "enum": ["supports", "opposes"] },
             "weight": { "type": "number", "minimum": -1, "maximum": 1 },
-          "rationale": { "type": "string" },
+          "rationale": { "type": "string", "description": "(Legacy / deep detail) Longer explanatory rationale; prefer contributingFactors for hover list" },
+          "contributingFactors": { "type": "array", "description": "Ordered list of short bullet factors shown on hover", "items": { "type": "string" } },
           "cpt": {
             "type": "object",
             "properties": {

@@ -49,15 +49,16 @@
     // Edge type and relationship
     type: { required: false, type: 'string', default: 'supports',
             allowed: ['supports', 'opposes'] },
-    relationship: { required: false, type: 'string', default: null },
+  relationship: { required: false, type: 'string', default: null },
     displayType: { required: false, type: 'string', default: null },
+  contributingFactors: { required: false, type: 'object', default: null }, // stored as array in minimal format; appears as data field (any value acceptable)
     
     // CPT (Conditional Probability Table) data
     cpt: {
       required: false, 
       type: 'object',
       default: null,
-      subfields: {
+  subfields: {
         condTrue: { required: false, type: 'number', default: null },
         condFalse: { required: false, type: 'number', default: null },
         baseline: { required: false, type: 'number', default: 50 },

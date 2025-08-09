@@ -5,8 +5,65 @@
   function nodeType(d){ const allowed=['fact','assertion','and','or','note']; return (d.type&&allowed.includes(d.type))?d.type:'assertion'; }
   function styleOut(d){ const s={}; if(d.textColor) s.textColor=d.textColor; if(d.sizeIndex&&d.sizeIndex!==3) s.sizeIndex=d.sizeIndex; if(d.floretColor) s.floretColor=d.floretColor; return Object.keys(s).length?s:undefined; }
   function pruneCpt(cpt){ if(!cpt) return; const {condTrue,condFalse,baseline,inverse}=cpt; const o={}; if(typeof condTrue==='number') o.condTrue=condTrue; if(typeof condFalse==='number') o.condFalse=condFalse; if(typeof baseline==='number') o.baseline=baseline; if(inverse===true) o.inverse=true; return Object.keys(o).length?o:undefined; }
-  function exportMinimalGraph(cy,{includePositions=true,version='2'}={}){ if(!cy) throw new Error('cy required'); const nodes=cy.nodes().map(n=>{const d=n.data(); const o={id:d.id,label:d.origLabel||d.label||d.id,type:nodeType(d)}; if(d.hoverLabel) o.description=d.hoverLabel; if(typeof d.prob==='number') o.prob=d.prob; if(d.cpt){const pc=pruneCpt(d.cpt); if(pc) o.cpt=pc;} const st=styleOut(d); if(st) o.style=st; return o;}); const edges=cy.edges().map(e=>{const d=e.data(); const w=d.userAssignedWeight??d.weight; const o={id:d.id,source:d.source,target:d.target,type:d.type||'supports'}; if(typeof w==='number') o.weight=w; if(d.rationale) o.rationale=d.rationale; if(d.cpt){const pc=pruneCpt(d.cpt); if(pc) o.cpt=pc;} return o;}); const out={version,nodes,edges}; const ann=global.textAnnotations?.exportAnnotations?.(); if(ann&&ann.length) out.annotations=ann; if(includePositions){const pos={}; cy.nodes().forEach(n=>{const p=n.position(); pos[n.id()]={x:p.x,y:p.y};}); out.layout={positions:pos};} return out; }
-  function normalizeFromElements(elements){ const nodes=[]; const edges=[]; (elements||[]).forEach(el=>{ if(!el||!el.data) return; if(el.group==='nodes'||(!el.data.source&&!el.data.target)){const d=el.data; const o={id:d.id,label:d.origLabel||d.label||d.id,type:nodeType(d)}; if(d.hoverLabel) o.description=d.hoverLabel; if(typeof d.prob==='number') o.prob=d.prob; if(d.cpt){const pc=pruneCpt(d.cpt); if(pc) o.cpt=pc;} const st=styleOut(d); if(st) o.style=st; nodes.push(o);} else { const d=el.data; const w=d.userAssignedWeight??d.weight; const o={id:d.id,source:d.source,target:d.target,type:d.type||'supports'}; if(typeof w==='number') o.weight=w; if(d.rationale) o.rationale=d.rationale; if(d.cpt){const pc=pruneCpt(d.cpt); if(pc) o.cpt=pc;} edges.push(o);} }); return {version:'2',nodes,edges}; }
+  function exportMinimalGraph(cy,{includePositions=true,version='2'}={}){
+    if(!cy) throw new Error('cy required');
+    const nodes=cy.nodes().map(n=>{
+      const d=n.data();
+      const o={id:d.id,label:d.origLabel||d.label||d.id,type:nodeType(d)};
+      if(d.hoverLabel) o.description=d.hoverLabel; // long sentence / full statement
+      if(typeof d.prob==='number') o.prob=d.prob;
+      if(d.cpt){const pc=pruneCpt(d.cpt); if(pc) o.cpt=pc;}
+      const st=styleOut(d); if(st) o.style=st;
+      return o;
+    });
+    const edges=cy.edges().map(e=>{
+      const d=e.data();
+      const w=d.userAssignedWeight??d.weight;
+      const o={id:d.id,source:d.source,target:d.target,type:d.type||'supports'};
+      if(typeof w==='number') o.weight=w;
+      if(d.rationale) o.rationale=d.rationale; // kept for backward compatibility / deep dive panel
+      if(d.contributingFactors && Array.isArray(d.contributingFactors) && d.contributingFactors.length){
+        // Store as trimmed unique factors (preserve order)
+        const seen=new Set();
+        o.contributingFactors=d.contributingFactors.map(f=> (f||'').trim()).filter(f=>{ if(!f||seen.has(f)) return false; seen.add(f); return true; });
+      }
+      if(d.cpt){const pc=pruneCpt(d.cpt); if(pc) o.cpt=pc;}
+      return o;
+    });
+    const out={version,nodes,edges};
+    const ann=global.textAnnotations?.exportAnnotations?.(); if(ann&&ann.length) out.annotations=ann;
+    if(includePositions){
+      const pos={};
+      cy.nodes().forEach(n=>{const p=n.position(); pos[n.id()]={x:p.x,y:p.y};});
+      out.layout={positions:pos};
+    }
+    return out;
+  }
+  function normalizeFromElements(elements){
+    const nodes=[]; const edges=[];
+    (elements||[]).forEach(el=>{
+      if(!el||!el.data) return;
+      if(el.group==='nodes'||(!el.data.source&&!el.data.target)){
+        const d=el.data; const o={id:d.id,label:d.origLabel||d.label||d.id,type:nodeType(d)};
+        if(d.hoverLabel) o.description=d.hoverLabel;
+        if(typeof d.prob==='number') o.prob=d.prob;
+        if(d.cpt){const pc=pruneCpt(d.cpt); if(pc) o.cpt=pc;}
+        const st=styleOut(d); if(st) o.style=st;
+        nodes.push(o);
+      } else {
+        const d=el.data; const w=d.userAssignedWeight??d.weight; const o={id:d.id,source:d.source,target:d.target,type:d.type||'supports'};
+        if(typeof w==='number') o.weight=w;
+        if(d.rationale) o.rationale=d.rationale;
+        if(d.contributingFactors && Array.isArray(d.contributingFactors) && d.contributingFactors.length){
+          const seen=new Set();
+            o.contributingFactors=d.contributingFactors.map(f=> (f||'').trim()).filter(f=>{ if(!f||seen.has(f)) return false; seen.add(f); return true; });
+        }
+        if(d.cpt){const pc=pruneCpt(d.cpt); if(pc) o.cpt=pc;}
+        edges.push(o);
+      }
+    });
+    return {version:'2',nodes,edges};
+  }
   function migrateGraphWrapper(json){ const m=normalizeFromElements(json.graph||[]); if(json.textAnnotations) m.annotations=json.textAnnotations; return m; }
   function migrateMinimalV1(json){ const c=JSON.parse(JSON.stringify(json)); c.version='2'; return c; }
   function normalizeAny(json){ const kind=detectFormat(json); switch(kind){ case 'elements': return normalizeFromElements(json); case 'graph-wrapper': return migrateGraphWrapper(json); case 'minimal': return json.version==='2'?json:migrateMinimalV1(json); default: throw new Error('Unrecognized format'); } }
@@ -109,7 +166,12 @@
     nodes.forEach((n,i)=>{ const angle = (2*Math.PI*i)/N; out[n.id]={ x: Math.round(radius*Math.cos(angle)), y: Math.round(radius*Math.sin(angle)) }; });
     return out;
   }
-  function expandToElements(minimal){ const els=[]; const fallbackPositions = generateFallbackPositions(minimal); minimal.nodes.forEach(n=>{ const d={id:n.id,label:n.label,origLabel:n.label,type:nodeType(n)}; if(n.description) d.hoverLabel=n.description; if(typeof n.prob==='number') d.prob=n.prob; if(n.cpt) d.cpt={...n.cpt}; if(n.style){ if(n.style.textColor) d.textColor=n.style.textColor; if(n.style.sizeIndex) d.sizeIndex=n.style.sizeIndex; if(n.style.floretColor) d.floretColor=n.style.floretColor; } const position = (minimal.layout?.positions?.[n.id]) || n.position || (fallbackPositions && fallbackPositions[n.id]); els.push({group:'nodes',data:d,position}); }); minimal.edges.forEach(e=>{ const d={id:e.id,source:e.source,target:e.target,type:e.type||'supports'}; if(typeof e.weight==='number'){ d.weight=e.weight; d.userAssignedWeight=e.weight; } if(e.rationale) d.rationale=e.rationale; if(e.cpt) d.cpt={...e.cpt}; els.push({group:'edges',data:d}); }); return els; }
+  function expandToElements(minimal){
+    const els=[]; const fallbackPositions = generateFallbackPositions(minimal);
+    minimal.nodes.forEach(n=>{ const d={id:n.id,label:n.label,origLabel:n.label,type:nodeType(n)}; if(n.description) d.hoverLabel=n.description; if(typeof n.prob==='number') d.prob=n.prob; if(n.cpt) d.cpt={...n.cpt}; if(n.style){ if(n.style.textColor) d.textColor=n.style.textColor; if(n.style.sizeIndex) d.sizeIndex=n.style.sizeIndex; if(n.style.floretColor) d.floretColor=n.style.floretColor; } const position = (minimal.layout?.positions?.[n.id]) || n.position || (fallbackPositions && fallbackPositions[n.id]); els.push({group:'nodes',data:d,position}); });
+    minimal.edges.forEach(e=>{ const d={id:e.id,source:e.source,target:e.target,type:e.type||'supports'}; if(typeof e.weight==='number'){ d.weight=e.weight; d.userAssignedWeight=e.weight; } if(e.rationale) d.rationale=e.rationale; if(e.contributingFactors && Array.isArray(e.contributingFactors) && e.contributingFactors.length){ d.contributingFactors=[...e.contributingFactors]; } if(e.cpt) d.cpt={...e.cpt}; els.push({group:'edges',data:d}); });
+    return els;
+  }
   global.BeliefGraphFormatCore={detectFormat,exportMinimalGraph,normalizeAny,expandToElements};
 })(typeof window!=='undefined'?window:globalThis);
 
