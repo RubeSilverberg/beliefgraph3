@@ -722,17 +722,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Set initial arrow directions based on current mode (default is lite)
   flipArrowDirections(mode);
 
-  // Initialize edgehandles extension
-  try {
-    const edgehandles = setupEdgeHandles(cy);
-    if (edgehandles) {
-      console.log('✅ Edgehandles extension loaded successfully');
-      // Store reference for mode switching
-      window.edgehandles = edgehandles;
-    }
-  } catch (error) {
-    console.warn('⚠️ Edgehandles extension failed to load:', error);
-  }
+  // (Legacy) cytoscape-edgehandles extension call removed – replaced by custom-edge-handles.js implementation.
+  // If reintroducing the original extension later, insert its setup call here guarded by a feature flag.
 
   // Ensure right-click suppression on the Cytoscape canvas (for browsers that don't respect document-level handler)
   setTimeout(() => {
