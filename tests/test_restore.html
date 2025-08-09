@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<title>Belief Graph – Restore / Autosave Test</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<style>
+		body { font-family: Arial, sans-serif; margin:24px; line-height:1.5; }
+		.banner { background:#ffe9b3; padding:10px 14px; border:1px solid #d8b75c; font:14px/1.45 Arial, sans-serif; margin-bottom:20px; border-radius:4px; }
+		.section { border:1px solid #ddd; padding:16px 18px; border-radius:6px; margin:22px 0; background:#f9f9f9; }
+		button { padding:8px 14px; margin:4px 8px 4px 0; }
+		code { background:#f4f4f4; padding:2px 5px; border-radius:3px; }
+		pre { background:#272822; color:#eee; padding:12px; border-radius:6px; overflow:auto; }
+	</style>
+</head>
+<body>
+	<div class="banner">
+		<strong>Restore Test Page:</strong> Focused environment to inspect autosave / restore behavior (localStorage) separate from the main application. Not the main app. Use it to create synthetic saves, view stored keys, and verify restore logic before integrating.
+	</div>
+	<h1>💾 Autosave & Restore Test</h1>
+	<p>This sandbox helps verify how graph state is stored & restored. Open the main app (<code>../index.html</code>) in another tab to compare behavior.</p>
+
+	<div class="section">
+		<h2>LocalStorage Keys</h2>
+		<p>Scan for keys related to belief graph (heuristic substring <code>graph</code> or <code>belief</code>).</p>
+		<button onclick="scanKeys()">Scan Keys</button>
+		<button onclick="clearDetected()">Clear Detected Keys</button>
+		<pre id="keys">(no scan yet)</pre>
+	</div>
+
+	<div class="section">
+		<h2>Create Synthetic Save</h2>
+		<p>Stores a mock graph payload under <code>testGraphData</code> for the main app to consume.</p>
+		<button onclick="storeMock()">Store Mock Graph</button>
+		<button onclick="openMain()">Open Main App (New Tab)</button>
+		<pre id="mockStatus">Idle.</pre>
+	</div>
+
+	<div class="section">
+		<h2>Manual JSON Entry</h2>
+		<p>Paste JSON, choose a key, and save.</p>
+		<input id="manualKey" value="customGraph" style="width:220px;"/> 
+		<button onclick="saveManual()">Save JSON</button>
+		<br/><br/>
+		<textarea id="manualJson" style="width:100%;min-height:140px;">{"graph":[],"meta":{"note":"example"}}</textarea>
+		<pre id="manualStatus">Waiting.</pre>
+	</div>
+
+	<div class="section">
+		<h2>Usage Notes</h2>
+		<ul>
+			<li>Main app loads autosave / restore keys at launch (implementation-specific).</li>
+			<li>Use DevTools Application tab to inspect <code>localStorage</code>.</li>
+			<li>This page never autoloads or mutates keys unless you click an action.</li>
+		</ul>
+	</div>
+
+	<script>
+		function scanKeys(){
+			const out=[];
+			for(let i=0;i<localStorage.length;i++){
+				const k=localStorage.key(i);
+				if(/graph|belief/i.test(k)){
+					try { out.push(k+': '+ localStorage.getItem(k).slice(0,200)); }
+					catch(e){ out.push(k+': <error reading>'); }
+				}
+			}
+			document.getElementById('keys').textContent = out.length? out.join('\n\n') : '(none found)';
+		}
+		function clearDetected(){
+			const removed=[];
+			for(let i=0;i<localStorage.length;i++){
+				const k=localStorage.key(i);
+				if(/graph|belief/i.test(k)) removed.push(k);
+			}
+			removed.forEach(k=>localStorage.removeItem(k));
+			document.getElementById('keys').textContent = 'Removed: '+ (removed.join(', ')||'(none)');
+		}
+		function storeMock(){
+			const mock={
+				graph:[{group:'nodes', data:{id:'n1', label:'Mock Node'}}],
+				meta:{ saved:new Date().toISOString(), via:'test_restore.html' }
+			};
+			localStorage.setItem('testGraphData', JSON.stringify(mock));
+			document.getElementById('mockStatus').textContent='Stored mock graph under key testGraphData';
+		}
+		function openMain(){ window.open('../index.html','_blank'); }
+		function saveManual(){
+			const key = document.getElementById('manualKey').value.trim();
+			const txt = document.getElementById('manualJson').value;
+			try {
+				const parsed = JSON.parse(txt);
+				localStorage.setItem(key, JSON.stringify(parsed));
+				document.getElementById('manualStatus').textContent = 'Saved JSON under key '+key;
+			} catch(e){
+				document.getElementById('manualStatus').textContent = 'Error: '+ e.message;
+			}
+		}
+	</script>
+</body>
+</html>

@@ -545,6 +545,8 @@ document.addEventListener('DOMContentLoaded', () => {
     layout: { name: 'preset' }
   });
 
+  // (Auto-import of testGraphData removed per user request to prevent unintended data loss)
+
   // Double-click node to edit label
   cy.on('dblclick', 'node', function(event) {
     const node = event.target;

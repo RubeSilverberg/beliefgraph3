@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<title>Belief Graph – Quick Test Sandbox</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<style>
+		body { font-family: Arial, sans-serif; margin:20px; }
+		.banner { background:#ffe9b3; padding:10px 14px; border:1px solid #d8b75c; font:14px/1.45 Arial, sans-serif; margin-bottom:18px; border-radius:4px; }
+		h1 { margin-top:0; }
+		textarea { width:100%; min-height:160px; font-family: monospace; }
+		.section { border:1px solid #ddd; padding:14px 16px; border-radius:6px; margin:20px 0; background:#f9f9f9; }
+		button { padding:8px 14px; margin:4px 6px 4px 0; }
+		pre { background:#f5f5f5; padding:10px; border-radius:4px; overflow:auto; }
+	</style>
+</head>
+<body>
+	<div class="banner">
+		<strong>Quick Test Sandbox:</strong> Ephemeral scratch page for rapid experiments while developing. Not the main application UI. Load scripts, run one-off code, inspect outputs without polluting other test pages.
+	</div>
+	<h1>⚡ Quick Test Sandbox</h1>
+	<p>Use this page to manually load core modules and try ideas in the console. Open DevTools (F12) and work there. Nothing here is persisted.</p>
+
+	<div class="section">
+		<h2>Load Core Modules</h2>
+		<p>Click to inject commonly used modules. You can edit after load.</p>
+		<button onclick="loadCore()">Load Core (format + validation)</button>
+		<button onclick="loadAll()">Load Extended (core + annotations)</button>
+		<pre id="status">Idle.</pre>
+	</div>
+
+	<div class="section">
+		<h2>Ad‑Hoc Script Runner</h2>
+		<p>Type JS below and Run – executes in page context (same as console).</p>
+		<textarea id="code">// Example: try minimal conversion if you loaded core
+// if(window.createFullJsonFromMinimalInput){
+//   console.log('Convert demo', createFullJsonFromMinimalInput({nodes:[{id:'a'}],edges:[]}));
+// }</textarea>
+		<br/>
+		<button onclick="runSnippet()">Run Snippet</button>
+		<pre id="output"></pre>
+	</div>
+
+	<div class="section">
+		<h2>Tips</h2>
+		<ul>
+			<li>Main app: <code>../index.html</code></li>
+			<li>Test hub: <code>./index.html</code></li>
+			<li>Clear sandbox state: refresh page</li>
+		</ul>
+	</div>
+
+	<script>
+		function append(msg){
+			const s = document.getElementById('status');
+			s.textContent += (s.textContent? '\n':'') + msg;
+		}
+		function loadScript(src){
+			return new Promise((res, rej)=>{
+				const s = document.createElement('script');
+				s.src = src; s.onload=()=>res(src); s.onerror=()=>rej(new Error('Failed '+src));
+				document.head.appendChild(s);
+			});
+		}
+		async function loadCore(){
+			document.getElementById('status').textContent = 'Loading core modules...';
+			try {
+				await loadScript('../format-core.js');
+				await loadScript('../validation.js');
+				append('Core modules loaded.');
+			} catch(e){ append('Error: '+ e.message); }
+		}
+		async function loadAll(){
+			document.getElementById('status').textContent = 'Loading extended set...';
+			try {
+				await loadCore();
+				await loadScript('../text-annotations.js');
+				append('Annotations module loaded.');
+			} catch(e){ append('Error: '+ e.message); }
+		}
+		function runSnippet(){
+			const code = document.getElementById('code').value;
+			const out = document.getElementById('output');
+			try {
+				const result = (0, eval)(code); // indirect eval (global scope)
+				out.textContent = 'Result: ' + (typeof result === 'undefined' ? '(undefined)' : JSON.stringify(result, null, 2));
+			} catch(err){
+				out.textContent = 'Error: ' + err.message;
+			}
+		}
+	</script>
+</body>
+</html>

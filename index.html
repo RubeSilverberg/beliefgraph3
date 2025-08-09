@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Belief Graph</title>
+  <meta name="page-id" content="main-app" />
   <!-- Link to your stylesheet -->
   <link rel="stylesheet" href="style.css" />
 
@@ -10,6 +11,35 @@
   <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
 </head>
 <body>
+  <!-- Page identity / fallback detector -->
+  <script>
+    (function(){
+      const pid = document.querySelector('meta[name="page-id"]').content;
+      // Warn if this content is being served for a different expected tool page (likely dev server fallback)
+      const p = location.pathname;
+      if(pid === 'main-app' && /test-minimal-converter\.html$/.test(p)){
+        const warn = document.createElement('div');
+        warn.style = 'background:#ffdddd;padding:10px 14px;border:2px solid #cc4444;font:14px/1.4 Arial,sans-serif;margin:0 0 10px 0;';
+        warn.innerHTML = '<strong>Warning:</strong> You requested <code>'+p+'</code> but received the main application content. This indicates a dev-server fallback (404 -> index.html).<br/>'+
+          'Check the file name spelling (<code>tests/minimal-json/test-minimal-converter.html</code>) or disable history API fallback in Live Server settings.';
+        document.body.prepend(warn);
+        console.warn('[BeliefGraph] Fallback detected: expected converter page, got main app.');
+      }
+      // Hash-based helper redirect: visiting /#converter jumps to converter page
+      if(pid === 'main-app' && (location.hash === '#converter' || location.search.includes('page=converter'))){
+        console.log('[BeliefGraph] Redirecting to minimal converter page via hash/query helper');
+        location.href = '/tests/minimal-json/test-minimal-converter.html';
+        return;
+      }
+      window.BELIEFGRAPH_PAGE_ID = pid;
+      console.log('[BeliefGraph] Page ID:', pid, 'Path:', p);
+      // Console helper command (no UI button)
+      window.openMinimalConverter = function(){
+        window.open('tests/minimal-json/test-minimal-converter.html','_blank');
+      };
+      console.log('[BeliefGraph] Console helper available: openMinimalConverter()');
+    })();
+  </script>
   <!-- Cytoscape Canvas -->
   <div id="cy" style="width: 100vw; height: 100vh;"></div>
 

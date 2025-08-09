@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Minimal JSON Test</title>
+  <meta name="page-id" content="minimal-converter" />
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
@@ -11,10 +12,33 @@
   </style>
 </head>
 <body>
+  <script>
+    (function(){
+      const pidEl = document.querySelector('meta[name="page-id"]');
+      const pid = pidEl ? pidEl.content : '(missing)';
+      window.BELIEFGRAPH_PAGE_ID = pid;
+      console.log('[BeliefGraph] Converter page loaded. Page ID:', pid, 'Path:', location.pathname);
+      // If somehow main app assets leak in, we could detect known main-only element
+      if(pid === 'minimal-converter' && document.getElementById('cy')){
+        console.warn('[BeliefGraph] Unexpected main app canvas detected inside converter page.');
+      }
+    })();
+  </script>
   <div style="background:#ffe9b3;padding:8px 12px;border:1px solid #d8b75c;font:14px/1.4 Arial, sans-serif;margin-bottom:12px;border-radius:4px;">
     <strong>Playground:</strong> This is a test / conversion sandbox (not the main app). Use it to load, validate, and convert minimal JSON before opening <code>../index.html</code>.
   </div>
   <h1>Minimal JSON Format Test</h1>
+  <div class="test-section" style="border:2px solid #9c7e39;background:#fff9ea;">
+    <h2>0. Paste Minimal JSON (Quick Converter)</h2>
+    <textarea id="paste-input" style="width:100%;min-height:140px;font-family:monospace;font-size:13px;padding:8px;box-sizing:border-box;" placeholder='{"nodes":[{"id":"a"},{"id":"b"}],"edges":[{"source":"a","target":"b"}]}'></textarea>
+    <div style="margin-top:8px;">
+      <button onclick="pasteConvertDownload()">Convert & Download graph.json</button>
+      <button onclick="pasteConvertOpen()">Open In Main App (new tab)</button>
+      <button onclick="pasteClear()">Clear</button>
+      <span id="paste-status" style="margin-left:10px;font-size:12px;color:#555;"></span>
+    </div>
+    <p style="font-size:12px;margin-top:6px;line-height:1.3;">Steps: Paste minimal JSON above. Click Convert & Download to get a file you can load in the main tool. Or click Open In Main App to auto-store it and open the app.</p>
+  </div>
   
   <div class="test-section">
     <h2>1. Load Minimal JSON File</h2>
@@ -55,6 +79,76 @@
   <script>
     let minimalData = null;
     let fullData = null;
+    function parseLooseMinimal(text){
+      let src = text.trim();
+      if(!src) throw new Error('Empty input');
+      // Strip BOM
+      src = src.replace(/^\uFEFF/, '');
+      // Remove leading const/let/var name =
+      src = src.replace(/^(?:const|let|var)\s+[a-zA-Z0-9_$]+\s*=\s*/, '');
+      // Remove trailing exports like module.exports =
+      src = src.replace(/^module\.exports\s*=\s*/, '');
+      // Remove trailing semicolon
+      src = src.replace(/;\s*$/, '');
+      // Remove // comments
+      src = src.replace(/(^|[^:])\/\/.*$/gm, '$1');
+      // Remove /* */ comments
+      src = src.replace(/\/\*[\s\S]*?\*\//g, '');
+      const tryJson = src;
+      try { return JSON.parse(tryJson); } catch(_e) {}
+      // If looks like object literal without quotes on keys or single quotes, attempt JS eval
+      try {
+        // Wrap in parentheses so object literals parse
+        // eslint-disable-next-line no-new-func
+        const obj = Function('return ( '+ src + ' )');
+        return obj();
+      } catch(e){
+        throw new Error('Could not parse as JSON or JS object literal');
+      }
+    }
+    function pasteClear(){
+      document.getElementById('paste-input').value='';
+      document.getElementById('paste-status').textContent='';
+    }
+    function pasteConvertDownload(){
+      const status = document.getElementById('paste-status');
+      try {
+        const txt = document.getElementById('paste-input').value.trim();
+        if(!txt){ status.textContent='(Nothing pasted)'; return; }
+  let minimal;
+  try { minimal = JSON.parse(txt); }
+  catch(_e){ minimal = parseLooseMinimal(txt); }
+        const full = window.createFullJsonFromMinimalInput(minimal);
+        const blob = new Blob([JSON.stringify(full.graph, null, 2)], {type:'application/json'});
+        const a=document.createElement('a');
+        a.href=URL.createObjectURL(blob);
+        a.download='graph.json';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+        status.textContent='Downloaded graph.json';
+      } catch(e){
+        console.error(e);
+        status.textContent='Error: '+ e.message;
+      }
+    }
+    function pasteConvertOpen(){
+      const status = document.getElementById('paste-status');
+      try {
+        const txt = document.getElementById('paste-input').value.trim();
+        if(!txt){ status.textContent='(Nothing pasted)'; return; }
+  let minimal;
+  try { minimal = JSON.parse(txt); }
+  catch(_e){ minimal = parseLooseMinimal(txt); }
+        const full = window.createFullJsonFromMinimalInput(minimal);
+        // Store in localStorage using existing key expectation
+        localStorage.setItem('testGraphData', JSON.stringify({ graph: full.graph, textAnnotations: [] }));
+        status.textContent='Stored + opening main app...';
+        window.open('../../index.html', '_blank');
+      } catch(e){
+        console.error(e);
+        status.textContent='Error: '+ e.message;
+      }
+    }
     
     async function loadMinimalJson() {
       try {
@@ -175,7 +269,7 @@
       }
       
       // Save the full data to localStorage so the main tool can load it
-      localStorage.setItem('testGraphData', JSON.stringify(fullData));
+  localStorage.setItem('testGraphData', JSON.stringify({ graph: fullData.graph, textAnnotations: [] }));
       document.getElementById('test-output').textContent = 
         'Full JSON saved to localStorage as "testGraphData"\n' +
         'You can now open the main tool and load this data';
