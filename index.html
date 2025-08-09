@@ -28,7 +28,8 @@
       // Hash-based helper redirect: visiting /#converter jumps to converter page
       if(pid === 'main-app' && (location.hash === '#converter' || location.search.includes('page=converter'))){
         console.log('[BeliefGraph] Redirecting to minimal converter page via hash/query helper');
-        location.href = '/tests/minimal-json/test-minimal-converter.html';
+        // Use relative path (no leading slash) so it works on GitHub Pages subpath
+        location.href = 'tests/minimal-json/test-minimal-converter.html';
         return;
       }
       window.BELIEFGRAPH_PAGE_ID = pid;
