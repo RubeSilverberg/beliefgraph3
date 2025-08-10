@@ -3,7 +3,7 @@
 export const EXAMPLE_GRAPHS = [
   {
     name: "Investigative Example",
-    description: "Credibility focused forensic investigation, lite mode",
+    description: "Credibility focused forensic investigation, lite and heavy mode",
     filename: "investigative-example.json"
   },
   {
