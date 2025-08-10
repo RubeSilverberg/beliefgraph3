@@ -1,0 +1,765 @@
+{
+  "graph": [
+    {
+      "data": {
+        "id": "assertion1754503976506",
+        "label": "Smells sour",
+        "origLabel": "New Fact",
+        "type": "fact",
+        "width": 60,
+        "height": 52,
+        "prob": 0.995,
+        "heavyProb": 1,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "displayLabel": "Smells sour",
+        "hoverLabel": "The milk smells a bit off.",
+        "sizeIndex": 3,
+        "fontSize": 14,
+        "textMaxWidth": 52
+      },
+      "position": {
+        "x": 583.8530497728694,
+        "y": -8.99221252223949
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "assertion1754503977858",
+        "label": "Milk spoiled\n42%",
+        "origLabel": "New Fact",
+        "type": "assertion",
+        "width": 63,
+        "height": 52,
+        "prob": 0.41719951161520447,
+        "heavyProb": 1,
+        "textColor": "#000",
+        "borderWidth": 7,
+        "borderColor": "rgb(146,146,146)",
+        "shape": "roundrectangle",
+        "displayLabel": "Milk spoiled",
+        "hoverLabel": "The milk is spoiled.",
+        "sizeIndex": 3,
+        "fontSize": 14,
+        "textMaxWidth": 55,
+        "robustness": 0.7274682069659874,
+        "robustnessLabel": "High"
+      },
+      "position": {
+        "x": 463.90526709460727,
+        "y": 106.86083725062991
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "assertion1754504077333",
+        "label": "Expiration date",
+        "origLabel": "New Fact",
+        "type": "fact",
+        "width": 78,
+        "height": 52,
+        "prob": 0.995,
+        "heavyProb": 1,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "displayLabel": "Expiration date",
+        "hoverLabel": "The milk doesn't expire for over a week.",
+        "sizeIndex": 3,
+        "fontSize": 14,
+        "textMaxWidth": 70,
+        "robustness": 0.29531191028128656,
+        "robustnessLabel": "Low"
+      },
+      "position": {
+        "x": 468.2493401738142,
+        "y": -42.06645270301571
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "assertion1754504262338",
+        "label": "Husband is fine",
+        "origLabel": "New Fact",
+        "type": "fact",
+        "width": 78,
+        "height": 52,
+        "prob": 0.995,
+        "heavyProb": 1,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "displayLabel": "Husband is fine",
+        "hoverLabel": "My husband drank a full glass earlier and he is fine.",
+        "sizeIndex": 3,
+        "fontSize": 14,
+        "textMaxWidth": 70
+      },
+      "position": {
+        "x": 639.5389106905862,
+        "y": 115.69993580067036
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "assertion1754504262338",
+        "target": "assertion1754503977858",
+        "rationale": "",
+        "weight": 0.35,
+        "type": "opposes",
+        "id": "cf27bcd1-dff2-445b-b5be-2c361b5bdec2",
+        "computedWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "absWeight": 0.35,
+        "displayType": "opposes",
+        "label": "",
+        "userAssignedWeight": 0.35,
+        "opposes": true
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "assertion1754503976506",
+        "target": "assertion1754503977858",
+        "rationale": "",
+        "id": "7c9378c7-2868-4f40-a5a7-0e327a7c355f",
+        "lineColor": "rgb(116,116,116)",
+        "absWeight": 0.6,
+        "displayType": "supports",
+        "label": "",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "type": "supports",
+        "computedWeight": 0.6
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "assertion1754504077333",
+        "target": "assertion1754503977858",
+        "rationale": "",
+        "weight": 0.35,
+        "type": "opposes",
+        "id": "7170fe18-fb57-41d0-9b28-d3fa33f97c8d",
+        "computedWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "absWeight": 0.35,
+        "displayType": "opposes",
+        "label": "",
+        "userAssignedWeight": 0.35,
+        "opposes": true,
+        "contributingFactors": [
+          "It might have been left out for a few hours."
+        ]
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "node1754853643255",
+        "origLabel": "New Fact",
+        "label": "out of cereal\n22%",
+        "type": "assertion",
+        "width": 68,
+        "height": 52,
+        "prob": 0.22374765730019838,
+        "robustness": 0.4511883639059735,
+        "robustnessLabel": "Moderate",
+        "heavyProb": 1,
+        "textColor": "#000",
+        "borderWidth": 5,
+        "borderColor": "rgb(181,181,181)",
+        "shape": "roundrectangle",
+        "displayLabel": "out of cereal",
+        "hoverLabel": "",
+        "sizeIndex": 3,
+        "fontSize": 14,
+        "textMaxWidth": 60
+      },
+      "position": {
+        "x": 133.61894139295427,
+        "y": 83.30171981263265
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "assertion1754853969397",
+        "label": "Travel pack",
+        "origLabel": "New Fact",
+        "type": "fact",
+        "width": 60,
+        "height": 52,
+        "prob": 0.995,
+        "heavyProb": 1,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "displayLabel": "Travel pack",
+        "hoverLabel": "I think I have a travel pack of Fruit Loops somewhere.",
+        "sizeIndex": 3,
+        "fontSize": 14,
+        "textMaxWidth": 52
+      },
+      "position": {
+        "x": 66.19510926737237,
+        "y": -50.548091832229986
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "assertion1754853969397",
+        "target": "node1754853643255",
+        "rationale": "",
+        "id": "411ce45b-9d40-4cbf-941e-cdba7ca3c9db",
+        "lineColor": "rgb(116,116,116)",
+        "absWeight": 0.6,
+        "displayType": "opposes",
+        "label": "",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "opposes": true,
+        "type": "opposes",
+        "computedWeight": 0.6
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "node1754854171698",
+        "origLabel": "Logic node",
+        "type": "or",
+        "prob": 0.5475997555647141,
+        "textColor": "#000",
+        "hoverLabel": "Logic node",
+        "label": "OR\n55%",
+        "borderWidth": 3,
+        "borderColor": "#bbb",
+        "shape": "ellipse"
+      },
+      "position": {
+        "x": 310.24880459063706,
+        "y": 155.93790577467195
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "node1754853643255",
+        "target": "node1754854171698",
+        "rationale": "",
+        "type": "supports",
+        "id": "377dcb55-9fdc-4bbf-92a7-bad706dbe377",
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": "22%"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "assertion1754503977858",
+        "target": "node1754854171698",
+        "rationale": "",
+        "type": "supports",
+        "id": "6570e05b-69a0-495e-a271-78eaddc706a2",
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": "42%"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "assertion1754854314899",
+        "label": "No alternative\n17%",
+        "origLabel": "New Fact",
+        "type": "assertion",
+        "width": 94,
+        "height": 67,
+        "prob": 0.16530479743012352,
+        "heavyProb": 1,
+        "textColor": "#000",
+        "borderWidth": 5,
+        "borderColor": "rgb(174,174,174)",
+        "shape": "roundrectangle",
+        "displayLabel": "No alternative",
+        "hoverLabel": "I'm going to want a bowl of cereal.",
+        "sizeIndex": 7,
+        "fontSize": 18,
+        "textMaxWidth": 86,
+        "robustness": 0.5034146962085905,
+        "robustnessLabel": "Moderate"
+      },
+      "position": {
+        "x": -82.28491271884955,
+        "y": 239.44906973066995
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "node1754854350527",
+        "origLabel": "Logic node",
+        "type": "and",
+        "prob": 0.09052086666641021,
+        "textColor": "#000",
+        "hoverLabel": "Logic node",
+        "label": "AND\n9%",
+        "borderWidth": 3,
+        "borderColor": "#bbb",
+        "shape": "diamond"
+      },
+      "position": {
+        "x": 35.59718505440987,
+        "y": 401.5033436068844
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "node1754854500865",
+        "origLabel": "New Fact",
+        "label": "Oatmeal",
+        "type": "fact",
+        "width": 60,
+        "height": 52,
+        "prob": 0.995,
+        "heavyProb": 1,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "displayLabel": "Oatmeal",
+        "hoverLabel": "There might be some oatmeal sitting around.",
+        "sizeIndex": 3,
+        "fontSize": 14,
+        "textMaxWidth": 52
+      },
+      "position": {
+        "x": -276.8986415744571,
+        "y": 148.82154574415364
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "node1754854500865",
+        "target": "assertion1754854314899",
+        "rationale": "",
+        "id": "32022fcc-457d-4f79-b66a-8366a88d4791",
+        "lineColor": "rgb(161,161,161)",
+        "absWeight": 0.35,
+        "displayType": "opposes",
+        "label": "",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "opposes": true,
+        "type": "opposes",
+        "computedWeight": 0.35
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "assertion1754854314899",
+        "target": "node1754854350527",
+        "rationale": "",
+        "type": "supports",
+        "id": "7791e967-0fa7-4653-ba8f-9d910c796af1",
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": "17%"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "node1754854350527",
+        "target": "assertion1754854586355",
+        "rationale": "",
+        "id": "5ef25104-2715-455d-a02d-0798772a1d20",
+        "lineColor": "rgb(44,44,44)",
+        "absWeight": 1,
+        "displayType": "supports",
+        "label": "",
+        "weight": 1,
+        "userAssignedWeight": 1,
+        "type": "supports",
+        "computedWeight": 1
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "assertion1754854586355",
+        "label": "No breakfast\n9%",
+        "origLabel": "New Belief",
+        "type": "assertion",
+        "width": 120,
+        "height": 100,
+        "prob": 0.09052086666641021,
+        "heavyProb": 1,
+        "textColor": "#000",
+        "borderWidth": 2,
+        "borderColor": "rgb(238,238,238)",
+        "shape": "roundrectangle",
+        "robustness": 0,
+        "robustnessLabel": "Minimal",
+        "displayLabel": "No breakfast",
+        "hoverLabel": "Need to stop at store if I want breakfast tomorrow.",
+        "sizeIndex": 15,
+        "fontSize": 27,
+        "textMaxWidth": 112
+      },
+      "position": {
+        "x": 31.399138660518474,
+        "y": 575.0862484414523
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "node1754854779702",
+        "origLabel": "New Fact",
+        "label": "No milk or no cereal\n55%",
+        "type": "assertion",
+        "width": 126,
+        "height": 63,
+        "prob": 0.5475997555647141,
+        "robustness": 0,
+        "robustnessLabel": "Minimal",
+        "heavyProb": 1,
+        "textColor": "#000",
+        "borderWidth": 2,
+        "borderColor": "rgb(238,238,238)",
+        "shape": "roundrectangle",
+        "displayLabel": "No milk or no cereal",
+        "hoverLabel": "",
+        "sizeIndex": 6,
+        "fontSize": 17,
+        "textMaxWidth": 118
+      },
+      "position": {
+        "x": 152.96130711878482,
+        "y": 250.68593437938029
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "node1754854171698",
+        "target": "node1754854779702",
+        "rationale": "",
+        "id": "2d79a683-c7c7-4e03-bfca-9b0bbd629983",
+        "lineColor": "rgb(44,44,44)",
+        "absWeight": 1,
+        "displayType": "supports",
+        "label": "",
+        "weight": 1,
+        "userAssignedWeight": 1,
+        "type": "supports",
+        "computedWeight": 1
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "node1754854779702",
+        "target": "node1754854350527",
+        "rationale": "",
+        "type": "supports",
+        "id": "5a91be8f-a188-4e82-bfef-a8028a2517d1",
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": "55%"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "assertion1754855055686",
+        "label": "Pop tarts",
+        "origLabel": "New Fact",
+        "type": "fact",
+        "width": 60,
+        "height": 52,
+        "prob": 0.995,
+        "heavyProb": 1,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "displayLabel": "Pop tarts",
+        "hoverLabel": "I might have some pop-tarts somewhere.",
+        "sizeIndex": 3,
+        "fontSize": 14,
+        "textMaxWidth": 52
+      },
+      "position": {
+        "x": -161.11234345081778,
+        "y": 74.74789131127669
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "assertion1754855055686",
+        "target": "assertion1754854314899",
+        "rationale": "",
+        "weight": 0.35,
+        "type": "opposes",
+        "id": "21186943-6b5e-4928-9ed6-269c6bc45c81",
+        "computedWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "absWeight": 0.35,
+        "displayType": "opposes",
+        "label": "",
+        "userAssignedWeight": 0.35,
+        "opposes": true
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    }
+  ],
+  "textAnnotations": [],
+  "version": "1.0"
+}

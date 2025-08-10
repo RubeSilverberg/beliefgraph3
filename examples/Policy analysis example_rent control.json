@@ -1,0 +1,1637 @@
+{
+  "graph": [
+    {
+      "data": {
+        "id": "n1",
+        "label": "Expand Rent Control\n26%",
+        "origLabel": "Expand Rent Control",
+        "type": "assertion",
+        "hoverLabel": "The city should expand rent control coverage and tighten rent caps.",
+        "prob": 0.2554922844383174,
+        "textColor": "#000",
+        "robustness": 0.9787202635616228,
+        "robustnessLabel": "Very High",
+        "borderWidth": 10,
+        "borderColor": "rgb(114,114,114)",
+        "shape": "roundrectangle",
+        "sizeIndex": 8,
+        "fontSize": 20,
+        "width": 141,
+        "textMaxWidth": 133,
+        "height": 74
+      },
+      "position": {
+        "x": -56.908270676691714,
+        "y": -5.341353383458664
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n2",
+        "label": "Protect Tenants\n94%",
+        "origLabel": "Protect Tenants",
+        "type": "assertion",
+        "hoverLabel": "Rent control protects tenants from sudden and large rent spikes.",
+        "prob": 0.9356616814217462,
+        "heavyProb": 0.5,
+        "textColor": "#000",
+        "robustness": 0.6132589765454988,
+        "robustnessLabel": "High",
+        "borderWidth": 6,
+        "borderColor": "rgb(160,160,160)",
+        "shape": "roundrectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 84,
+        "textMaxWidth": 76,
+        "height": 86
+      },
+      "position": {
+        "x": 142.88270676691732,
+        "y": -57.4195488721804
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n3",
+        "label": "Prevent Displacement\n94%",
+        "origLabel": "Prevent Displacement",
+        "type": "assertion",
+        "hoverLabel": "Rent control reduces forced moves and tenant displacement within regulated areas.",
+        "prob": 0.9356616814217462,
+        "heavyProb": 0.5,
+        "textColor": "#000",
+        "robustness": 0.6132589765454988,
+        "robustnessLabel": "High",
+        "borderWidth": 6,
+        "borderColor": "rgb(160,160,160)",
+        "shape": "roundrectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 111,
+        "textMaxWidth": 103,
+        "height": 56
+      },
+      "position": {
+        "x": -175.3593984962406,
+        "y": -148.65263157894736
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n4",
+        "label": "Stabilize Neighborhoods\n62%",
+        "origLabel": "Stabilize Neighborhoods",
+        "type": "assertion",
+        "hoverLabel": "Rent control stabilizes neighborhood composition and social networks.",
+        "prob": 0.6165541560007682,
+        "heavyProb": 0.5,
+        "textColor": "#000",
+        "robustness": 0.29531191028128656,
+        "robustnessLabel": "Low",
+        "borderWidth": 3,
+        "borderColor": "rgb(200,200,200)",
+        "shape": "roundrectangle",
+        "sizeIndex": 5,
+        "fontSize": 16,
+        "width": 137,
+        "textMaxWidth": 129,
+        "height": 60
+      },
+      "position": {
+        "x": 20.030075187969928,
+        "y": -202.96992481203006
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n5",
+        "label": "Reduce Homelessness\n62%",
+        "origLabel": "Reduce Homelessness",
+        "type": "assertion",
+        "hoverLabel": "Rent control helps prevent homelessness by reducing rent burdens and evictions.",
+        "prob": 0.6165541560007682,
+        "heavyProb": 0.5,
+        "textColor": "#000",
+        "robustness": 0.29531191028128656,
+        "robustnessLabel": "Low",
+        "borderWidth": 3,
+        "borderColor": "rgb(200,200,200)",
+        "shape": "roundrectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 106,
+        "textMaxWidth": 98,
+        "height": 86
+      },
+      "position": {
+        "x": 194.05413533834587,
+        "y": -223.43157894736834
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n6",
+        "label": "Balance Power",
+        "origLabel": "Balance Power",
+        "type": "fact",
+        "hoverLabel": "Rent control rebalances bargaining power between landlords and tenants.",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 73,
+        "textMaxWidth": 65,
+        "height": 56
+      },
+      "position": {
+        "x": -92.07218045112779,
+        "y": -325.53233082706765
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n7",
+        "label": "SF Evidence Mixed",
+        "origLabel": "SF Evidence Mixed",
+        "type": "fact",
+        "hoverLabel": "San Francisco evidence shows tenant protections alongside supply side responses.",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 95,
+        "textMaxWidth": 87,
+        "height": 56
+      },
+      "position": {
+        "x": 347.9954887218045,
+        "y": -199.36992481203006
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n8",
+        "label": "NJ Stabilization",
+        "origLabel": "NJ Stabilization",
+        "type": "fact",
+        "hoverLabel": "New Jersey stabilization policies limited rent growth with modest supply effects.",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 89,
+        "textMaxWidth": 81,
+        "height": 56
+      },
+      "position": {
+        "x": 89.04661654135333,
+        "y": -358.0721804511278
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n9",
+        "label": "Right To Counsel",
+        "origLabel": "Right To Counsel",
+        "type": "fact",
+        "hoverLabel": "Right to counsel complements rent regulation by reducing eviction risk.",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 89,
+        "textMaxWidth": 81,
+        "height": 56
+      },
+      "position": {
+        "x": -335.0766917293234,
+        "y": -276.827067669173
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n10",
+        "label": "Rent Burden Relief",
+        "origLabel": "Rent Burden Relief",
+        "type": "fact",
+        "hoverLabel": "Lower rent burdens from regulation increase household financial stability.",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 100,
+        "textMaxWidth": 92,
+        "height": 56
+      },
+      "position": {
+        "x": 260.4300751879699,
+        "y": -372.5593984962406
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n11",
+        "label": "Eviction Filings Down",
+        "origLabel": "Eviction Filings Down",
+        "type": "fact",
+        "hoverLabel": "Eviction filing rates decline when rent increases are constrained.",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 117,
+        "textMaxWidth": 109,
+        "height": 56
+      },
+      "position": {
+        "x": 348.6165413533834,
+        "y": -61.01353383458644
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n12",
+        "label": "Tenure Length Up",
+        "origLabel": "Tenure Length Up",
+        "type": "fact",
+        "hoverLabel": "Average tenancy length increases under stricter rent regulation.",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 89,
+        "textMaxWidth": 81,
+        "height": 56
+      },
+      "position": {
+        "x": -228.76390977443617,
+        "y": -371.02255639097746
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n13",
+        "label": "Reduce Supply\n78%",
+        "origLabel": "Reduce Supply",
+        "type": "assertion",
+        "hoverLabel": "Rent control reduces the long run supply of rental housing.",
+        "prob": 0.7802176602217195,
+        "heavyProb": 0.5,
+        "textColor": "#000",
+        "robustness": 0.7877520261732569,
+        "robustnessLabel": "High",
+        "borderWidth": 8,
+        "borderColor": "rgb(138,138,138)",
+        "shape": "roundrectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 73,
+        "textMaxWidth": 65,
+        "height": 86
+      },
+      "position": {
+        "x": 121.51428571428572,
+        "y": 94.80902255639097
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n14",
+        "label": "Maintenance Decline\n77%",
+        "origLabel": "Maintenance Decline",
+        "type": "assertion",
+        "hoverLabel": "Rent control leads to reduced maintenance and investment in regulated stock.",
+        "prob": 0.773155412031195,
+        "heavyProb": 0.5,
+        "textColor": "#000",
+        "robustness": 0.6671289163019204,
+        "robustnessLabel": "High",
+        "borderWidth": 7,
+        "borderColor": "rgb(153,153,153)",
+        "shape": "roundrectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 106,
+        "textMaxWidth": 98,
+        "height": 86
+      },
+      "position": {
+        "x": -247.9428571428569,
+        "y": -19.60000000000018
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n15",
+        "label": "Misallocate Units\n17%",
+        "origLabel": "Misallocate Units",
+        "type": "assertion",
+        "hoverLabel": "Rent control misallocates units across household sizes and incomes.",
+        "prob": 0.16530479743012352,
+        "heavyProb": 0.5,
+        "textColor": "#000",
+        "robustness": 0.5034146962085905,
+        "robustnessLabel": "Moderate",
+        "borderWidth": 5,
+        "borderColor": "rgb(174,174,174)",
+        "shape": "roundrectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 95,
+        "textMaxWidth": 87,
+        "height": 56
+      },
+      "position": {
+        "x": -21.365413533834598,
+        "y": 265.7308270676691
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n16",
+        "label": "Raise Unregulated Rents\n62%",
+        "origLabel": "Raise Unregulated Rents",
+        "type": "assertion",
+        "hoverLabel": "Rent control raises rents in unregulated segments and nearby areas.",
+        "prob": 0.6165541560007682,
+        "heavyProb": 0.5,
+        "textColor": "#000",
+        "robustness": 0.29531191028128656,
+        "robustnessLabel": "Low",
+        "borderWidth": 3,
+        "borderColor": "rgb(200,200,200)",
+        "shape": "roundrectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 128,
+        "textMaxWidth": 120,
+        "height": 56
+      },
+      "position": {
+        "x": -371.6541353383459,
+        "y": 218.0902255639098
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n17",
+        "label": "Cambridge Repeal Effects",
+        "origLabel": "Cambridge Repeal Effects",
+        "type": "fact",
+        "hoverLabel": "After Cambridge repeal investment and housing quality increased.",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 134,
+        "textMaxWidth": 126,
+        "height": 56
+      },
+      "position": {
+        "x": -447.86616541353385,
+        "y": -28.972932330827057
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n18",
+        "label": "Berlin Freeze Effects",
+        "origLabel": "Berlin Freeze Effects",
+        "type": "fact",
+        "hoverLabel": "The Berlin freeze reduced listings and shifted demand to unregulated homes.",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 117,
+        "textMaxWidth": 109,
+        "height": 56
+      },
+      "position": {
+        "x": -157.50375939849624,
+        "y": 191.99849624060155
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n19",
+        "label": "New Build Exemption",
+        "origLabel": "New Build Exemption",
+        "type": "fact",
+        "hoverLabel": "Exempting new construction from controls preserves development incentives.",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 106,
+        "textMaxWidth": 98,
+        "height": 56
+      },
+      "position": {
+        "x": 310.4466165413534,
+        "y": 197.75338345864654
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n20",
+        "label": "Vacancy Decontrol",
+        "origLabel": "Vacancy Decontrol",
+        "type": "fact",
+        "hoverLabel": "Allowing rent resets at vacancy reduces unit misallocation.",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 95,
+        "textMaxWidth": 87,
+        "height": 56
+      },
+      "position": {
+        "x": -188.4421052631579,
+        "y": 331.4616541353384
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n21",
+        "label": "Landlord Hardship Relief",
+        "origLabel": "Landlord Hardship Relief",
+        "type": "fact",
+        "hoverLabel": "Hardship processes stabilize small landlords facing revenue shocks.",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 134,
+        "textMaxWidth": 126,
+        "height": 56
+      },
+      "position": {
+        "x": -441.04812030075186,
+        "y": 95.01203007518795
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n22",
+        "label": "Maintenance Subsidies",
+        "origLabel": "Maintenance Subsidies",
+        "type": "fact",
+        "hoverLabel": "Targeted subsidies support building upkeep under regulation.",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 117,
+        "textMaxWidth": 109,
+        "height": 56
+      },
+      "position": {
+        "x": -398.3172932330827,
+        "y": -152.43157894736834
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n23",
+        "label": "Means Tested Targeting",
+        "origLabel": "Means Tested Targeting",
+        "type": "fact",
+        "hoverLabel": "Means tested eligibility directs benefits to lower income tenants.",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 123,
+        "textMaxWidth": 115,
+        "height": 56
+      },
+      "position": {
+        "x": -6.83609022556389,
+        "y": 410.9864661654135
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "n24",
+        "label": "Construction Pipeline Data",
+        "origLabel": "Construction Pipeline Data",
+        "type": "fact",
+        "hoverLabel": "Permit and starts data show investment responses to rent regulation.",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 145,
+        "textMaxWidth": 137,
+        "height": 56
+      },
+      "position": {
+        "x": 327.806015037594,
+        "y": 62.637593984962336
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n2",
+        "target": "n1",
+        "type": "supports",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "contributingFactors": [
+          "lower rent volatility",
+          "reduced eviction threats",
+          "predictable housing costs"
+        ],
+  "rationale": "Caps reduce volatility and eviction leverage, making housing costs more predictable.",
+        "id": "a2221539-33d5-405f-880c-4861ce64b495",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n3",
+        "target": "n1",
+        "type": "supports",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "contributingFactors": [
+          "fewer forced moves",
+          "tenant stability increases",
+          "school continuity preserved"
+        ],
+  "rationale": "Greater tenant stability and fewer forced moves preserve social and school continuity.",
+        "id": "335e098c-da8d-4d90-8437-737dd2d3ef43",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n4",
+        "target": "n1",
+        "type": "supports",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "contributingFactors": [
+          "community ties maintained",
+          "resident turnover declines",
+          "local networks strengthened"
+        ],
+  "rationale": "Lower turnover maintains community ties and strengthens local support networks.",
+        "id": "ea2d5df0-5ed7-4f7c-a4c2-f3d2357cba5c",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n5",
+        "target": "n1",
+        "type": "supports",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "contributingFactors": [
+          "shelter entries prevented",
+          "rent burden eased",
+          "financial shocks buffered"
+        ],
+  "rationale": "Lower rent burden and fewer crises prevent shelter entry and buffer shocks.",
+        "id": "a6cf07b7-1a23-4cbb-8805-36439246d90a",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n6",
+        "target": "n1",
+        "type": "supports",
+        "weight": 0.15,
+        "userAssignedWeight": 0.15,
+        "contributingFactors": [
+          "bargaining leverage rebalanced",
+          "less unilateral increases",
+          "fairer lease negotiations"
+        ],
+  "rationale": "Stronger tenant bargaining curbs unilateral increases and yields fairer leases.",
+        "id": "fbda1306-12e3-48a7-81fb-1f393fefd34b",
+        "computedWeight": 0.15,
+        "absWeight": 0.15,
+        "lineColor": "rgb(197,197,197)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n13",
+        "target": "n1",
+        "type": "opposes",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "contributingFactors": [
+          "investment returns constrained",
+          "conversions to condos",
+          "rental production declines"
+        ],
+  "rationale": "Constrained returns spur conversions and depress new rental production, limiting long-term stability.",
+        "id": "a60175e3-f812-461f-a268-a51eb72591ca",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "opposes",
+        "label": "",
+        "opposes": true
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n14",
+        "target": "n1",
+        "type": "opposes",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "contributingFactors": [
+          "deferred repairs accumulate",
+          "capital expenditure drops",
+          "unit quality deteriorates"
+        ],
+  "rationale": "Reduced reinvestment leads to deferred maintenance and deteriorating unit quality.",
+        "id": "2180294a-b904-4672-8f9c-69a80a64b880",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "opposes",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n15",
+        "target": "n1",
+        "type": "opposes",
+        "weight": 0.15,
+        "userAssignedWeight": 0.15,
+        "contributingFactors": [
+          "bedroom mismatch persists",
+          "higher income incumbency",
+          "inefficient unit allocation"
+        ],
+  "rationale": "Lock-in effects keep higher-income incumbents mismatched to units, reducing allocation efficiency.",
+        "id": "9205f943-a8e6-4cf6-8396-969a11ec2853",
+        "computedWeight": 0.15,
+        "absWeight": 0.15,
+        "lineColor": "rgb(197,197,197)",
+        "displayType": "opposes",
+        "label": "",
+        "opposes": true
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n16",
+        "target": "n1",
+        "type": "opposes",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "contributingFactors": [
+          "demand shifts outward",
+          "spillovers to suburbs",
+          "unregulated segment pressures"
+        ],
+  "rationale": "Outward demand shifts raise pressures in unregulated markets, undermining broad stability.",
+        "id": "5d5b877d-4b47-4a30-86a3-ed68cebab8ef",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "opposes",
+        "label": "",
+        "opposes": true
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n11",
+        "target": "n2",
+        "type": "supports",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "contributingFactors": [
+          "filings fall after caps",
+          "threatened evictions decline",
+          "payment plans increase"
+        ],
+  "rationale": "Fewer filings and more payment plans directly cut eviction threats.",
+        "id": "ba896d49-851b-44fc-ae04-04907f9e1268",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n7",
+        "target": "n2",
+        "type": "supports",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "contributingFactors": [
+          "incumbent protections observed",
+          "rent spikes tempered",
+          "tenant retention improved"
+        ],
+  "rationale": "Protections temper spikes and improve retention for incumbents.",
+        "id": "d8d7a2a6-2848-4a7f-b59f-870d436fe597",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n12",
+        "target": "n3",
+        "type": "supports",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "contributingFactors": [
+          "tenancy lengths increase",
+          "move rates decline",
+          "stability indicators rise"
+        ],
+  "rationale": "Longer tenancies and lower move rates raise measured residential stability.",
+        "id": "fb2ec65f-582d-4ded-8174-20e76a0b0362",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n9",
+        "target": "n3",
+        "type": "supports",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "contributingFactors": [
+          "legal representation expands",
+          "unwarranted evictions drop",
+          "settlements more frequent"
+        ],
+  "rationale": "Expanded representation reduces unwarranted evictions and promotes stabilizing settlements.",
+        "id": "29649164-3770-4788-84e4-ca5601bbf670",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n10",
+        "target": "n5",
+        "type": "supports",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "contributingFactors": [
+          "budget slack increases",
+          "arrears risks fall",
+          "crisis moves avoided"
+        ],
+  "rationale": "Greater budget slack lowers arrears risk and avoids crisis relocations.",
+        "id": "0ab82f4c-59d5-4036-b1c9-248b9fbd29cc",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n8",
+        "target": "n4",
+        "type": "supports",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "contributingFactors": [
+          "rent growth moderated",
+          "neighborhood turnover fell",
+          "community continuity strengthened"
+        ],
+  "rationale": "Moderated rent growth lowers turnover and preserves neighborhood continuity.",
+        "id": "09d199a8-d039-4e21-8fa1-74b9df49808e",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n24",
+        "target": "n13",
+        "type": "supports",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "contributingFactors": [
+          "permits decline post policy",
+          "starts trend downward",
+          "developer sentiment weakens"
+        ],
+  "rationale": "Falling permits and weak sentiment signal reduced future supply investment.",
+        "id": "7b91f37f-6a6b-4669-ab73-ea2b59f187c6",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n18",
+        "target": "n13",
+        "type": "supports",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "contributingFactors": [
+          "listings fell sharply",
+          "new supply paused",
+          "investors exit market"
+        ],
+  "rationale": "Shrinking listings and paused projects show investors exiting, tightening supply.",
+        "id": "428e54b0-35fc-4add-9b8e-aea9d8f30772",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n18",
+        "target": "n16",
+        "type": "supports",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "contributingFactors": [
+          "unregulated rents rose",
+          "demand shifted periphery",
+          "shadow markets expanded"
+        ],
+  "rationale": "Peripheral demand and rising unregulated rents expand shadow submarkets.",
+        "id": "75ed0ffc-3d41-4bc4-b546-1ca845face62",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n17",
+        "target": "n14",
+        "type": "supports",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "contributingFactors": [
+          "post repeal renovations surged",
+          "quality upgrades increased",
+          "capital backlog addressed"
+        ],
+  "rationale": "Evidence of post-repeal upgrades shows restrictions had suppressed maintenance.",
+        "id": "44c7a404-eab0-4697-8c1c-b95ab7fefa9d",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n19",
+        "target": "n13",
+        "type": "opposes",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "contributingFactors": [
+          "investors keep building",
+          "pipeline confidence maintained",
+          "lender underwriting satisfied"
+        ],
+  "rationale": "Continued building and pipeline confidence indicate investment not materially deterred.",
+        "id": "0f719bc8-b9a3-4af1-a7be-390bbc4aa91e",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "opposes",
+        "label": "",
+        "opposes": true
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n20",
+        "target": "n15",
+        "type": "opposes",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "contributingFactors": [
+          "units reenter matching",
+          "allocation efficiency improves",
+          "lock in effects reduced"
+        ],
+  "rationale": "Units reentering the market reduce lock-in and improve allocation efficiency.",
+        "id": "bac356bc-257c-4a4e-935c-ea17a6a3cf48",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "opposes",
+        "label": "",
+        "opposes": true
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n23",
+        "target": "n15",
+        "type": "opposes",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "contributingFactors": [
+          "benefits focused on need",
+          "underuse less common",
+          "targeting reduces mismatch"
+        ],
+  "rationale": "Better targeting reduces underuse and bedroom mismatch.",
+        "id": "0dab5cb4-f2a2-4ecb-8f44-16c6058bd0f1",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "opposes",
+        "label": "",
+        "opposes": true
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n21",
+        "target": "n14",
+        "type": "opposes",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "contributingFactors": [
+          "temporary relief offered",
+          "foreclosures largely prevented",
+          "cash flow stabilized"
+        ],
+  "rationale": "Relief measures sustain cash flow and prevent deferred maintenance spiral.",
+        "id": "98a55c42-1b6c-47fd-b670-453e7876db27",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "opposes",
+        "label": "",
+        "opposes": true
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "n22",
+        "target": "n14",
+        "type": "supports",
+        "weight": 0.15,
+        "userAssignedWeight": 0.15,
+        "contributingFactors": [
+          "subsidize major repairs",
+          "maintenance incentives aligned",
+          "compliance tied funding"
+        ],
+  "rationale": "Repair subsidies and incentive alignment raise reinvestment likelihood.",
+        "id": "d9da25b0-d227-4b24-98ee-bd1395e1b847",
+        "computedWeight": 0.15,
+        "absWeight": 0.15,
+        "lineColor": "rgb(197,197,197)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "assertion1754796897825",
+        "label": "Fights market forces",
+        "origLabel": "New Fact",
+        "type": "fact",
+        "width": 104,
+        "height": 52,
+        "prob": 0.995,
+        "heavyProb": 1,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "displayLabel": "Fights market forces",
+        "hoverLabel": "Fighting market forces is typically not sustainable.",
+        "sizeIndex": 3,
+        "fontSize": 14,
+        "textMaxWidth": 96
+      },
+      "position": {
+        "x": 147.45139054479984,
+        "y": 247.36071318371293
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "assertion1754796897825",
+        "target": "n1",
+  "rationale": "Attempting to fight underlying market forces can create distortions and unintended consequences.",
+        "weight": 0.6,
+        "type": "opposes",
+        "id": "786d9ff9-9962-4286-b37e-e7ecb62a282d",
+        "computedWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "absWeight": 0.6,
+        "displayType": "opposes",
+        "label": "",
+        "userAssignedWeight": 0.6,
+        "opposes": true
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    }
+  ],
+  "textAnnotations": [],
+  "version": "1.0"
+}

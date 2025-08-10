@@ -7,9 +7,15 @@ export const EXAMPLE_GRAPHS = [
     filename: "investigative-example.json"
   },
   {
-    name: "Simple Milk Example",
-    description: "Basic everyday reasoning: Is the milk spoiled?",
-    filename: "Simple milk example.json"
+    name: "AND OR logic node example",
+    description: "Simple usage of logic nodes: breakfast",
+    filename: "AND OR logic node example.json"
+  },
+
+    {
+    name: "Policy Analysis: Rent Control",
+    description: "Weighing arguments for / against expanding rent control",
+    filename: "Policy analysis example_rent control.json"
   }
   // Add more examples here as needed
 ];
