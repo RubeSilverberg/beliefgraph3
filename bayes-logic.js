@@ -54,8 +54,11 @@ function topologicalSort(nodes, cy) {
       }
     });
     
-    visited.add(node.id());
-    result.unshift(node); // Add to front for proper ordering
+  visited.add(node.id());
+  // Push so that after visiting parents first, parents appear earlier in the array
+  // (Previously used unshift which reversed the intended dependency order, causing
+  // children to compute before their parents and requiring an extra user action.)
+  result.push(node);
   }
 
   nodes.forEach(node => {
