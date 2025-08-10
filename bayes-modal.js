@@ -191,33 +191,20 @@ document.getElementById('cancel-btn').addEventListener('click', function() {
     }
     baselineSlider.addEventListener('input', updateBaseline);
     inverseCheckbox.addEventListener('change', () => {
+      // Only flip constraint logic & visuals; do NOT swap semantic labels.
       inverse = inverseCheckbox.checked;
-      
-      // Update text content for visible elements only
-      if (parentTrueWord2) {
-        parentTrueWord2.textContent = inverse ? "false" : "true";
-      }
-      if (parentFalseWord2) {
-        parentFalseWord2.textContent = inverse ? "true" : "false";
-      }
-      
-      // Apply styling to the visible elements
+      // Keep displayed words fixed as true/false (semantics stable). Styling preserved.
       const parentTrueWord2El = document.getElementById('parent-true-word2');
       const parentFalseWord2El = document.getElementById('parent-false-word2');
-      
       if (parentTrueWord2El) {
-        // Don't override the color - keep the green color from updateModalLabels
         parentTrueWord2El.style.fontStyle = 'italic';
         parentTrueWord2El.style.fontWeight = 'bold';
       }
-      
       if (parentFalseWord2El) {
-        // Don't override the color - keep the red color from updateModalLabels
         parentFalseWord2El.style.fontStyle = 'italic';
         parentFalseWord2El.style.fontWeight = 'bold';
       }
-      
-      // Note: Constraints will update when user clicks "Set Baseline"
+      // Constraints will be applied when progressing steps / setting baseline.
     });
 setBaselineBtn.onclick = () => {
   baselineInputRow.classList.add('hidden');
@@ -464,15 +451,13 @@ window.openBayesModalForEdge = function(edge) {
   if (parentTrueWord2El) {
     parentTrueWord2El.style.fontStyle = 'italic';
     parentTrueWord2El.style.fontWeight = 'bold';
-    // Don't override the color - keep the green color from updateModalLabels
-    parentTrueWord2El.textContent = inverse ? "false" : "true";
+    // Keep semantic label constant
+    parentTrueWord2El.textContent = 'true';
   }
-  
   if (parentFalseWord2El) {
     parentFalseWord2El.style.fontStyle = 'italic';
     parentFalseWord2El.style.fontWeight = 'bold';
-    // Don't override the color - keep the red color from updateModalLabels
-    parentFalseWord2El.textContent = inverse ? "true" : "false";
+    parentFalseWord2El.textContent = 'false';
   }
 
   document.getElementById('bayes-modal').classList.remove('hidden');
