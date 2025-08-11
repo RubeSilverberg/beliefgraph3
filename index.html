@@ -41,6 +41,10 @@
       console.log('[BeliefGraph] Console helper available: openMinimalConverter()');
     })();
   </script>
+  <!-- Mobile device warning (hidden by default; revealed via feature+UA detection) -->
+  <div id="mobile-warning" role="alert" style="display:none;background:#fdd;border:2px solid #d55;padding:12px 16px;margin:0 0 10px 0;font:14px/1.45 Arial,sans-serif;text-align:center;">
+    <strong>Notice:</strong> This tool is not optimized for touch/mobile devices and may not work as intended. Please use a desktop browser for the full experience.
+  </div>
   <!-- Cytoscape Canvas -->
   <div id="cy" style="width: 100vw; height: 100vh;"></div>
 
@@ -168,6 +172,24 @@
   <script type="module" src="script_current.js"></script>
   <script type="module" src="bayes-modal.js"></script>
   <script src="network-logger.js"></script>
+  <!-- Mobile detection script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      try {
+        const coarse = window.matchMedia('(pointer: coarse)').matches;
+        const noHover = window.matchMedia('(hover: none)').matches;
+        const uaMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const likelyTouchMobile = uaMobile || (coarse && noHover);
+        if(likelyTouchMobile){
+          const el = document.getElementById('mobile-warning');
+          if(el) el.style.display = 'block';
+          console.warn('[BeliefGraph] Mobile/touch environment detected – showing compatibility warning.');
+        }
+      } catch(e){
+        console.warn('[BeliefGraph] Mobile detection failed:', e);
+      }
+    });
+  </script>
   <!-- Dev tools are available at tests/dev-tools/ and can be injected from there if needed -->
 </body>
 </html>
