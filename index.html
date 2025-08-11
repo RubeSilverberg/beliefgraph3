@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <title>Belief Graph</title>
   <meta name="page-id" content="main-app" />
+  <!-- Ensure proper scaling on mobile so detection + layout behave predictably -->
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
   <!-- Link to your stylesheet -->
   <link rel="stylesheet" href="style.css" />
 
@@ -172,23 +174,52 @@
   <script type="module" src="script_current.js"></script>
   <script type="module" src="bayes-modal.js"></script>
   <script src="network-logger.js"></script>
-  <!-- Mobile detection script -->
+  <!-- Mobile detection script (robust: UA + capability + media queries + size) -->
   <script>
-    document.addEventListener('DOMContentLoaded', function(){
-      try {
-        const coarse = window.matchMedia('(pointer: coarse)').matches;
-        const noHover = window.matchMedia('(hover: none)').matches;
-        const uaMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        const likelyTouchMobile = uaMobile || (coarse && noHover);
-        if(likelyTouchMobile){
-          const el = document.getElementById('mobile-warning');
-          if(el) el.style.display = 'block';
+    (function(){
+      function showWarning(){
+        const el = document.getElementById('mobile-warning');
+        if(el && el.style.display !== 'block'){
+          el.style.display = 'block';
           console.warn('[BeliefGraph] Mobile/touch environment detected – showing compatibility warning.');
         }
-      } catch(e){
-        console.warn('[BeliefGraph] Mobile detection failed:', e);
       }
-    });
+      function detectMobile(){
+        try {
+          const ua = navigator.userAgent || '';
+          const hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints||0) > 0;
+          const mqCoarse = window.matchMedia('(pointer: coarse)').matches;
+          const mqNoHover = window.matchMedia('(hover: none)').matches;
+          const smallScreen = Math.min(window.innerWidth, window.innerHeight) < 760; // portrait phones
+          const uaMobile = /Mobi|Android|iPhone|iPad|iPod|Mobile Safari/i.test(ua);
+          // iPadOS desktop-mode Safari sometimes spoofs as Mac; catch via touch + coarse pointer + screen heuristics
+          const iPadDesktopMode = hasTouch && mqCoarse && /Macintosh/.test(ua) && ('ontouchend' in document);
+          if((uaMobile && hasTouch) || (hasTouch && mqCoarse && mqNoHover) || (hasTouch && smallScreen) || iPadDesktopMode){
+            showWarning();
+          }
+        } catch(e){
+          console.warn('[BeliefGraph] Mobile detection error:', e);
+        }
+      }
+      // Run as soon as possible in case DOMContentLoaded already fired by time script executes
+      if(document.readyState === 'loading'){
+        document.addEventListener('DOMContentLoaded', detectMobile, { once: true });
+      } else {
+        detectMobile();
+      }
+      // Re-evaluate once on first resize/orientation change (helpful if loaded in landscape tablet)
+      let reevaluated = false;
+      function oneTimeRecheck(){
+        if(!reevaluated){
+          reevaluated = true;
+          detectMobile();
+          window.removeEventListener('resize', oneTimeRecheck);
+          window.removeEventListener('orientationchange', oneTimeRecheck);
+        }
+      }
+      window.addEventListener('resize', oneTimeRecheck);
+      window.addEventListener('orientationchange', oneTimeRecheck);
+    })();
   </script>
   <!-- Dev tools are available at tests/dev-tools/ and can be injected from there if needed -->
 </body>
