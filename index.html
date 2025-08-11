@@ -44,11 +44,11 @@
     })();
   </script>
   <!-- Mobile device warning (hidden by default; revealed via feature+UA detection) -->
-  <div id="mobile-warning" role="alert" style="display:none;background:#fdd;border:2px solid #d55;padding:12px 16px;margin:0 0 10px 0;font:14px/1.45 Arial,sans-serif;text-align:center;">
+  <div id="mobile-warning" role="alert" style="display:none;position:fixed;top:0;left:0;right:0;background:#fdd;border-bottom:2px solid #d55;padding:12px 16px;font:14px/1.45 Arial,sans-serif;text-align:center;z-index:10000;box-shadow:0 2px 6px rgba(0,0,0,0.15);">
     <strong>Notice:</strong> This tool is not optimized for touch/mobile devices and may not work as intended. Please use a desktop browser for the full experience.
   </div>
   <!-- Cytoscape Canvas -->
-  <div id="cy" style="width: 100vw; height: 100vh;"></div>
+  <div id="cy" style="width: 100vw; height: 100vh; top:0; left:0; position:absolute;"></div>
 
   <!-- Controls -->
   <div id="controls">
@@ -177,11 +177,26 @@
   <!-- Mobile detection script (robust: UA + capability + media queries + size) -->
   <script>
     (function(){
+      function adjustLayoutForWarning(){
+        const el = document.getElementById('mobile-warning');
+        const cy = document.getElementById('cy');
+        if(!el || !cy) return;
+        if(el.style.display === 'block'){
+          const h = el.offsetHeight;
+            // push graph below banner
+            cy.style.top = h + 'px';
+            cy.style.height = 'calc(100vh - ' + h + 'px)';
+        }
+      }
       function showWarning(){
         const el = document.getElementById('mobile-warning');
         if(el && el.style.display !== 'block'){
           el.style.display = 'block';
           console.warn('[BeliefGraph] Mobile/touch environment detected – showing compatibility warning.');
+          // Wait a frame so offsetHeight is correct, then adjust
+          requestAnimationFrame(adjustLayoutForWarning);
+        } else {
+          adjustLayoutForWarning();
         }
       }
       function detectMobile(){
@@ -208,17 +223,15 @@
         detectMobile();
       }
       // Re-evaluate once on first resize/orientation change (helpful if loaded in landscape tablet)
-      let reevaluated = false;
-      function oneTimeRecheck(){
-        if(!reevaluated){
-          reevaluated = true;
-          detectMobile();
-          window.removeEventListener('resize', oneTimeRecheck);
-          window.removeEventListener('orientationchange', oneTimeRecheck);
-        }
-      }
-      window.addEventListener('resize', oneTimeRecheck);
-      window.addEventListener('orientationchange', oneTimeRecheck);
+      // Re-evaluate & adjust on orientation / resize (debounced minimal)
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(()=>{ detectMobile(); adjustLayoutForWarning(); }, 120);
+      });
+      window.addEventListener('orientationchange', () => {
+        setTimeout(()=>{ detectMobile(); adjustLayoutForWarning(); }, 120);
+      });
     })();
   </script>
   <!-- Dev tools are available at tests/dev-tools/ and can be injected from there if needed -->
