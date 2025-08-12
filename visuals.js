@@ -266,13 +266,8 @@ export function computeVisuals(cy) {
       if (!node.data('userCustomTextColor')) {
         node.data('textColor', '#fff');
       }
-      // Inert fact embellishments
+      // Inert fact embellishments (visual only – no inline INERT text)
       if (node.data('inertFact')) {
-        // Add indicator tag if not already present
-        if (!/\bINERT\b/.test(label)) {
-          label = label + '\nINERT';
-        }
-        // Use warning color border
         borderColor = '#ff9800';
         borderWidth = 4;
         node.data('backgroundOpacity', 0.75);
@@ -734,8 +729,10 @@ export function showNodeHoverBox(cy, node) {
   }
 
   if (nodeType === NODE_TYPE_FACT) {
+    const inert = node.data('inertFact');
+    const typeLine = inert ? 'INERT Fact node' : 'Fact node';
     box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${combinedLabel}</div>
-                     <div style="color: #666; font-style: italic;">Fact node</div>`;
+                     <div style="color: ${inert ? '#e65100' : '#666'}; font-style: italic; font-weight:${inert ? '600':'400'};">${typeLine}</div>`;
     container.parentElement.appendChild(box);
     return;
   }
