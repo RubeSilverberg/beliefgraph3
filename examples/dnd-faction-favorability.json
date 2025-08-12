@@ -7,7 +7,7 @@
         "origLabel": "City Guard Favors Party",
         "type": "assertion",
         "hoverLabel": "Aggregate favorability of the City Guard (law & order focus). Center hub; do NOT toggle directly.",
-        "prob": 0.5000000019613653,
+        "prob": 0.5000000000025779,
         "textColor": "#000",
         "robustness": 0.18126924692201818,
         "robustnessLabel": "Low",
@@ -26,8 +26,8 @@
         "userCustomFloretColor": true
       },
       "position": {
-        "x": 24.911891098356307,
-        "y": -276.54182262417396
+        "x": -755.3499466519661,
+        "y": 328.66010258944044
       },
       "group": "nodes",
       "removed": false,
@@ -45,7 +45,7 @@
         "origLabel": "Thieves' Guild Favors Party",
         "type": "assertion",
         "hoverLabel": "Aggregate favorability of the Thieves' Guild (profit & leverage).",
-        "prob": 0.49999994589911584,
+        "prob": 0.4999999999288929,
         "textColor": "#000",
         "robustness": 0.18126924692201818,
         "robustnessLabel": "Low",
@@ -64,8 +64,8 @@
         "userCustomFloretColor": true
       },
       "position": {
-        "x": 162.99559178309812,
-        "y": -94.3171698713598
+        "x": 598.62730964307,
+        "y": 339.23741247127697
       },
       "group": "nodes",
       "removed": false,
@@ -83,7 +83,7 @@
         "origLabel": "Temple of the Dawn Favors Party",
         "type": "assertion",
         "hoverLabel": "Aggregate favorability of the Temple (piety, charity, visible virtue).",
-        "prob": 0.5000000002888993,
+        "prob": 0.500000000000335,
         "textColor": "#000",
         "robustness": 0.2591817793182821,
         "robustnessLabel": "Low",
@@ -102,8 +102,8 @@
         "userCustomFloretColor": true
       },
       "position": {
-        "x": 201.89425823074882,
-        "y": 118.08370068474183
+        "x": 218.45570989805196,
+        "y": 327.1720279844438
       },
       "group": "nodes",
       "removed": false,
@@ -121,7 +121,7 @@
         "origLabel": "Mage Collegium Favors Party",
         "type": "assertion",
         "hoverLabel": "Aggregate favorability of the Collegium (research, secrecy, arcane order).",
-        "prob": 0.499999994530303,
+        "prob": 0.4999999999939637,
         "textColor": "#000",
         "robustness": 0.1392920235749422,
         "robustnessLabel": "Minimal",
@@ -140,8 +140,8 @@
         "userCustomFloretColor": true
       },
       "position": {
-        "x": -163.56827192558518,
-        "y": 81.67401369483645
+        "x": -455.7488241164073,
+        "y": 325.7111794451254
       },
       "group": "nodes",
       "removed": false,
@@ -159,7 +159,7 @@
         "origLabel": "Dockworkers' Union Favors Party",
         "type": "assertion",
         "hoverLabel": "Aggregate favorability of the Dockworkers' Union (wages, safety, solidarity).",
-        "prob": 0.49999999886962676,
+        "prob": 0.4999999999985143,
         "textColor": "#000",
         "robustness": 0.1392920235749422,
         "robustnessLabel": "Minimal",
@@ -178,8 +178,8 @@
         "userCustomFloretColor": true
       },
       "position": {
-        "x": -212.81937397981073,
-        "y": -130.72685686126516
+        "x": -144.47657375785727,
+        "y": 326.89644374285757
       },
       "group": "nodes",
       "removed": false,
@@ -222,13 +222,12 @@
     {
       "data": {
         "id": "bias_guard_overstretched",
-        "label": "Campaign Bias: Guard Overstretched\nINERT",
+        "label": "Campaign Bias: Guard Overstretched",
         "origLabel": "Campaign Bias: Guard Overstretched",
         "type": "fact",
         "hoverLabel": "Baseline: Guard stretched thin (−Guard, +Guild opportunism, +Union sympathy). Starts inert until activated.",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -240,8 +239,8 @@
         "inertFact": true
       },
       "position": {
-        "x": 27.598774079499435,
-        "y": -563.4506114786186
+        "x": -531.8605786949722,
+        "y": -668.0379682287424
       },
       "group": "nodes",
       "removed": false,
@@ -255,13 +254,12 @@
     {
       "data": {
         "id": "bias_temple_scandal",
-        "label": "Campaign Bias: Temple Scandal Lingers\nINERT",
+        "label": "Campaign Bias: Temple Scandal Lingers",
         "origLabel": "Campaign Bias: Temple Scandal Lingers",
         "type": "fact",
         "hoverLabel": "Baseline: lingering scandal (−Temple, +Guild exploiting piety vac). Starts inert.",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -273,8 +271,8 @@
         "inertFact": true
       },
       "position": {
-        "x": 269.55562008320686,
-        "y": -529.1112401664137
+        "x": -253.38116366741244,
+        "y": -676.8616330356363
       },
       "group": "nodes",
       "removed": false,
@@ -288,13 +286,12 @@
     {
       "data": {
         "id": "bias_arcane_embargo",
-        "label": "Campaign Bias: Arcane Embargo\nINERT",
+        "label": "Campaign Bias: Arcane Embargo",
         "origLabel": "Campaign Bias: Arcane Embargo",
         "type": "fact",
         "hoverLabel": "Baseline: anti-magic embargo (−Collegium, +Guard order stance). Starts inert.",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -306,8 +303,8 @@
         "inertFact": true
       },
       "position": {
-        "x": -383.2211846807454,
-        "y": -422.1731277010668
+        "x": -11.355027346971763,
+        "y": -674.5108773204132
       },
       "group": "nodes",
       "removed": false,
@@ -321,13 +318,12 @@
     {
       "data": {
         "id": "bias_prices_crash",
-        "label": "Campaign Bias: Harbor Prices Crash\nINERT",
+        "label": "Campaign Bias: Harbor Prices Crash",
         "origLabel": "Campaign Bias: Harbor Prices Crash",
         "type": "fact",
         "hoverLabel": "Baseline: freight price collapse (−Union, +Guild arbitrage). Starts inert.",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -339,8 +335,8 @@
         "inertFact": true
       },
       "position": {
-        "x": -580.6783108450894,
-        "y": -95.07158334340133
+        "x": 241.07949219159795,
+        "y": -681.0928044988572
       },
       "group": "nodes",
       "removed": false,
@@ -354,13 +350,12 @@
     {
       "data": {
         "id": "sting_success",
-        "label": "Smuggling Sting: Success\nINERT",
+        "label": "Smuggling Sting: Success",
         "origLabel": "Smuggling Sting: Success",
         "type": "fact",
         "hoverLabel": "Party busts ring at Pier 7 (Guard++, Temple+, Guild−−, Union−).",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -372,8 +367,8 @@
         "inertFact": true
       },
       "position": {
-        "x": 410.17712182043067,
-        "y": -406.30515364817
+        "x": -393.31939670433036,
+        "y": -446.14795621964583
       },
       "group": "nodes",
       "removed": false,
@@ -387,13 +382,12 @@
     {
       "data": {
         "id": "sting_failure",
-        "label": "Smuggling Sting: Failure\nINERT",
+        "label": "Smuggling Sting: Failure",
         "origLabel": "Smuggling Sting: Failure",
         "type": "fact",
         "hoverLabel": "Sting botched (Guard−, Guild+, Union+, slight Temple concern).",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -405,8 +399,8 @@
         "inertFact": true
       },
       "position": {
-        "x": 538.8626394715242,
-        "y": -277.12243460729746
+        "x": -171.1977009289744,
+        "y": -446.45434553606935
       },
       "group": "nodes",
       "removed": false,
@@ -420,13 +414,12 @@
     {
       "data": {
         "id": "strike_protect",
-        "label": "Strike: Protect the Line\nINERT",
+        "label": "Strike: Protect the Line",
         "origLabel": "Strike: Protect the Line",
         "type": "fact",
         "hoverLabel": "Guard confrontations; party shields workers (Union++, Guard−, slight Temple optics −, Guild mixed?).",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -438,12 +431,12 @@
         "inertFact": true
       },
       "position": {
-        "x": -506.21446875110956,
-        "y": 271.13081158603194
+        "x": 4.420374461467603,
+        "y": -337.68226364737154
       },
       "group": "nodes",
       "removed": false,
-      "selected": false,
+      "selected": true,
       "selectable": true,
       "locked": false,
       "grabbable": true,
@@ -453,13 +446,12 @@
     {
       "data": {
         "id": "strike_break",
-        "label": "Strike: Break the Strike\nINERT",
+        "label": "Strike: Break the Strike",
         "origLabel": "Strike: Break the Strike",
         "type": "fact",
         "hoverLabel": "Party breaks strike (Guard+, Union−−, Guild−, Temple− mercy optics).",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -471,8 +463,8 @@
         "inertFact": true
       },
       "position": {
-        "x": -546.8694300426287,
-        "y": 173.21532265371113
+        "x": -522.0798725889695,
+        "y": -337.65086292481453
       },
       "group": "nodes",
       "removed": false,
@@ -486,13 +478,12 @@
     {
       "data": {
         "id": "strike_failAid",
-        "label": "Strike: Failed Aid\nINERT",
+        "label": "Strike: Failed Aid",
         "origLabel": "Strike: Failed Aid",
         "type": "fact",
         "hoverLabel": "Tried helping line but failed (half magnitudes).",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -504,8 +495,8 @@
         "inertFact": true
       },
       "position": {
-        "x": -368.4599401793553,
-        "y": 389.4748823396012
+        "x": 201.54890024123992,
+        "y": -343.41702820965673
       },
       "group": "nodes",
       "removed": false,
@@ -519,13 +510,12 @@
     {
       "data": {
         "id": "strike_failBreak",
-        "label": "Strike: Failed Strikebreaking\nINERT",
+        "label": "Strike: Failed Strikebreaking",
         "origLabel": "Strike: Failed Strikebreaking",
         "type": "fact",
         "hoverLabel": "Tried to break strike; muddled result (half & inverted where apt).",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -537,8 +527,8 @@
         "inertFact": true
       },
       "position": {
-        "x": -583.9773129765639,
-        "y": 44.854586712081854
+        "x": -229.74393708065008,
+        "y": -339.00273665216184
       },
       "group": "nodes",
       "removed": false,
@@ -552,13 +542,12 @@
     {
       "data": {
         "id": "relic_public",
-        "label": "Relic: Public Return\nINERT",
+        "label": "Relic: Public Return",
         "origLabel": "Relic: Public Return",
         "type": "fact",
         "hoverLabel": "Relic restored with ceremony (Temple++, Guard+, Guild−, Collegium small ±).",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -570,8 +559,8 @@
         "inertFact": true
       },
       "position": {
-        "x": 207.39911334284355,
-        "y": 402.16005585042024
+        "x": -394.3329374145704,
+        "y": 179.4348849584365
       },
       "group": "nodes",
       "removed": false,
@@ -585,13 +574,12 @@
     {
       "data": {
         "id": "relic_fenced",
-        "label": "Relic: Fenced Quietly\nINERT",
+        "label": "Relic: Fenced Quietly",
         "origLabel": "Relic: Fenced Quietly",
         "type": "fact",
         "hoverLabel": "Relic sold clandestinely (Guild++, Temple−−, Guard−, Collegium+).",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -603,8 +591,8 @@
         "inertFact": true
       },
       "position": {
-        "x": 551.9078849418012,
-        "y": 406.58585356164804
+        "x": -81.69941149875987,
+        "y": 180.87018951153473
       },
       "group": "nodes",
       "removed": false,
@@ -618,13 +606,12 @@
     {
       "data": {
         "id": "relic_failed",
-        "label": "Relic: Lost\nINERT",
+        "label": "Relic: Lost",
         "origLabel": "Relic: Lost",
         "type": "fact",
         "hoverLabel": "Failed to recover relic (Temple−, Guard−).",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -636,8 +623,8 @@
         "inertFact": true
       },
       "position": {
-        "x": 385.5396833408312,
-        "y": 419.17378270861497
+        "x": -241.72529855827474,
+        "y": 179.03273353271962
       },
       "group": "nodes",
       "removed": false,
@@ -651,13 +638,12 @@
     {
       "data": {
         "id": "experiment_contained",
-        "label": "Arcane Incident Contained\nINERT",
+        "label": "Arcane Incident Contained",
         "origLabel": "Arcane Incident Contained",
         "type": "fact",
         "hoverLabel": "Runaway experiment contained (Collegium++, Guard+, Temple+, Union−).",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -669,8 +655,8 @@
         "inertFact": true
       },
       "position": {
-        "x": -11.966244536033706,
-        "y": 461.82411473460365
+        "x": -136.17713204080712,
+        "y": 43.647460135199736
       },
       "group": "nodes",
       "removed": false,
@@ -684,13 +670,12 @@
     {
       "data": {
         "id": "experiment_loose",
-        "label": "Arcane Incident Loose\nINERT",
+        "label": "Arcane Incident Loose",
         "origLabel": "Arcane Incident Loose",
         "type": "fact",
         "hoverLabel": "Experiment loose (Guard−, Temple−, Union−, Guild+).",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -702,8 +687,8 @@
         "inertFact": true
       },
       "position": {
-        "x": -195.4875069416235,
-        "y": 419.62652785576495
+        "x": -370.30912305346067,
+        "y": 36.62904993153579
       },
       "group": "nodes",
       "removed": false,
@@ -717,13 +702,12 @@
     {
       "data": {
         "id": "nephew_rescued",
-        "label": "Captain's Nephew Rescued\nINERT",
+        "label": "Captain's Nephew Rescued",
         "origLabel": "Captain's Nephew Rescued",
         "type": "fact",
         "hoverLabel": "Rescued from kidnappers (Guard++, Guild−, Union+).",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -735,8 +719,8 @@
         "inertFact": true
       },
       "position": {
-        "x": -575.9124932250068,
-        "y": -226.92748811252852
+        "x": -411.07143579144423,
+        "y": -559.7908302794351
       },
       "group": "nodes",
       "removed": false,
@@ -750,13 +734,12 @@
     {
       "data": {
         "id": "nephew_bungled",
-        "label": "Rescue Bungled\nINERT",
+        "label": "Rescue Bungled",
         "origLabel": "Rescue Bungled",
         "type": "fact",
         "hoverLabel": "Rescue failed (Guard−−, Guild+, Temple−).",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -768,8 +751,8 @@
         "inertFact": true
       },
       "position": {
-        "x": -546.53206025574,
-        "y": -350.76157395928544
+        "x": -216.9095194948328,
+        "y": -565.326702465569
       },
       "group": "nodes",
       "removed": false,
@@ -783,13 +766,12 @@
     {
       "data": {
         "id": "curfew_defy",
-        "label": "Harbor Curfew Defied\nINERT",
+        "label": "Harbor Curfew Defied",
         "origLabel": "Harbor Curfew Defied",
         "type": "fact",
         "hoverLabel": "Party denounces & defies curfew (Guard−−, Union+, Guild+, Temple nuanced).",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -801,8 +783,8 @@
         "inertFact": true
       },
       "position": {
-        "x": 589.4650944948172,
-        "y": -152.76168975302647
+        "x": -366.9935095865496,
+        "y": -215.82626912245718
       },
       "group": "nodes",
       "removed": false,
@@ -816,13 +798,12 @@
     {
       "data": {
         "id": "curfew_support",
-        "label": "Harbor Curfew Enforced\nINERT",
+        "label": "Harbor Curfew Enforced",
         "origLabel": "Harbor Curfew Enforced",
         "type": "fact",
         "hoverLabel": "Party supports curfew (Guard++, Union−, Guild−).",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -834,8 +815,8 @@
         "inertFact": true
       },
       "position": {
-        "x": 614.6196090256144,
-        "y": -7.8362771365572215
+        "x": -150.57507548904698,
+        "y": -212.01078227996456
       },
       "group": "nodes",
       "removed": false,
@@ -849,13 +830,12 @@
     {
       "data": {
         "id": "patent_collegium",
-        "label": "Patent: Side Collegium\nINERT",
+        "label": "Patent: Side Collegium",
         "origLabel": "Patent: Side Collegium",
         "type": "fact",
         "hoverLabel": "Back Collegium crackdown (Collegium++, Temple−, Union−, Guild−).",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -867,8 +847,8 @@
         "inertFact": true
       },
       "position": {
-        "x": -355.16728770909543,
-        "y": -545.1065407250494
+        "x": -416.59160834012056,
+        "y": -802.4246406658302
       },
       "group": "nodes",
       "removed": false,
@@ -882,13 +862,12 @@
     {
       "data": {
         "id": "patent_street",
-        "label": "Patent: Back Street Mages\nINERT",
+        "label": "Patent: Back Street Mages",
         "origLabel": "Patent: Back Street Mages",
         "type": "fact",
         "hoverLabel": "Support hedge-wizards (Collegium−−, Temple+, Union+, Guild+).",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -900,8 +879,8 @@
         "inertFact": true
       },
       "position": {
-        "x": -179.29693257168282,
-        "y": -569.7648411222259
+        "x": -230.760552559839,
+        "y": -803.841306229646
       },
       "group": "nodes",
       "removed": false,
@@ -915,13 +894,12 @@
     {
       "data": {
         "id": "gala_expose",
-        "label": "Gala: Expose Cleanly\nINERT",
+        "label": "Gala: Expose Cleanly",
         "origLabel": "Gala: Expose Cleanly",
         "type": "fact",
         "hoverLabel": "Expose corruption cleanly (Guard+, Temple+, Guild−, Union+).",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -933,8 +911,8 @@
         "inertFact": true
       },
       "position": {
-        "x": 567.1868591287136,
-        "y": 259.6492942333292
+        "x": -145.72407602858854,
+        "y": -92.31531985011247
       },
       "group": "nodes",
       "removed": false,
@@ -948,13 +926,12 @@
     {
       "data": {
         "id": "gala_crude",
-        "label": "Gala: Crude Sabotage\nINERT",
+        "label": "Gala: Crude Sabotage",
         "origLabel": "Gala: Crude Sabotage",
         "type": "fact",
         "hoverLabel": "Crude property damage (Guard−, Temple−, Guild+, slight Union ±).",
         "prob": 0.995,
         "textColor": "#fff",
-        "backgroundOpacity": 0.75,
         "borderWidth": 4,
         "borderColor": "#ff9800",
         "shape": "rectangle",
@@ -966,8 +943,8 @@
         "inertFact": true
       },
       "position": {
-        "x": 661.7930263372125,
-        "y": 144.6892491313881
+        "x": -358.17993786899785,
+        "y": -97.68779984508937
       },
       "group": "nodes",
       "removed": false,
@@ -997,8 +974,8 @@
         "height": 56
       },
       "position": {
-        "x": 188.48973842918986,
-        "y": 555.3635723415979
+        "x": -343.54689638292314,
+        "y": 611.2584717187459
       },
       "group": "nodes",
       "removed": false,
