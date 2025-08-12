@@ -743,6 +743,36 @@ document.addEventListener('DOMContentLoaded', () => {
   function focusEdges(edges) { edges.removeClass('faint-edge').addClass('focus-edge'); }
   function focusAllEdges() { cy.edges().removeClass('faint-edge').addClass('focus-edge'); }
   function returnToBaseline() { faintAllEdges(); }
+  // Auto-focus thresholds
+  const AUTO_FOCUS_ZOOM = 1.6; // zoom level at which all edges sharpen
+  const VISIBLE_EDGE_THRESHOLD = 5; // if <= this many edges visible, sharpen
+  let isPointerDown = false;
+  function autoEdgeFocusCheck(){
+    if (isPointerDown) return; // user actively interacting; defer
+    const zoom = cy.zoom();
+    // Quick short-circuit on zoom
+    if (zoom >= AUTO_FOCUS_ZOOM) {
+      if (!cy._autoEdgesFocused) { focusAllEdges(); cy._autoEdgesFocused = true; }
+      return;
+    }
+    // Count edges whose midpoint lies in viewport
+    const ext = cy.extent();
+    let visibleCount = 0;
+    for (const edge of cy.edges()) {
+      const m = edge.midpoint();
+      if (m.x >= ext.x1 && m.x <= ext.x2 && m.y >= ext.y1 && m.y <= ext.y2) {
+        visibleCount++;
+        if (visibleCount > VISIBLE_EDGE_THRESHOLD) break; // no need to continue
+      }
+    }
+    if (visibleCount <= VISIBLE_EDGE_THRESHOLD) {
+      if (!cy._autoEdgesFocused) { focusAllEdges(); cy._autoEdgesFocused = true; }
+    } else if (cy._autoEdgesFocused) {
+      // revert to baseline faint only if we aren't in a manually focused state
+      faintAllEdges();
+      cy._autoEdgesFocused = false;
+    }
+  }
   if (!cy._addedFaintEdgeStyle) {
     cy.style()
       .selector('edge.faint-edge')
@@ -755,13 +785,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Baseline: edges faint
   faintAllEdges();
   // Background press: temporarily show all sharply
-  cy.on('mousedown', (evt) => { if (evt.target === cy) requestAnimationFrame(()=>focusAllEdges()); });
+  cy.on('mousedown', (evt) => { isPointerDown = true; if (evt.target === cy) requestAnimationFrame(()=>focusAllEdges()); });
   // Node press: show only connected edges sharply
-  cy.on('mousedown', 'node', (evt) => { const node = evt.target; requestAnimationFrame(()=>{ faintAllEdges(); focusEdges(node.connectedEdges()); }); });
-  // Mouse release anywhere: revert to baseline faint
-  cy.on('mouseup', () => { requestAnimationFrame(()=>returnToBaseline()); });
+  cy.on('mousedown', 'node', (evt) => { isPointerDown = true; const node = evt.target; requestAnimationFrame(()=>{ faintAllEdges(); focusEdges(node.connectedEdges()); }); });
+  // Mouse release anywhere: revert or auto-focus depending on viewport
+  cy.on('mouseup', () => { isPointerDown = false; requestAnimationFrame(()=>{ returnToBaseline(); autoEdgeFocusCheck(); }); });
   // Double click background: toggle between baseline faint and full focus (quality-of-life)
-  cy.on('dblclick', (evt) => { if (evt.target === cy) { const anyFocused = cy.edges('.focus-edge').length === cy.edges().length; if (anyFocused) faintAllEdges(); else focusAllEdges(); } });
+  cy.on('dblclick', (evt) => { if (evt.target === cy) { const anyFocused = cy.edges('.focus-edge').length === cy.edges().length; if (anyFocused) { faintAllEdges(); cy._autoEdgesFocused=false; } else { focusAllEdges(); cy._autoEdgesFocused=true; } } });
+  cy.on('zoom pan', () => autoEdgeFocusCheck());
+  // Initial auto check post start
+  setTimeout(autoEdgeFocusCheck, 50);
 
   // (Legacy) cytoscape-edgehandles extension call removed – replaced by custom-edge-handles.js implementation.
   // If reintroducing the original extension later, insert its setup call here guarded by a feature flag.
