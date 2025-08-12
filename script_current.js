@@ -772,12 +772,8 @@ document.addEventListener('DOMContentLoaded', () => {
   cy.on('mouseup', () => {
     restoreAllEdges();
   });
-  // Optional: double-click background to restore all edges
-  cy.on('dblclick', (evt) => {
-    if (evt.target === cy) {
-      cy.edges().removeClass('hidden-edge');
-    }
-  });
+  // Optional: double-click background to immediately restore full edge emphasis
+  cy.on('dblclick', (evt) => { if (evt.target === cy) restoreAllEdges(); });
 
   // (Legacy) cytoscape-edgehandles extension call removed – replaced by custom-edge-handles.js implementation.
   // If reintroducing the original extension later, insert its setup call here guarded by a feature flag.
@@ -800,42 +796,26 @@ document.addEventListener('DOMContentLoaded', () => {
   function parseColorToHex6(input){
     if(!input) return null;
     let c = input.trim();
-    // Expand short hex #abc
-    if(/^#?[0-9a-fA-F]{3}$/.test(c)){
-      c = c.replace('#','');
-      c = c.split('').map(ch=>ch+ch).join('');
-      return '#'+c.toLowerCase();
-    }
-    // #rrggbb or #rrggbbaa
-    if(/^#?[0-9a-fA-F]{6,8}$/.test(c)){
-      c = c.replace('#','');
-      return '#'+c.slice(0,6).toLowerCase();
-    }
-    // rgb/rgba
-    let m = c.match(/^rgba?\(([^)]+)\)$/i);
+    // Expand #abc
+    if(/^#?[0-9a-fA-F]{3}$/.test(c)) return '#'+c.replace('#','').split('').map(ch=>ch+ch).join('').toLowerCase();
+    // #rrggbb / #rrggbbaa
+    if(/^#?[0-9a-fA-F]{6,8}$/.test(c)) return '#'+c.replace('#','').slice(0,6).toLowerCase();
+    // rgb/rgba()
+    const m = c.match(/^rgba?\(([^)]+)\)$/i);
     if(m){
       const parts = m[1].split(',').map(p=>parseFloat(p.trim()));
-      if(parts.length>=3){
-        const toHex=v=>('0'+Math.max(0,Math.min(255,Math.round(v))).toString(16)).slice(-2);
-        return '#'+toHex(parts[0])+toHex(parts[1])+toHex(parts[2]);
-      }
+      if(parts.length>=3){ const toHex=v=>('0'+Math.min(255,Math.max(0,Math.round(v))).toString(16)).slice(-2); return '#'+toHex(parts[0])+toHex(parts[1])+toHex(parts[2]); }
     }
-    // Named colors -> use canvas
+    // Named colors via canvas normalization
     if(typeof document!=='undefined'){
       const ctx = parseColorToHex6._ctx || (parseColorToHex6._ctx = document.createElement('canvas').getContext('2d'));
-      ctx.fillStyle = '#000';
-      ctx.fillStyle = c; // browser normalizes
-      const computed = ctx.fillStyle; // might be rgb(r,g,b)
-      if(computed !== '#000' || c.toLowerCase()==='black'){
-        if(/^#[0-9a-fA-F]{6}$/.test(computed)) return computed.toLowerCase();
-        const mm = computed.match(/^rgba?\(([^)]+)\)$/i);
-        if(mm){
-          const parts = mm[1].split(',').map(p=>parseFloat(p.trim()));
-          if(parts.length>=3){
-            const toHex=v=>('0'+Math.max(0,Math.min(255,Math.round(v))).toString(16)).slice(-2);
-            return '#'+toHex(parts[0])+toHex(parts[1])+toHex(parts[2]);
-          }
-        }
+      ctx.fillStyle = c; // will normalize or fallback
+      const computed = ctx.fillStyle; // rgb(...) or #rrggbb
+      if(/^#[0-9a-fA-F]{6}$/.test(computed)) return computed.toLowerCase();
+      const mm = computed.match(/^rgba?\(([^)]+)\)$/i);
+      if(mm){
+        const parts = mm[1].split(',').map(p=>parseFloat(p.trim()));
+        if(parts.length>=3){ const toHex=v=>('0'+Math.min(255,Math.max(0,Math.round(v))).toString(16)).slice(-2); return '#'+toHex(parts[0])+toHex(parts[1])+toHex(parts[2]); }
       }
     }
     return null;
@@ -877,54 +857,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const toHex = v => ('0'+Math.round(v*255).toString(16)).slice(-2);
   return '#'+toHex(r2)+toHex(g2)+toHex(b2);
   }
-  function relativeLuminance(hex){
-    const m = hex.match(/^#?([0-9a-fA-F]{6})$/); if(!m) return 0;
-    const c = m[1];
-    const r = parseInt(c.slice(0,2),16)/255;
-    const g = parseInt(c.slice(2,4),16)/255;
-    const b = parseInt(c.slice(4,6),16)/255;
-    const f=x=> x<=0.03928? x/12.92: Math.pow((x+0.055)/1.055,2.4);
-    return 0.2126*f(r)+0.7152*f(g)+0.0722*f(b);
-  }
-  function refreshSoftColors(){
-  if (cy._softening) return; // reentrancy guard
-  cy._softening = true;
-    cy.nodes('[floretColor]').forEach(n=>{
-      const orig = n.data('floretColor');
-  const prevBase = n.data('softBaseColor');
-  if (prevBase === orig && n.data('softFloretColor')) return; // already up-to-date
-  const soft = softenColor(orig);
-  n.data({ softFloretColor: soft, floretBorderColor: orig, softBaseColor: orig });
-      if (!n.data('userCustomTextColor')) {
-        const lum = relativeLuminance(soft);
+  function applySoftColorToNode(n){
+    const orig = n.data('floretColor');
+    if(!orig) return;
+    const prevBase = n.data('softBaseColor');
+    if(prevBase === orig && n.data('softFloretColor')) return; // already processed
+    const soft = softenColor(orig);
+    n.data({ softFloretColor: soft, floretBorderColor: orig, softBaseColor: orig });
+    if(!n.data('userCustomTextColor')){
+      // inline relative luminance calc (avoids extra global fn)
+      const m = soft.match(/^#?([0-9a-fA-F]{6})$/);
+      if(m){
+        const c = m[1];
+        const rf=parseInt(c.slice(0,2),16)/255, gf=parseInt(c.slice(2,4),16)/255, bf=parseInt(c.slice(4,6),16)/255;
+        const f=x=> x<=0.03928? x/12.92: Math.pow((x+0.055)/1.055,2.4);
+        const lum=0.2126*f(rf)+0.7152*f(gf)+0.0722*f(bf);
         n.data('textColor', lum > 0.55 ? '#111' : '#fff');
       }
-    });
+    }
+  }
+  function refreshSoftColors(){
+    if (cy._softening) return;
+    cy._softening = true;
+    cy.nodes('[floretColor]').forEach(applySoftColorToNode);
     cy.style()
       .selector('node[softFloretColor]')
         .style({ 'background-color':'data(softFloretColor)','background-opacity':1,'border-color':'data(floretBorderColor)','border-width':2 })
       .update();
-  cy._softening = false;
+    cy._softening = false;
   }
   refreshSoftColors();
-  window.refreshSoftColors = refreshSoftColors; // expose for external reapplication
-  // Re-soften after any data change to floretColor
-  cy.on('data', 'node', evt => {
-  if (cy._softening) return; // skip if inside softening batch
-    const node = evt.target;
-    const orig = node.data('floretColor');
-    if (!orig) return;
-    const prevBase = node.data('softBaseColor');
-    if (prevBase === orig && node.data('softFloretColor')) return; // unchanged color; skip
-    cy._softening = true; // treat as batch to suppress nested triggers
-    const soft = softenColor(orig);
-    node.data({ 'softFloretColor': soft, 'floretBorderColor': orig, 'softBaseColor': orig });
-    if (!node.data('userCustomTextColor')) {
-      const lum = relativeLuminance(soft);
-      node.data('textColor', lum > 0.55 ? '#111' : '#fff');
-    }
-    cy._softening = false;
-  });
+  window.refreshSoftColors = refreshSoftColors; // external reapplication
+  cy.on('data', 'node', evt => { if(!cy._softening) applySoftColorToNode(evt.target); });
   initializeCustomEdgeHandlesModeMonitoring();
 
   // Register custom context menu, edge modals, etc.

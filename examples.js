@@ -17,9 +17,9 @@ export const EXAMPLE_GRAPHS = [
     filename: "Policy analysis example_rent control.json"
   },
   {
-    name: "D&D NPC Favorability Graph",
-    description: "Track how party actions affect NPC factions in a D&D campaign.",
-    filename: "dnd-npc-favorability.json"
+    name: "D&D Faction Favorability Graph",
+    description: "Track how party's actions affect relationship with factions in a D&D campaign.",
+    filename: "dnd-faction-favorability.json"
   }
 ];
 

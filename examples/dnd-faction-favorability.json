@@ -1,0 +1,3283 @@
+{
+  "graph": [
+    {
+      "data": {
+        "id": "f_guard",
+        "label": "City Guard Favors Party\n50%",
+        "origLabel": "City Guard Favors Party",
+        "type": "assertion",
+        "hoverLabel": "Aggregate favorability of the City Guard (law & order focus). Center hub; do NOT toggle directly.",
+        "prob": 0.5000000019613653,
+        "textColor": "#000",
+        "robustness": 0.18126924692201818,
+        "robustnessLabel": "Low",
+        "borderWidth": 2,
+        "borderColor": "rgb(215,215,215)",
+        "shape": "roundrectangle",
+        "sizeIndex": 10,
+        "fontSize": 22,
+        "width": 188,
+        "textMaxWidth": 180,
+        "height": 82,
+        "floretColor": "black",
+        "softFloretColor": "#c7c7c7",
+        "floretBorderColor": "black",
+        "softBaseColor": "black",
+        "userCustomFloretColor": true
+      },
+      "position": {
+        "x": 24.911891098356307,
+        "y": -276.54182262417396
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "f_guild",
+        "label": "Thieves' Guild Favors Party\n50%",
+        "origLabel": "Thieves' Guild Favors Party",
+        "type": "assertion",
+        "hoverLabel": "Aggregate favorability of the Thieves' Guild (profit & leverage).",
+        "prob": 0.49999994589911584,
+        "textColor": "#000",
+        "robustness": 0.18126924692201818,
+        "robustnessLabel": "Low",
+        "borderWidth": 2,
+        "borderColor": "rgb(215,215,215)",
+        "shape": "roundrectangle",
+        "sizeIndex": 10,
+        "fontSize": 22,
+        "width": 220,
+        "textMaxWidth": 212,
+        "height": 82,
+        "floretColor": "red",
+        "softFloretColor": "#d1bdbd",
+        "floretBorderColor": "red",
+        "softBaseColor": "red",
+        "userCustomFloretColor": true
+      },
+      "position": {
+        "x": 162.99559178309812,
+        "y": -94.3171698713598
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "f_temple",
+        "label": "Temple of the Dawn Favors Party\n50%",
+        "origLabel": "Temple of the Dawn Favors Party",
+        "type": "assertion",
+        "hoverLabel": "Aggregate favorability of the Temple (piety, charity, visible virtue).",
+        "prob": 0.5000000002888993,
+        "textColor": "#000",
+        "robustness": 0.2591817793182821,
+        "robustnessLabel": "Low",
+        "borderWidth": 3,
+        "borderColor": "rgb(205,205,205)",
+        "shape": "roundrectangle",
+        "sizeIndex": 10,
+        "fontSize": 22,
+        "width": 253,
+        "textMaxWidth": 245,
+        "height": 82,
+        "floretColor": "purple",
+        "softFloretColor": "#d1bdd1",
+        "floretBorderColor": "purple",
+        "softBaseColor": "purple",
+        "userCustomFloretColor": true
+      },
+      "position": {
+        "x": 201.89425823074882,
+        "y": 118.08370068474183
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "f_collegium",
+        "label": "Mage Collegium Favors Party\n50%",
+        "origLabel": "Mage Collegium Favors Party",
+        "type": "assertion",
+        "hoverLabel": "Aggregate favorability of the Collegium (research, secrecy, arcane order).",
+        "prob": 0.499999994530303,
+        "textColor": "#000",
+        "robustness": 0.1392920235749422,
+        "robustnessLabel": "Minimal",
+        "borderWidth": 2,
+        "borderColor": "rgb(220,220,220)",
+        "shape": "roundrectangle",
+        "sizeIndex": 10,
+        "fontSize": 22,
+        "width": 220,
+        "textMaxWidth": 212,
+        "height": 82,
+        "floretColor": "blue",
+        "softFloretColor": "#bdbdd1",
+        "floretBorderColor": "blue",
+        "softBaseColor": "blue",
+        "userCustomFloretColor": true
+      },
+      "position": {
+        "x": -163.56827192558518,
+        "y": 81.67401369483645
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "f_union",
+        "label": "Dockworkers' Union Favors Party\n50%",
+        "origLabel": "Dockworkers' Union Favors Party",
+        "type": "assertion",
+        "hoverLabel": "Aggregate favorability of the Dockworkers' Union (wages, safety, solidarity).",
+        "prob": 0.49999999886962676,
+        "textColor": "#000",
+        "robustness": 0.1392920235749422,
+        "robustnessLabel": "Minimal",
+        "borderWidth": 2,
+        "borderColor": "rgb(220,220,220)",
+        "shape": "roundrectangle",
+        "sizeIndex": 10,
+        "fontSize": 22,
+        "width": 253,
+        "textMaxWidth": 245,
+        "height": 82,
+        "floretColor": "green",
+        "softFloretColor": "#bdd1bd",
+        "floretBorderColor": "green",
+        "softBaseColor": "green",
+        "userCustomFloretColor": true
+      },
+      "position": {
+        "x": -212.81937397981073,
+        "y": -130.72685686126516
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "note_instructions",
+        "label": "Right click to toggle the nodes on and off depending on party's choices and preset influences.",
+        "origLabel": "How To Use (DM)",
+        "type": "note",
+        "borderWidth": 1,
+        "borderColor": "#ddd",
+        "shape": "roundrectangle",
+        "displayLabel": "Right click to toggle the nodes on and off depending on party's choices and preset influences.",
+        "sizeIndex": 16,
+        "fontSize": 28,
+        "width": 350,
+        "textMaxWidth": 342,
+        "height": 272
+      },
+      "position": {
+        "x": -927.9586457113401,
+        "y": -188.86210886058393
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "bias_guard_overstretched",
+        "label": "Campaign Bias: Guard Overstretched\nINERT",
+        "origLabel": "Campaign Bias: Guard Overstretched",
+        "type": "fact",
+        "hoverLabel": "Baseline: Guard stretched thin (−Guard, +Guild opportunism, +Union sympathy). Starts inert until activated.",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 189,
+        "textMaxWidth": 181,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": 27.598774079499435,
+        "y": -563.4506114786186
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "bias_temple_scandal",
+        "label": "Campaign Bias: Temple Scandal Lingers\nINERT",
+        "origLabel": "Campaign Bias: Temple Scandal Lingers",
+        "type": "fact",
+        "hoverLabel": "Baseline: lingering scandal (−Temple, +Guild exploiting piety vac). Starts inert.",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 202,
+        "textMaxWidth": 194,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": 269.55562008320686,
+        "y": -529.1112401664137
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "bias_arcane_embargo",
+        "label": "Campaign Bias: Arcane Embargo\nINERT",
+        "origLabel": "Campaign Bias: Arcane Embargo",
+        "type": "fact",
+        "hoverLabel": "Baseline: anti-magic embargo (−Collegium, +Guard order stance). Starts inert.",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 161,
+        "textMaxWidth": 153,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -383.2211846807454,
+        "y": -422.1731277010668
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "bias_prices_crash",
+        "label": "Campaign Bias: Harbor Prices Crash\nINERT",
+        "origLabel": "Campaign Bias: Harbor Prices Crash",
+        "type": "fact",
+        "hoverLabel": "Baseline: freight price collapse (−Union, +Guild arbitrage). Starts inert.",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 189,
+        "textMaxWidth": 181,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -580.6783108450894,
+        "y": -95.07158334340133
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "sting_success",
+        "label": "Smuggling Sting: Success\nINERT",
+        "origLabel": "Smuggling Sting: Success",
+        "type": "fact",
+        "hoverLabel": "Party busts ring at Pier 7 (Guard++, Temple+, Guild−−, Union−).",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 134,
+        "textMaxWidth": 126,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": 410.17712182043067,
+        "y": -406.30515364817
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "sting_failure",
+        "label": "Smuggling Sting: Failure\nINERT",
+        "origLabel": "Smuggling Sting: Failure",
+        "type": "fact",
+        "hoverLabel": "Sting botched (Guard−, Guild+, Union+, slight Temple concern).",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 134,
+        "textMaxWidth": 126,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": 538.8626394715242,
+        "y": -277.12243460729746
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "strike_protect",
+        "label": "Strike: Protect the Line\nINERT",
+        "origLabel": "Strike: Protect the Line",
+        "type": "fact",
+        "hoverLabel": "Guard confrontations; party shields workers (Union++, Guard−, slight Temple optics −, Guild mixed?).",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 134,
+        "textMaxWidth": 126,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -506.21446875110956,
+        "y": 271.13081158603194
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "strike_break",
+        "label": "Strike: Break the Strike\nINERT",
+        "origLabel": "Strike: Break the Strike",
+        "type": "fact",
+        "hoverLabel": "Party breaks strike (Guard+, Union−−, Guild−, Temple− mercy optics).",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 134,
+        "textMaxWidth": 126,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -546.8694300426287,
+        "y": 173.21532265371113
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "strike_failAid",
+        "label": "Strike: Failed Aid\nINERT",
+        "origLabel": "Strike: Failed Aid",
+        "type": "fact",
+        "hoverLabel": "Tried helping line but failed (half magnitudes).",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 100,
+        "textMaxWidth": 92,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -368.4599401793553,
+        "y": 389.4748823396012
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "strike_failBreak",
+        "label": "Strike: Failed Strikebreaking\nINERT",
+        "origLabel": "Strike: Failed Strikebreaking",
+        "type": "fact",
+        "hoverLabel": "Tried to break strike; muddled result (half & inverted where apt).",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 161,
+        "textMaxWidth": 153,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -583.9773129765639,
+        "y": 44.854586712081854
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "relic_public",
+        "label": "Relic: Public Return\nINERT",
+        "origLabel": "Relic: Public Return",
+        "type": "fact",
+        "hoverLabel": "Relic restored with ceremony (Temple++, Guard+, Guild−, Collegium small ±).",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 111,
+        "textMaxWidth": 103,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": 207.39911334284355,
+        "y": 402.16005585042024
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "relic_fenced",
+        "label": "Relic: Fenced Quietly\nINERT",
+        "origLabel": "Relic: Fenced Quietly",
+        "type": "fact",
+        "hoverLabel": "Relic sold clandestinely (Guild++, Temple−−, Guard−, Collegium+).",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 117,
+        "textMaxWidth": 109,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": 551.9078849418012,
+        "y": 406.58585356164804
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "relic_failed",
+        "label": "Relic: Lost\nINERT",
+        "origLabel": "Relic: Lost",
+        "type": "fact",
+        "hoverLabel": "Failed to recover relic (Temple−, Guard−).",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 62,
+        "textMaxWidth": 54,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": 385.5396833408312,
+        "y": 419.17378270861497
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "experiment_contained",
+        "label": "Arcane Incident Contained\nINERT",
+        "origLabel": "Arcane Incident Contained",
+        "type": "fact",
+        "hoverLabel": "Runaway experiment contained (Collegium++, Guard+, Temple+, Union−).",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 139,
+        "textMaxWidth": 131,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -11.966244536033706,
+        "y": 461.82411473460365
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "experiment_loose",
+        "label": "Arcane Incident Loose\nINERT",
+        "origLabel": "Arcane Incident Loose",
+        "type": "fact",
+        "hoverLabel": "Experiment loose (Guard−, Temple−, Union−, Guild+).",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 117,
+        "textMaxWidth": 109,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -195.4875069416235,
+        "y": 419.62652785576495
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "nephew_rescued",
+        "label": "Captain's Nephew Rescued\nINERT",
+        "origLabel": "Captain's Nephew Rescued",
+        "type": "fact",
+        "hoverLabel": "Rescued from kidnappers (Guard++, Guild−, Union+).",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 134,
+        "textMaxWidth": 126,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -575.9124932250068,
+        "y": -226.92748811252852
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "nephew_bungled",
+        "label": "Rescue Bungled\nINERT",
+        "origLabel": "Rescue Bungled",
+        "type": "fact",
+        "hoverLabel": "Rescue failed (Guard−−, Guild+, Temple−).",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 78,
+        "textMaxWidth": 70,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -546.53206025574,
+        "y": -350.76157395928544
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "curfew_defy",
+        "label": "Harbor Curfew Defied\nINERT",
+        "origLabel": "Harbor Curfew Defied",
+        "type": "fact",
+        "hoverLabel": "Party denounces & defies curfew (Guard−−, Union+, Guild+, Temple nuanced).",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 111,
+        "textMaxWidth": 103,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": 589.4650944948172,
+        "y": -152.76168975302647
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "curfew_support",
+        "label": "Harbor Curfew Enforced\nINERT",
+        "origLabel": "Harbor Curfew Enforced",
+        "type": "fact",
+        "hoverLabel": "Party supports curfew (Guard++, Union−, Guild−).",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 123,
+        "textMaxWidth": 115,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": 614.6196090256144,
+        "y": -7.8362771365572215
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "patent_collegium",
+        "label": "Patent: Side Collegium\nINERT",
+        "origLabel": "Patent: Side Collegium",
+        "type": "fact",
+        "hoverLabel": "Back Collegium crackdown (Collegium++, Temple−, Union−, Guild−).",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 123,
+        "textMaxWidth": 115,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -355.16728770909543,
+        "y": -545.1065407250494
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "patent_street",
+        "label": "Patent: Back Street Mages\nINERT",
+        "origLabel": "Patent: Back Street Mages",
+        "type": "fact",
+        "hoverLabel": "Support hedge-wizards (Collegium−−, Temple+, Union+, Guild+).",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 139,
+        "textMaxWidth": 131,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -179.29693257168282,
+        "y": -569.7648411222259
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "gala_expose",
+        "label": "Gala: Expose Cleanly\nINERT",
+        "origLabel": "Gala: Expose Cleanly",
+        "type": "fact",
+        "hoverLabel": "Expose corruption cleanly (Guard+, Temple+, Guild−, Union+).",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 111,
+        "textMaxWidth": 103,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": 567.1868591287136,
+        "y": 259.6492942333292
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "gala_crude",
+        "label": "Gala: Crude Sabotage\nINERT",
+        "origLabel": "Gala: Crude Sabotage",
+        "type": "fact",
+        "hoverLabel": "Crude property damage (Guard−, Temple−, Guild+, slight Union ±).",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "backgroundOpacity": 0.75,
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 111,
+        "textMaxWidth": 103,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": 661.7930263372125,
+        "y": 144.6892491313881
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "and_relic_plus_contain",
+        "label": "AND\n—",
+        "origLabel": "Public Relic AND Contained Incident",
+        "type": "and",
+        "hoverLabel": "Only if BOTH: Temple publicly endorses cooperation → small Collegium bonus.",
+        "isVirgin": true,
+        "textColor": "#000",
+        "borderWidth": 3,
+        "borderColor": "#bbb",
+        "shape": "diamond",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 60,
+        "textMaxWidth": 52,
+        "height": 56
+      },
+      "position": {
+        "x": 188.48973842918986,
+        "y": 555.3635723415979
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "bias_guard_overstretched",
+        "target": "f_guard",
+        "type": "opposes",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "id": "7827f27f-6cc7-476b-8ecc-5a7d873e3340",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "opposes",
+        "label": "(Sm)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "bias_guard_overstretched",
+        "target": "f_guild",
+        "type": "supports",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "id": "e9b15065-4c12-480e-a5ed-7ea7e231c1fe",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "supports",
+        "label": "Sm"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "bias_guard_overstretched",
+        "target": "f_union",
+        "type": "supports",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "id": "88f0e7b4-af63-4ec3-8b18-c18307e65dec",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "supports",
+        "label": "Sm"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "bias_temple_scandal",
+        "target": "f_temple",
+        "type": "opposes",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "id": "35ad4482-a399-43aa-807f-040dda5215c0",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "opposes",
+        "label": "(Sm)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "bias_temple_scandal",
+        "target": "f_guild",
+        "type": "supports",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "id": "c92cc3f0-defe-4b0a-a578-1f5336ec3bb1",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "supports",
+        "label": "Sm"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "bias_arcane_embargo",
+        "target": "f_collegium",
+        "type": "opposes",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "id": "ee701e7e-26e6-44b4-b725-162c59930ba6",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "opposes",
+        "label": "(Sm)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "bias_arcane_embargo",
+        "target": "f_guard",
+        "type": "supports",
+        "weight": 0.2,
+        "userAssignedWeight": 0.2,
+        "id": "e3b4b84c-9c01-42fe-b5cd-df95bca9cfa2",
+        "computedWeight": 0.2,
+        "absWeight": 0.2,
+        "lineColor": "rgb(188,188,188)",
+        "displayType": "supports",
+        "label": "Min"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "bias_prices_crash",
+        "target": "f_union",
+        "type": "opposes",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "id": "128a2d3f-9e62-487a-b65f-a2c2d30f3cc0",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "opposes",
+        "label": "(Sm)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "bias_prices_crash",
+        "target": "f_guild",
+        "type": "supports",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "id": "15d282b8-6fd4-4ff7-8398-c093656a8d0d",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "supports",
+        "label": "Sm"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "sting_success",
+        "target": "f_guard",
+        "type": "supports",
+        "weight": 0.95,
+        "userAssignedWeight": 0.95,
+        "id": "96a958b2-df65-4928-ba1c-5d2d189965e7",
+        "computedWeight": 0.95,
+        "absWeight": 0.95,
+        "lineColor": "rgb(53,53,53)",
+        "displayType": "supports",
+        "label": "Lrg"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "sting_success",
+        "target": "f_guild",
+        "type": "opposes",
+        "weight": 0.95,
+        "userAssignedWeight": 0.95,
+        "id": "c383c157-b089-4942-8333-1af01886c452",
+        "computedWeight": 0.95,
+        "absWeight": 0.95,
+        "lineColor": "rgb(53,53,53)",
+        "displayType": "opposes",
+        "label": "(Lrg)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "sting_success",
+        "target": "f_union",
+        "type": "opposes",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "id": "4ff87e76-efc9-4cfd-a9cf-1aa9f81b636a",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "opposes",
+        "label": "(Sm)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "sting_success",
+        "target": "f_temple",
+        "type": "supports",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "id": "e764d1f0-17eb-4fe7-823a-ac1f38ddb854",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "supports",
+        "label": "Sm"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "sting_failure",
+        "target": "f_guard",
+        "type": "opposes",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "id": "8c0eeab0-7652-4231-a907-8c086083b0c6",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "opposes",
+        "label": "(Sm)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "sting_failure",
+        "target": "f_guild",
+        "type": "supports",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "b2e72957-9ef0-4f5a-8fcb-be4587333854",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": "Med"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "sting_failure",
+        "target": "f_union",
+        "type": "supports",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "id": "92decf52-f462-40b8-b915-fba55444a495",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "supports",
+        "label": "Sm"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "sting_failure",
+        "target": "f_temple",
+        "type": "opposes",
+        "weight": 0.2,
+        "userAssignedWeight": 0.2,
+        "id": "f3db97b1-d234-4c7b-9765-1cf58ca6fdd3",
+        "computedWeight": 0.2,
+        "absWeight": 0.2,
+        "lineColor": "rgb(188,188,188)",
+        "displayType": "opposes",
+        "label": "(Min)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "strike_protect",
+        "target": "f_union",
+        "type": "supports",
+        "weight": 0.95,
+        "userAssignedWeight": 0.95,
+        "id": "c1507d59-9308-4c4a-9e41-f055afa1b790",
+        "computedWeight": 0.95,
+        "absWeight": 0.95,
+        "lineColor": "rgb(53,53,53)",
+        "displayType": "supports",
+        "label": "Lrg"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "strike_protect",
+        "target": "f_guard",
+        "type": "opposes",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "id": "b04b2657-3e36-45d7-a5f0-96c1bfd305a2",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "opposes",
+        "label": "(Sm)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "strike_protect",
+        "target": "f_temple",
+        "type": "opposes",
+        "weight": 0.2,
+        "userAssignedWeight": 0.2,
+        "id": "4501386f-06d1-48e3-8db9-6717f43894a3",
+        "computedWeight": 0.2,
+        "absWeight": 0.2,
+        "lineColor": "rgb(188,188,188)",
+        "displayType": "opposes",
+        "label": "(Min)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "strike_break",
+        "target": "f_guard",
+        "type": "supports",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "26df3319-b501-4851-ac59-b405e8b3d627",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": "Med"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "strike_break",
+        "target": "f_union",
+        "type": "opposes",
+        "weight": 0.95,
+        "userAssignedWeight": 0.95,
+        "id": "ecc74d77-502f-4389-bce0-426e2954ad51",
+        "computedWeight": 0.95,
+        "absWeight": 0.95,
+        "lineColor": "rgb(53,53,53)",
+        "displayType": "opposes",
+        "label": "(Lrg)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "strike_break",
+        "target": "f_guild",
+        "type": "opposes",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "id": "b6e27112-6862-4638-a6e8-47a36b311499",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "opposes",
+        "label": "(Sm)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "strike_break",
+        "target": "f_temple",
+        "type": "opposes",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "id": "febc9a9d-22d7-4904-9a24-336fffd0ab1f",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "opposes",
+        "label": "(Sm)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "strike_failAid",
+        "target": "f_union",
+        "type": "supports",
+        "weight": 0.5,
+        "userAssignedWeight": 0.5,
+        "id": "d39ef585-3ab3-4f7c-95af-22be63b48155",
+        "computedWeight": 0.5,
+        "absWeight": 0.5,
+        "lineColor": "rgb(134,134,134)",
+        "displayType": "supports",
+        "label": "Med"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "strike_failAid",
+        "target": "f_guard",
+        "type": "opposes",
+        "weight": 0.2,
+        "userAssignedWeight": 0.2,
+        "id": "34c1c0f5-cfac-4959-8e34-2be279009c99",
+        "computedWeight": 0.2,
+        "absWeight": 0.2,
+        "lineColor": "rgb(188,188,188)",
+        "displayType": "opposes",
+        "label": "(Min)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "strike_failBreak",
+        "target": "f_guard",
+        "type": "supports",
+        "weight": 0.3,
+        "userAssignedWeight": 0.3,
+        "id": "be5a25fe-43bd-47c5-b368-431f85f4c346",
+        "computedWeight": 0.3,
+        "absWeight": 0.3,
+        "lineColor": "rgb(170,170,170)",
+        "displayType": "supports",
+        "label": "Sm"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "strike_failBreak",
+        "target": "f_union",
+        "type": "opposes",
+        "weight": 0.5,
+        "userAssignedWeight": 0.5,
+        "id": "fd852b60-d60c-48f9-a29f-807f8ce82032",
+        "computedWeight": 0.5,
+        "absWeight": 0.5,
+        "lineColor": "rgb(134,134,134)",
+        "displayType": "opposes",
+        "label": "(Med)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "relic_public",
+        "target": "f_temple",
+        "type": "supports",
+        "weight": 0.95,
+        "userAssignedWeight": 0.95,
+        "id": "0f8bd0d8-8a39-436d-8f31-b212a1ce1c8b",
+        "computedWeight": 0.95,
+        "absWeight": 0.95,
+        "lineColor": "rgb(53,53,53)",
+        "displayType": "supports",
+        "label": "Lrg"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "relic_public",
+        "target": "f_guard",
+        "type": "supports",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "98a3e880-3400-4359-a1b3-37768ebb74c2",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": "Med"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "relic_public",
+        "target": "f_guild",
+        "type": "opposes",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "b9f6be46-d78b-41e5-8651-25ef4d987723",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "opposes",
+        "label": "(Med)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "relic_public",
+        "target": "f_collegium",
+        "type": "supports",
+        "weight": 0.2,
+        "userAssignedWeight": 0.2,
+        "id": "310c1ddc-50d0-4330-af32-c56f228a69cb",
+        "computedWeight": 0.2,
+        "absWeight": 0.2,
+        "lineColor": "rgb(188,188,188)",
+        "displayType": "supports",
+        "label": "Min"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "relic_fenced",
+        "target": "f_guild",
+        "type": "supports",
+        "weight": 0.95,
+        "userAssignedWeight": 0.95,
+        "id": "2db1dbeb-cf53-492d-b57c-2d58a14c2c65",
+        "computedWeight": 0.95,
+        "absWeight": 0.95,
+        "lineColor": "rgb(53,53,53)",
+        "displayType": "supports",
+        "label": "Lrg"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "relic_fenced",
+        "target": "f_temple",
+        "type": "opposes",
+        "weight": 0.95,
+        "userAssignedWeight": 0.95,
+        "id": "24faace1-46e8-4425-bc26-b7d2c0647d77",
+        "computedWeight": 0.95,
+        "absWeight": 0.95,
+        "lineColor": "rgb(53,53,53)",
+        "displayType": "opposes",
+        "label": "(Lrg)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "relic_fenced",
+        "target": "f_guard",
+        "type": "opposes",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "d81e1b71-8ca9-4494-9ff3-b89da0900050",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "opposes",
+        "label": "(Med)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "relic_fenced",
+        "target": "f_collegium",
+        "type": "supports",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "db23c4f1-e408-4e4d-a452-f39acb60b941",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": "Med"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "relic_failed",
+        "target": "f_temple",
+        "type": "opposes",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "02350980-2d27-41c6-8c13-26ddb434acc3",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "opposes",
+        "label": "(Med)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "relic_failed",
+        "target": "f_guard",
+        "type": "opposes",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "e7a2bfa6-38ff-42e9-b1b6-b10680c2a90c",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "opposes",
+        "label": "(Med)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "experiment_contained",
+        "target": "f_collegium",
+        "type": "supports",
+        "weight": 0.95,
+        "userAssignedWeight": 0.95,
+        "id": "187caed1-fc91-4861-a294-fe85ec1a52e2",
+        "computedWeight": 0.95,
+        "absWeight": 0.95,
+        "lineColor": "rgb(53,53,53)",
+        "displayType": "supports",
+        "label": "Lrg"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "experiment_contained",
+        "target": "f_guard",
+        "type": "supports",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "5a5035ae-ed52-4879-8427-b25c587ae6ff",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": "Med"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "experiment_contained",
+        "target": "f_temple",
+        "type": "supports",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "4a9fb673-0539-444b-9675-b339a2767f38",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": "Med"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "experiment_contained",
+        "target": "f_union",
+        "type": "opposes",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "id": "63740868-2ad6-4677-b428-7f7497344ec1",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "opposes",
+        "label": "(Sm)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "experiment_loose",
+        "target": "f_guard",
+        "type": "opposes",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "a3026072-e4e4-4706-a13c-b75fd4ca3e74",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "opposes",
+        "label": "(Med)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "experiment_loose",
+        "target": "f_temple",
+        "type": "opposes",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "69d1a22c-5dd8-474a-ae3d-006092d2c7e7",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "opposes",
+        "label": "(Med)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "experiment_loose",
+        "target": "f_union",
+        "type": "opposes",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "319108ee-d9aa-4515-8675-711e0d6adcb5",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "opposes",
+        "label": "(Med)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "experiment_loose",
+        "target": "f_guild",
+        "type": "supports",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "558a6ebc-b433-43e0-ace8-685f6c85065c",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": "Med"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "nephew_rescued",
+        "target": "f_guard",
+        "type": "supports",
+        "weight": 0.95,
+        "userAssignedWeight": 0.95,
+        "id": "1796da47-14ee-4ac1-9bde-116c72e111c6",
+        "computedWeight": 0.95,
+        "absWeight": 0.95,
+        "lineColor": "rgb(53,53,53)",
+        "displayType": "supports",
+        "label": "Lrg"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "nephew_rescued",
+        "target": "f_guild",
+        "type": "opposes",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "4a33ff57-6c49-499b-b9d2-49f678a75fe7",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "opposes",
+        "label": "(Med)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "nephew_rescued",
+        "target": "f_union",
+        "type": "supports",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "95a839b0-a1fc-4796-99f5-f32c4da68854",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": "Med"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "nephew_bungled",
+        "target": "f_guard",
+        "type": "opposes",
+        "weight": 0.95,
+        "userAssignedWeight": 0.95,
+        "id": "11800c9e-7e46-4717-ab47-f7be0eb90a0d",
+        "computedWeight": 0.95,
+        "absWeight": 0.95,
+        "lineColor": "rgb(53,53,53)",
+        "displayType": "opposes",
+        "label": "(Lrg)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "nephew_bungled",
+        "target": "f_guild",
+        "type": "supports",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "cff89921-af06-4571-9afb-c67e1744f42e",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": "Med"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "nephew_bungled",
+        "target": "f_temple",
+        "type": "opposes",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "b3cb0eab-d092-44d9-aea1-dfb7521c17d8",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "opposes",
+        "label": "(Med)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "curfew_defy",
+        "target": "f_guard",
+        "type": "opposes",
+        "weight": 0.95,
+        "userAssignedWeight": 0.95,
+        "id": "a1c57cc3-ad07-4464-a5e7-109e34cb781e",
+        "computedWeight": 0.95,
+        "absWeight": 0.95,
+        "lineColor": "rgb(53,53,53)",
+        "displayType": "opposes",
+        "label": "(Lrg)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "curfew_defy",
+        "target": "f_union",
+        "type": "supports",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "e3b80e14-d8b6-4301-8bc3-717af7286be1",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": "Med"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "curfew_defy",
+        "target": "f_guild",
+        "type": "supports",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "b0ad3ea0-bfa6-43e6-b0c9-67fbd5813b17",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": "Med"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "curfew_defy",
+        "target": "f_temple",
+        "type": "supports",
+        "weight": 0.2,
+        "userAssignedWeight": 0.2,
+        "id": "630e104e-e995-4e76-8b8e-8e7d960fd0a4",
+        "computedWeight": 0.2,
+        "absWeight": 0.2,
+        "lineColor": "rgb(188,188,188)",
+        "displayType": "supports",
+        "label": "Min"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "curfew_support",
+        "target": "f_guard",
+        "type": "supports",
+        "weight": 0.95,
+        "userAssignedWeight": 0.95,
+        "id": "999b9812-365e-4642-a0b5-f89636b439ae",
+        "computedWeight": 0.95,
+        "absWeight": 0.95,
+        "lineColor": "rgb(53,53,53)",
+        "displayType": "supports",
+        "label": "Lrg"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "curfew_support",
+        "target": "f_union",
+        "type": "opposes",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "7f117f26-1bcb-4e89-a525-b34185a9369e",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "opposes",
+        "label": "(Med)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "curfew_support",
+        "target": "f_guild",
+        "type": "opposes",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "ebad7256-a4f4-4a91-8b08-ea9bfe25f658",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "opposes",
+        "label": "(Med)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "patent_collegium",
+        "target": "f_collegium",
+        "type": "supports",
+        "weight": 0.95,
+        "userAssignedWeight": 0.95,
+        "id": "20a55765-f30f-4a6b-9dcc-ddbb9e2d3471",
+        "computedWeight": 0.95,
+        "absWeight": 0.95,
+        "lineColor": "rgb(53,53,53)",
+        "displayType": "supports",
+        "label": "Lrg"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "patent_collegium",
+        "target": "f_temple",
+        "type": "opposes",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "46645f0b-1d94-4f76-bd1b-c9852322326f",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "opposes",
+        "label": "(Med)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "patent_collegium",
+        "target": "f_union",
+        "type": "opposes",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "6ba2d64e-a884-4e33-a1ec-cd99debd4551",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "opposes",
+        "label": "(Med)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "patent_collegium",
+        "target": "f_guild",
+        "type": "opposes",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "500dbfd5-d3e1-4428-b8ff-429b084daeb3",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "opposes",
+        "label": "(Med)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "patent_street",
+        "target": "f_collegium",
+        "type": "opposes",
+        "weight": 0.95,
+        "userAssignedWeight": 0.95,
+        "id": "6ea5fc75-e762-4b19-8fd1-4fd608a9a14e",
+        "computedWeight": 0.95,
+        "absWeight": 0.95,
+        "lineColor": "rgb(53,53,53)",
+        "displayType": "opposes",
+        "label": "(Lrg)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "patent_street",
+        "target": "f_temple",
+        "type": "supports",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "e9d23404-64dd-428e-b45d-7181175a0c01",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": "Med"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "patent_street",
+        "target": "f_union",
+        "type": "supports",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "a87fd64a-4588-4f78-8d31-cdc0335c8386",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": "Med"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "patent_street",
+        "target": "f_guild",
+        "type": "supports",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "896058e0-9a07-45d5-9310-861f2506bf4b",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": "Med"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "gala_expose",
+        "target": "f_guard",
+        "type": "supports",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "4a117c7f-93dc-4085-b7fb-42b4a409ca91",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": "Med"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "gala_expose",
+        "target": "f_temple",
+        "type": "supports",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "44004914-21cc-4937-bce3-3bc8707fdadc",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": "Med"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "gala_expose",
+        "target": "f_guild",
+        "type": "opposes",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "90a4477c-fcc1-4e1b-80c5-67ad04119d69",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "opposes",
+        "label": "(Med)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "gala_expose",
+        "target": "f_union",
+        "type": "supports",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "841971c5-0e95-4456-b9ea-3c2b2a7e2926",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": "Med"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "gala_crude",
+        "target": "f_guard",
+        "type": "opposes",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "f0ebf95f-ec87-40a5-b9ed-6f3a0605511c",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "opposes",
+        "label": "(Med)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "gala_crude",
+        "target": "f_temple",
+        "type": "opposes",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "eeb42823-3b6c-4b9f-b2da-6e864dfc1202",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "opposes",
+        "label": "(Med)"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "gala_crude",
+        "target": "f_guild",
+        "type": "supports",
+        "weight": 0.6,
+        "userAssignedWeight": 0.6,
+        "id": "9dd96a8e-2518-40c8-86ac-05a200c6db60",
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": "Med"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "gala_crude",
+        "target": "f_union",
+        "type": "supports",
+        "weight": 0.2,
+        "userAssignedWeight": 0.2,
+        "id": "dc4fba5c-5233-4503-8ec9-32f5a0e22ffb",
+        "computedWeight": 0.2,
+        "absWeight": 0.2,
+        "lineColor": "rgb(188,188,188)",
+        "displayType": "supports",
+        "label": "Min"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "relic_public",
+        "target": "and_relic_plus_contain",
+        "type": "supports",
+        "weight": 0.9,
+        "userAssignedWeight": 0.9,
+        "id": "129107af-89b8-4372-b029-7ad4dcff975c",
+        "computedWeight": 0.9,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "experiment_contained",
+        "target": "and_relic_plus_contain",
+        "type": "supports",
+        "weight": 0.9,
+        "userAssignedWeight": 0.9,
+        "id": "29664540-148f-4995-bb45-b6ba67006eea",
+        "computedWeight": 0.9,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "and_relic_plus_contain",
+        "target": "f_collegium",
+        "type": "supports",
+        "weight": 0.2,
+        "userAssignedWeight": 0.2,
+        "id": "766c61c1-806f-4763-a035-1f344afc4491",
+        "computedWeight": 0.2,
+        "absWeight": 0,
+        "lineColor": "#ff9900",
+        "displayType": "supports",
+        "label": "Min"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "f_guard",
+        "target": "f_temple",
+        "type": "supports",
+        "weight": 0.15,
+        "userAssignedWeight": 0.15,
+        "id": "9d936f60-268a-4184-8c81-6517e82a2e53",
+        "computedWeight": 0.15,
+        "absWeight": 0.15,
+        "lineColor": "rgb(197,197,197)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "f_guard",
+        "target": "f_guild",
+        "type": "opposes",
+        "weight": 0.2,
+        "userAssignedWeight": 0.2,
+        "id": "06aed8aa-1ca1-440e-8871-30e922679dd0",
+        "computedWeight": 0.2,
+        "absWeight": 0.2,
+        "lineColor": "rgb(188,188,188)",
+        "displayType": "opposes",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "f_guild",
+        "target": "f_guard",
+        "type": "opposes",
+        "weight": 0.2,
+        "userAssignedWeight": 0.2,
+        "id": "3d5c8857-8bc4-496a-bd28-5226344158ab",
+        "computedWeight": 0.2,
+        "absWeight": 0.2,
+        "lineColor": "rgb(188,188,188)",
+        "displayType": "opposes",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "f_guild",
+        "target": "f_union",
+        "type": "supports",
+        "weight": 0.15,
+        "userAssignedWeight": 0.15,
+        "id": "7bab7167-da37-42ce-8939-34aa6b3f97f3",
+        "computedWeight": 0.15,
+        "absWeight": 0.15,
+        "lineColor": "rgb(197,197,197)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "f_temple",
+        "target": "f_collegium",
+        "type": "opposes",
+        "weight": 0.15,
+        "userAssignedWeight": 0.15,
+        "id": "a6387d69-9214-4918-9f95-bf3b1ccef3df",
+        "computedWeight": 0.15,
+        "absWeight": 0.15,
+        "lineColor": "rgb(197,197,197)",
+        "displayType": "opposes",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "f_collegium",
+        "target": "f_temple",
+        "type": "opposes",
+        "weight": 0.15,
+        "userAssignedWeight": 0.15,
+        "id": "2f823dec-5fbc-413e-aa56-26b127154833",
+        "computedWeight": 0.15,
+        "absWeight": 0.15,
+        "lineColor": "rgb(197,197,197)",
+        "displayType": "opposes",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": ""
+    }
+  ],
+  "textAnnotations": [],
+  "version": "1.0"
+}
