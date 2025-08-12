@@ -457,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
       'border-color': '#ff9800',
       'border-width': 4,
       'background-color': '#555',
-  'background-opacity': 'data(backgroundOpacity)',
+  'background-opacity': 1,
       'text-outline-width': 2,
       'text-outline-color': '#000'
     }

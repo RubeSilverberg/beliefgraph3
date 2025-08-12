@@ -270,10 +270,9 @@ export function computeVisuals(cy) {
       if (node.data('inertFact')) {
         borderColor = '#ff9800';
         borderWidth = 4;
-        node.data('backgroundOpacity', 0.75);
-      } else {
-        node.removeData('backgroundOpacity');
       }
+      // Ensure any legacy translucency flag is cleared so inert facts are fully opaque
+      if (node.data('backgroundOpacity') !== undefined) node.removeData('backgroundOpacity');
     }
     else if (nodeType === NODE_TYPE_ASSERTION) {
       // Only set default text color if user hasn't customized it
