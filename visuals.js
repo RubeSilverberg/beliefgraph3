@@ -90,7 +90,12 @@ export function getEdgeLabel(edge) {
   // Lite mode logic
   const targetNode = edge.target();
   const parentNode = edge.source();
-  const parentProb = parentNode.data('prob');
+  let parentProb = parentNode.data('prob');
+  // Inert facts: show their value but do not allow propagation; treat as undefined for edge activation logic
+  const parentIsInert = parentNode.data('type') === NODE_TYPE_FACT && parentNode.data('inertFact');
+  if (parentIsInert) {
+    // Keep local parentProb variable for potential display elsewhere, but for virgin detection treat as absent
+  }
   const edgeWeight = edge.data('weight');
   const hasUserWeight = edge.data('userAssignedWeight') !== undefined;
   const targetType = targetNode.data('type');
@@ -108,7 +113,7 @@ export function getEdgeLabel(edge) {
   }
   
   // Check if this is a virgin edge (no parent prob OR no weight)
-  const isVirgin = typeof parentProb !== "number" || !edgeWeight || edgeWeight === 0;
+  const isVirgin = parentIsInert || typeof parentProb !== 'number' || !edgeWeight || edgeWeight === 0;
   
   // Debug logging to track virgin detection
   if (DEBUG) {
@@ -168,6 +173,8 @@ export function autoUpdateNodeTypes(cy, fromConvergeAll = false) {
             edge.data('userAssignedWeight', currentWeight);
           }
         });
+  // Clear inert flag when leaving fact state
+  if (node.data('inertFact')) node.removeData('inertFact');
       }
       
       // If converting from assertion to fact, restore any preserved edge weights
@@ -259,6 +266,19 @@ export function computeVisuals(cy) {
       if (!node.data('userCustomTextColor')) {
         node.data('textColor', '#fff');
       }
+      // Inert fact embellishments
+      if (node.data('inertFact')) {
+        // Add indicator tag if not already present
+        if (!/\bINERT\b/.test(label)) {
+          label = label + '\nINERT';
+        }
+        // Use warning color border
+        borderColor = '#ff9800';
+        borderWidth = 4;
+        node.data('backgroundOpacity', 0.75);
+      } else {
+        node.removeData('backgroundOpacity');
+      }
     }
     else if (nodeType === NODE_TYPE_ASSERTION) {
       // Only set default text color if user hasn't customized it
@@ -312,14 +332,16 @@ export function computeVisuals(cy) {
       // LITE MODE
       const incomingEdges = node.incomers('edge');
       const validEdges = incomingEdges.filter(e => {
-        // Edge is valid if parent has a probability AND weight is set (not 0)
-        const parentProb = e.source().data('prob');
+        // Edge is valid if parent has a probability AND weight is set (not 0) AND parent (if fact) is not inert
+        const parentNode = e.source();
+        const parentProb = parentNode.data('prob');
         const edgeWeight = e.data('weight');
-        const isValid = typeof parentProb === "number" && edgeWeight && edgeWeight !== 0;
+        const parentIsInert = parentNode.data('type') === NODE_TYPE_FACT && parentNode.data('inertFact');
+        const isValid = !parentIsInert && typeof parentProb === 'number' && edgeWeight && edgeWeight !== 0;
         
         // Debug logging for edge validity
         if (DEBUG) {
-          console.log(`Node ${node.id()} - Edge ${e.id()}: parentProb=${parentProb}, edgeWeight=${edgeWeight}, isValid=${isValid}`);
+          console.log(`Node ${node.id()} - Edge ${e.id()}: parentProb=${parentProb}, edgeWeight=${edgeWeight}, parentIsInert=${parentIsInert}, isValid=${isValid}`);
         }
         
         return isValid;

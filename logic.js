@@ -309,7 +309,13 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
         }
       } else if (nodeType === 'and') {
         const incomingEdges = node.incomers('edge');
-        if (incomingEdges.length === 0 || incomingEdges.some(edge => typeof getCurrentIterProb(edge.source()) !== "number")) {
+        if (incomingEdges.length === 0 || incomingEdges.some(edge => {
+          const parent = edge.source();
+          const parentProb = getCurrentIterProb(parent);
+          // Treat inert facts as if they have no probability for propagation purposes
+          if (parent.data('type') === 'fact' && parent.data('inertFact')) return true;
+          return typeof parentProb !== 'number';
+        })) {
           newProb = undefined;
           node.data('isVirgin', true);
         } else {
@@ -337,7 +343,12 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
         currentIterProbs.set(node.id(), newProb);
       } else if (nodeType === 'or') {
         const incomingEdges = node.incomers('edge');
-        if (incomingEdges.length === 0 || incomingEdges.some(edge => typeof getCurrentIterProb(edge.source()) !== "number")) {
+        if (incomingEdges.length === 0 || incomingEdges.some(edge => {
+          const parent = edge.source();
+          const parentProb = getCurrentIterProb(parent);
+          if (parent.data('type') === 'fact' && parent.data('inertFact')) return true;
+          return typeof parentProb !== 'number';
+        })) {
           newProb = undefined;
           node.data('isVirgin', true);
         } else {
@@ -377,7 +388,8 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
           const edgeWeight = e.data('weight');
           const computedWeight = e.data('computedWeight');
           
-          const parentHasProb = typeof parentProb === "number";
+          // Inert facts: act like they have no probability for outgoing influence
+          const parentHasProb = typeof parentProb === 'number' && !(parentNode.data('type') === 'fact' && parentNode.data('inertFact'));
           const weightIsValid = edgeWeight && edgeWeight !== 0;
           const isValidEdge = parentHasProb && weightIsValid;
           
@@ -386,6 +398,7 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
             parentId: parentNode.id(),
             parentType: parentNode.data('type'),
             parentProb: parentProb,
+            parentInertFact: parentNode.data('type') === 'fact' && !!parentNode.data('inertFact'),
             parentHasProb: parentHasProb,
             edgeWeight: edgeWeight,
             computedWeight: computedWeight,

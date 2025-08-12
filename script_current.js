@@ -449,6 +449,19 @@ document.addEventListener('DOMContentLoaded', () => {
       'border-style': 'solid'
     }
   },
+  // Inert fact nodes: very obvious styling
+  {
+    selector: 'node[type="fact"][inertFact]',
+    style: {
+      'border-style': 'dashed',
+      'border-color': '#ff9800',
+      'border-width': 4,
+      'background-color': '#555',
+  'background-opacity': 'data(backgroundOpacity)',
+      'text-outline-width': 2,
+      'text-outline-color': '#000'
+    }
+  },
   // AND logic: diamond, thicker border, bigger
   {
     selector: 'node[type="and"]',

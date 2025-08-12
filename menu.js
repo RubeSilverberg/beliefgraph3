@@ -231,6 +231,27 @@ window.cy.on('doubleTap', 'node', function(event) {
         list.appendChild(toggleLogic);
       }
 
+      // Fact-only: inert toggle (prevents outgoing propagation while retaining displayed probability)
+      if (nodeType === NODE_TYPE_FACT) {
+        const inert = !!node.data('inertFact');
+        const toggleInert = document.createElement('li');
+        toggleInert.textContent = inert ? 'Make Fact Active (propagate)' : 'Make Fact Inert (freeze influence)';
+        toggleInert.style.cursor = 'pointer';
+        toggleInert.onclick = () => {
+          if (inert) {
+            node.removeData('inertFact');
+          } else {
+            node.data('inertFact', true);
+          }
+          // Recompute so children drop/add this parent contribution
+          convergeAll({ cy });
+            // Ensure assertion nodes with now-zero valid parents become virgin again
+          computeVisuals(cy);
+          hideMenu();
+        };
+        list.appendChild(toggleInert);
+      }
+
       const visualSignalsItem = document.createElement('li');
       visualSignalsItem.textContent = 'Visual Signals...';
       visualSignalsItem.style.cursor = 'pointer';
