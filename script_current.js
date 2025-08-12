@@ -548,7 +548,8 @@ document.addEventListener('DOMContentLoaded', () => {
     selector: 'node[floretColor]',
     style: {
       'background-color': 'data(floretColor)',
-      'background-opacity': 0.18
+  // Previously translucent; now fully opaque per request
+  'background-opacity': 1
     }
   },
   // ---- VIRGIN EDGE STYLE: REMOVED - now using computed lineColor ----
@@ -737,6 +738,47 @@ document.addEventListener('DOMContentLoaded', () => {
   // Set initial arrow directions based on current mode (default is lite)
   flipArrowDirections(mode);
 
+  // ===== Edge Visibility Interaction (faint instead of hide) =====
+  function faintAllEdges() {
+    cy.edges().addClass('faint-edge').removeClass('focus-edge');
+  }
+  function unfaintEdges(edges) {
+    edges.removeClass('faint-edge').addClass('focus-edge');
+  }
+  function restoreAllEdges(){
+    cy.edges().removeClass('faint-edge focus-edge');
+  }
+  if (!cy._addedFaintEdgeStyle) {
+    cy.style()
+      .selector('edge.faint-edge')
+        .style({ 'opacity': 0.12 })
+      .selector('edge.focus-edge')
+        .style({ 'opacity': 0.9 })
+      .update();
+    cy._addedFaintEdgeStyle = true;
+  }
+  cy.on('mousedown', (evt) => {
+    if (evt.target === cy) {
+      requestAnimationFrame(()=>faintAllEdges());
+    }
+  });
+  cy.on('mousedown', 'node', (evt) => {
+    const node = evt.target;
+    requestAnimationFrame(()=>{
+      faintAllEdges();
+      unfaintEdges(node.connectedEdges());
+    });
+  });
+  cy.on('mouseup', () => {
+    restoreAllEdges();
+  });
+  // Optional: double-click background to restore all edges
+  cy.on('dblclick', (evt) => {
+    if (evt.target === cy) {
+      cy.edges().removeClass('hidden-edge');
+    }
+  });
+
   // (Legacy) cytoscape-edgehandles extension call removed – replaced by custom-edge-handles.js implementation.
   // If reintroducing the original extension later, insert its setup call here guarded by a feature flag.
 
@@ -753,6 +795,136 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Setup custom edge handles for intuitive edge creation
   setupCustomEdgeHandles(cy);
+
+  // === Soften floretColor nodes while keeping opacity 1 ===
+  function parseColorToHex6(input){
+    if(!input) return null;
+    let c = input.trim();
+    // Expand short hex #abc
+    if(/^#?[0-9a-fA-F]{3}$/.test(c)){
+      c = c.replace('#','');
+      c = c.split('').map(ch=>ch+ch).join('');
+      return '#'+c.toLowerCase();
+    }
+    // #rrggbb or #rrggbbaa
+    if(/^#?[0-9a-fA-F]{6,8}$/.test(c)){
+      c = c.replace('#','');
+      return '#'+c.slice(0,6).toLowerCase();
+    }
+    // rgb/rgba
+    let m = c.match(/^rgba?\(([^)]+)\)$/i);
+    if(m){
+      const parts = m[1].split(',').map(p=>parseFloat(p.trim()));
+      if(parts.length>=3){
+        const toHex=v=>('0'+Math.max(0,Math.min(255,Math.round(v))).toString(16)).slice(-2);
+        return '#'+toHex(parts[0])+toHex(parts[1])+toHex(parts[2]);
+      }
+    }
+    // Named colors -> use canvas
+    if(typeof document!=='undefined'){
+      const ctx = parseColorToHex6._ctx || (parseColorToHex6._ctx = document.createElement('canvas').getContext('2d'));
+      ctx.fillStyle = '#000';
+      ctx.fillStyle = c; // browser normalizes
+      const computed = ctx.fillStyle; // might be rgb(r,g,b)
+      if(computed !== '#000' || c.toLowerCase()==='black'){
+        if(/^#[0-9a-fA-F]{6}$/.test(computed)) return computed.toLowerCase();
+        const mm = computed.match(/^rgba?\(([^)]+)\)$/i);
+        if(mm){
+          const parts = mm[1].split(',').map(p=>parseFloat(p.trim()));
+          if(parts.length>=3){
+            const toHex=v=>('0'+Math.max(0,Math.min(255,Math.round(v))).toString(16)).slice(-2);
+            return '#'+toHex(parts[0])+toHex(parts[1])+toHex(parts[2]);
+          }
+        }
+      }
+    }
+    return null;
+  }
+  function softenColor(input) {
+    const hex6 = parseColorToHex6(input);
+    if(!hex6) return input; // fallback
+    const h = hex6.slice(1);
+    let r = parseInt(h.slice(0,2),16);
+    let g = parseInt(h.slice(2,4),16);
+    let b = parseInt(h.slice(4,6),16);
+    // Convert to HSL, reduce saturation, increase lightness slightly
+    r/=255; g/=255; b/=255;
+    const max=Math.max(r,g,b), min=Math.min(r,g,b);
+    let hDeg, s, l=(max+min)/2;
+    if(max===min){ hDeg=0; s=0; }
+    else {
+      const d=max-min;
+      s=l>0.5? d/(2-max-min): d/(max+min);
+      switch(max){
+        case r: hDeg=(g-b)/d + (g<b?6:0); break;
+        case g: hDeg=(b-r)/d + 2; break;
+        case b: hDeg=(r-g)/d + 4; break;
+      }
+      hDeg/=6;
+    }
+  // Adjust: much softer (limit saturation & lift lightness heavily)
+  // More aggressive softening: near pastel
+  s = Math.min(0.18, s * 0.18); // push saturation very low
+  l = Math.max(0.78, Math.min(0.92, l * 0.4 + 0.55)); // lift lightness significantly
+    function h2rgb(p,q,t){ if(t<0)t+=1; if(t>1)t-=1; if(t<1/6)return p+(q-p)*6*t; if(t<1/2)return q; if(t<2/3)return p+(q-p)*(2/3-t)*6; return p; }
+    let r2,g2,b2;
+    if(s===0){ r2=g2=b2=l; }
+    else {
+      const q = l < 0.5 ? l*(1+s) : l + s - l*s;
+      const p = 2*l - q;
+      r2=h2rgb(p,q,hDeg+1/3); g2=h2rgb(p,q,hDeg); b2=h2rgb(p,q,hDeg-1/3);
+    }
+    const toHex = v => ('0'+Math.round(v*255).toString(16)).slice(-2);
+  return '#'+toHex(r2)+toHex(g2)+toHex(b2);
+  }
+  function relativeLuminance(hex){
+    const m = hex.match(/^#?([0-9a-fA-F]{6})$/); if(!m) return 0;
+    const c = m[1];
+    const r = parseInt(c.slice(0,2),16)/255;
+    const g = parseInt(c.slice(2,4),16)/255;
+    const b = parseInt(c.slice(4,6),16)/255;
+    const f=x=> x<=0.03928? x/12.92: Math.pow((x+0.055)/1.055,2.4);
+    return 0.2126*f(r)+0.7152*f(g)+0.0722*f(b);
+  }
+  function refreshSoftColors(){
+  if (cy._softening) return; // reentrancy guard
+  cy._softening = true;
+    cy.nodes('[floretColor]').forEach(n=>{
+      const orig = n.data('floretColor');
+  const prevBase = n.data('softBaseColor');
+  if (prevBase === orig && n.data('softFloretColor')) return; // already up-to-date
+  const soft = softenColor(orig);
+  n.data({ softFloretColor: soft, floretBorderColor: orig, softBaseColor: orig });
+      if (!n.data('userCustomTextColor')) {
+        const lum = relativeLuminance(soft);
+        n.data('textColor', lum > 0.55 ? '#111' : '#fff');
+      }
+    });
+    cy.style()
+      .selector('node[softFloretColor]')
+        .style({ 'background-color':'data(softFloretColor)','background-opacity':1,'border-color':'data(floretBorderColor)','border-width':2 })
+      .update();
+  cy._softening = false;
+  }
+  refreshSoftColors();
+  window.refreshSoftColors = refreshSoftColors; // expose for external reapplication
+  // Re-soften after any data change to floretColor
+  cy.on('data', 'node', evt => {
+  if (cy._softening) return; // skip if inside softening batch
+    const node = evt.target;
+    const orig = node.data('floretColor');
+    if (!orig) return;
+    const prevBase = node.data('softBaseColor');
+    if (prevBase === orig && node.data('softFloretColor')) return; // unchanged color; skip
+    cy._softening = true; // treat as batch to suppress nested triggers
+    const soft = softenColor(orig);
+    node.data({ 'softFloretColor': soft, 'floretBorderColor': orig, 'softBaseColor': orig });
+    if (!node.data('userCustomTextColor')) {
+      const lum = relativeLuminance(soft);
+      node.data('textColor', lum > 0.55 ? '#111' : '#fff');
+    }
+    cy._softening = false;
+  });
   initializeCustomEdgeHandlesModeMonitoring();
 
   // Register custom context menu, edge modals, etc.

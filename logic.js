@@ -1027,6 +1027,9 @@ export function loadGraph() {
         cy.fit();
         cy.resize();
         window.resetLayout?.();
+        if (window.refreshSoftColors) {
+          window.refreshSoftColors();
+        }
         console.log(`Graph loaded from file: ${file.name}`);
       } catch (err) {
         console.error('Failed to load graph:', err);

@@ -476,6 +476,12 @@ export function computeVisuals(cy) {
     let absWeight = 0;
     let edgeType = 'supports';
 
+    // Clean up any prior logic edge targetLabel overlays (feature disabled per user request)
+    const tgtNodeTypeForCleanup = edge.target().data('type');
+    if ((tgtNodeTypeForCleanup === NODE_TYPE_AND || tgtNodeTypeForCleanup === NODE_TYPE_OR) && edge.data('targetLabel')) {
+      edge.removeData('targetLabel');
+    }
+
     if (bayesMode === 'heavy') {
       // HEAVY MODE: Three-category edge system parallel to Lite mode
       const cpt = edge.data('cpt');
@@ -590,12 +596,12 @@ export function computeVisuals(cy) {
     // Set edge label (virgin weight label / dash / pct)
     const edgeLabel = getEdgeLabel(edge);
     const tgtType = edge.target().data('type');
-    if ((tgtType === NODE_TYPE_AND || tgtType === NODE_TYPE_OR) && edgeLabel) {
-      edge.data('targetLabel', edgeLabel);
-      edge.data('label', ''); // suppress midpoint label
+    // Logic edge percentage overlays temporarily disabled; show nothing instead
+    if (tgtType === NODE_TYPE_AND || tgtType === NODE_TYPE_OR) {
+      edge.data('label', '');
+      if (edge.data('targetLabel')) edge.removeData('targetLabel');
     } else {
       edge.data('label', edgeLabel);
-      if (edge.data('targetLabel')) edge.removeData('targetLabel');
     }
   });
 
@@ -607,24 +613,13 @@ export function computeVisuals(cy) {
     .update();
 
   // Draw dynamic overlays (requestAnimationFrame to ensure positions are current)
-  if (typeof requestAnimationFrame === 'function') {
-    requestAnimationFrame(()=>drawDynamicLogicEdgeLabels(cy));
-  } else {
-    drawDynamicLogicEdgeLabels(cy);
-  }
+  // Dynamic logic edge label overlays disabled (green percentages) per user request.
+  // Left in place for potential future reactivation.
 
   // Install dynamic listeners once to keep labels synced with movement
   if (!cy._logicEdgeDynamicListeners) {
     const schedule = () => {
-      if (typeof requestAnimationFrame === 'function') {
-        if (cy._logicEdgeLabelRAF) return;
-        cy._logicEdgeLabelRAF = requestAnimationFrame(() => {
-          drawDynamicLogicEdgeLabels(cy);
-          cy._logicEdgeLabelRAF = null;
-        });
-      } else {
-        drawDynamicLogicEdgeLabels(cy);
-      }
+      // No-op: overlays disabled
     };
     // Node movement / position changes
     cy.on('position drag free', 'node', schedule);
@@ -643,51 +638,7 @@ export function computeVisuals(cy) {
 }
 
 // --- Dynamic logic edge label overlays ---
-function drawDynamicLogicEdgeLabels(cy){
-  const container = cy.container();
-  const parent = container.parentElement;
-  if(!parent) return;
-  parent.querySelectorAll('.logic-edge-dynlabel').forEach(el=>el.remove());
-  const pan = cy.pan();
-  const zoom = cy.zoom();
-  cy.edges('[targetLabel]').forEach(edge=>{
-    const label = edge.data('targetLabel');
-    if(!label) return;
-    const src = edge.source().position();
-    const tgt = edge.target().position();
-    const dx = tgt.x - src.x;
-    const dy = tgt.y - src.y;
-    const len = Math.hypot(dx,dy) || 1;
-    const targetNode = edge.target();
-    const nodeRadius = Math.max(targetNode.width(), targetNode.height())/2;
-    const backoff = nodeRadius + 18; // pixels away from node center along edge
-    const fraction = Math.max(0, (len - backoff)/len); // point before entering node shape
-    const px = src.x + dx * fraction;
-    const py = src.y + dy * fraction;
-    // Slight perpendicular offset so label doesn't sit exactly on edge line
-    const nx = -dy/len;
-    const ny = dx/len;
-    const perpOffset = 10; // pixels
-    const finalX = (px + nx * perpOffset) * zoom + pan.x;
-    const finalY = (py + ny * perpOffset) * zoom + pan.y;
-    const div = document.createElement('div');
-    div.className='logic-edge-dynlabel';
-    div.textContent = label;
-    div.style.position='absolute';
-    div.style.left= finalX + 'px';
-    div.style.top= finalY + 'px';
-    div.style.transform='translate(-50%,-50%)';
-    div.style.background='rgba(200,245,200,0.85)';
-    div.style.padding='2px 4px';
-    div.style.fontSize='11px';
-    div.style.fontWeight='600';
-    div.style.border='1px solid #6aa36a';
-    div.style.borderRadius='4px';
-    div.style.pointerEvents='none';
-    div.style.zIndex=9;
-    parent.appendChild(div);
-  });
-}
+function drawDynamicLogicEdgeLabels(cy){ /* disabled stub */ }
 /**
  * Draw floating modifier boxes only for assertion node edges.
  */

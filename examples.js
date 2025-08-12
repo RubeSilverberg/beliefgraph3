@@ -11,13 +11,16 @@ export const EXAMPLE_GRAPHS = [
     description: "Simple usage of logic nodes: breakfast",
     filename: "AND OR logic node example.json"
   },
-
-    {
+  {
     name: "Policy Analysis: Rent Control",
     description: "Weighing arguments for / against expanding rent control",
     filename: "Policy analysis example_rent control.json"
+  },
+  {
+    name: "D&D NPC Favorability Graph",
+    description: "Track how party actions affect NPC factions in a D&D campaign.",
+    filename: "dnd-npc-favorability.json"
   }
-  // Add more examples here as needed
 ];
 
 export async function loadExampleGraph(filename) {
@@ -58,6 +61,7 @@ export function showExamplesMenu() {
   }
 
   const selectedExample = EXAMPLE_GRAPHS[choiceNum - 1];
+  // Add more examples here as needed
   
   if (!confirm(`Load "${selectedExample.name}"? Current work will be lost.`)) {
     return;
@@ -106,6 +110,10 @@ async function loadExampleAndApply(filename) {
     }
     if (window.resetLayout) {
       window.resetLayout();
+    }
+    // Apply softened color palette if available
+    if (window.refreshSoftColors) {
+      window.refreshSoftColors();
     }
 
     console.log(`Example "${filename}" loaded successfully`);
