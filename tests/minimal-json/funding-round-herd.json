@@ -1,0 +1,109 @@
+{
+  "nodes": [
+    { "id": "lead_term_sheet_success", "label": "Lead term sheet issued", "type": "fact", "position": { "x": -900, "y": -400 } },
+    { "id": "lead_term_sheet_fallthrough", "label": "Lead term sheet fell through", "type": "fact", "position": { "x": -900, "y": -320 } },
+    { "id": "customer_loi_success", "label": "Marquee customer LOI signed", "type": "fact", "position": { "x": -650, "y": -400 } },
+    { "id": "customer_loi_failure", "label": "Marquee customer LOI lost", "type": "fact", "position": { "x": -650, "y": -320 } },
+    { "id": "diligence_red_flag_present", "label": "Diligence red flag present", "type": "fact", "position": { "x": -390, "y": -400 } },
+    { "id": "diligence_red_flag_cleared", "label": "Red flag cleared", "type": "fact", "position": { "x": -390, "y": -320 } },
+    { "id": "valuation_cut_applied", "label": "Valuation cut 15% applied", "type": "fact", "position": { "x": -130, "y": -400 } },
+    { "id": "valuation_cut_not", "label": "Valuation held firm", "type": "fact", "position": { "x": -130, "y": -320 } },
+    { "id": "positive_press_hit", "label": "Positive press hit", "type": "fact", "position": { "x": 120, "y": -400 } },
+    { "id": "positive_press_miss", "label": "Press attempt missed", "type": "fact", "position": { "x": 120, "y": -320 } },
+    { "id": "competitor_big_raise", "label": "Competitor big raise", "type": "fact", "position": { "x": 370, "y": -400 } },
+    { "id": "strategic_pilot_launched", "label": "Strategic pilot launched", "type": "fact", "position": { "x": 620, "y": -400 } },
+    { "id": "strategic_pilot_slipped", "label": "Pilot launch slipped", "type": "fact", "position": { "x": 620, "y": -320 } },
+    { "id": "founder_coach_hired", "label": "Coach or replacement hired", "type": "fact", "position": { "x": 870, "y": -400 } },
+    { "id": "founder_no_change", "label": "No leadership change", "type": "fact", "position": { "x": 870, "y": -320 } },
+    { "id": "burn_reduced_hit", "label": "Burn reduced 30%", "type": "fact", "position": { "x": 1120, "y": -400 } },
+    { "id": "burn_reduced_miss", "label": "Burn target missed", "type": "fact", "position": { "x": 1120, "y": -320 } },
+    { "id": "note_extended", "label": "Convertible note extended", "type": "fact", "position": { "x": 1370, "y": -400 } },
+    { "id": "note_denied", "label": "Note extension denied", "type": "fact", "position": { "x": 1370, "y": -320 } },
+    { "id": "key_hire_accepted", "label": "VP Sales accepted", "type": "fact", "position": { "x": 1620, "y": -400 } },
+    { "id": "key_hire_no", "label": "VP Sales not filled", "type": "fact", "position": { "x": 1620, "y": -320 } },
+    { "id": "angels_prorata_in", "label": "Existing angels pro-rata in", "type": "fact", "position": { "x": 1870, "y": -400 } },
+    { "id": "angels_prorata_out", "label": "Angels not rolling", "type": "fact", "position": { "x": 1870, "y": -320 } },
+    { "id": "market_momentum", "label": "Market momentum up", "type": "fact", "position": { "x": 2120, "y": -360 } },
+
+    { "id": "and_lead_plus_loi", "type": "and", "label": "Lead + LOI synergy", "position": { "x": -775, "y": -160 } },
+
+    { "id": "invest_lead_fund", "label": "Lead Fund will invest", "type": "assertion", "position": { "x": -900, "y": 80 } },
+    { "id": "invest_strategic_corp", "label": "Strategic Corp VC will invest", "type": "assertion", "position": { "x": -620, "y": 80 } },
+    { "id": "invest_tier1", "label": "Tier-1 VC will invest", "type": "assertion", "position": { "x": -340, "y": 80 } },
+    { "id": "invest_tier2", "label": "Tier-2 VC will invest", "type": "assertion", "position": { "x": -60, "y": 80 } },
+    { "id": "invest_angel_synd", "label": "Angel Syndicate will invest", "type": "assertion", "position": { "x": 220, "y": 80 } },
+    { "id": "invest_regional_fund", "label": "Regional Fund will invest", "type": "assertion", "position": { "x": 500, "y": 80 } },
+    { "id": "invest_family_office", "label": "Family Office will invest", "type": "assertion", "position": { "x": 780, "y": 80 } },
+
+    { "id": "round_likely_close", "label": "Round likely to close", "type": "assertion", "position": { "x": -60, "y": 340 } }
+  ],
+  "edges": [
+    { "source": "lead_term_sheet_success", "target": "and_lead_plus_loi", "weight": 0.5, "type": "supports" },
+    { "source": "customer_loi_success", "target": "and_lead_plus_loi", "weight": 0.5, "type": "supports" },
+    { "source": "and_lead_plus_loi", "target": "invest_tier1", "weight": 0.4, "type": "supports" },
+    { "source": "and_lead_plus_loi", "target": "invest_tier2", "weight": 0.35, "type": "supports" },
+    { "source": "and_lead_plus_loi", "target": "invest_strategic_corp", "weight": 0.3, "type": "supports" },
+
+    { "source": "lead_term_sheet_success", "target": "invest_lead_fund", "weight": 0.55, "type": "supports" },
+    { "source": "lead_term_sheet_fallthrough", "target": "invest_lead_fund", "weight": -0.5, "type": "supports", "opposes": true },
+    { "source": "customer_loi_success", "target": "invest_tier1", "weight": 0.45, "type": "supports" },
+    { "source": "customer_loi_failure", "target": "invest_tier1", "weight": -0.4, "type": "supports", "opposes": true },
+    { "source": "customer_loi_success", "target": "invest_strategic_corp", "weight": 0.3, "type": "supports" },
+    { "source": "customer_loi_failure", "target": "invest_strategic_corp", "weight": -0.25, "type": "supports", "opposes": true },
+
+    { "source": "diligence_red_flag_present", "target": "invest_tier1", "weight": -0.35, "type": "supports", "opposes": true },
+    { "source": "diligence_red_flag_present", "target": "invest_tier2", "weight": -0.3, "type": "supports", "opposes": true },
+    { "source": "diligence_red_flag_cleared", "target": "invest_tier1", "weight": 0.25, "type": "supports" },
+    { "source": "diligence_red_flag_cleared", "target": "invest_tier2", "weight": 0.2, "type": "supports" },
+
+    { "source": "valuation_cut_applied", "target": "invest_lead_fund", "weight": -0.25, "type": "supports", "opposes": true },
+    { "source": "valuation_cut_applied", "target": "invest_tier1", "weight": 0.15, "type": "supports" },
+    { "source": "valuation_cut_not", "target": "invest_lead_fund", "weight": 0.15, "type": "supports" },
+
+    { "source": "positive_press_hit", "target": "invest_angel_synd", "weight": 0.35, "type": "supports" },
+    { "source": "positive_press_hit", "target": "invest_regional_fund", "weight": 0.3, "type": "supports" },
+    { "source": "positive_press_miss", "target": "invest_angel_synd", "weight": -0.2, "type": "supports", "opposes": true },
+
+    { "source": "competitor_big_raise", "target": "invest_lead_fund", "weight": 0.2, "type": "supports" },
+    { "source": "competitor_big_raise", "target": "invest_tier1", "weight": 0.1, "type": "supports" },
+
+    { "source": "strategic_pilot_launched", "target": "invest_strategic_corp", "weight": 0.5, "type": "supports" },
+    { "source": "strategic_pilot_slipped", "target": "invest_strategic_corp", "weight": -0.35, "type": "supports", "opposes": true },
+
+    { "source": "founder_coach_hired", "target": "invest_tier2", "weight": 0.2, "type": "supports" },
+    { "source": "founder_no_change", "target": "invest_tier2", "weight": -0.15, "type": "supports", "opposes": true },
+
+    { "source": "burn_reduced_hit", "target": "invest_lead_fund", "weight": 0.25, "type": "supports" },
+    { "source": "burn_reduced_hit", "target": "invest_tier1", "weight": 0.2, "type": "supports" },
+    { "source": "burn_reduced_miss", "target": "invest_lead_fund", "weight": -0.2, "type": "supports", "opposes": true },
+
+    { "source": "note_extended", "target": "invest_lead_fund", "weight": 0.15, "type": "supports" },
+    { "source": "note_denied", "target": "invest_lead_fund", "weight": -0.2, "type": "supports", "opposes": true },
+
+    { "source": "key_hire_accepted", "target": "invest_tier1", "weight": 0.3, "type": "supports" },
+    { "source": "key_hire_accepted", "target": "invest_tier2", "weight": 0.25, "type": "supports" },
+    { "source": "key_hire_no", "target": "invest_tier1", "weight": -0.25, "type": "supports", "opposes": true },
+
+    { "source": "angels_prorata_in", "target": "invest_angel_synd", "weight": 0.3, "type": "supports" },
+    { "source": "angels_prorata_in", "target": "invest_regional_fund", "weight": 0.25, "type": "supports" },
+    { "source": "angels_prorata_out", "target": "invest_angel_synd", "weight": -0.25, "type": "supports", "opposes": true },
+
+    { "source": "market_momentum", "target": "round_likely_close", "weight": 0.15, "type": "supports" },
+
+    { "source": "invest_lead_fund", "target": "invest_tier1", "weight": 0.18, "type": "supports" },
+    { "source": "invest_lead_fund", "target": "invest_angel_synd", "weight": 0.15, "type": "supports" },
+    { "source": "invest_tier1", "target": "invest_tier2", "weight": 0.15, "type": "supports" },
+    { "source": "invest_tier2", "target": "invest_tier1", "weight": 0.1, "type": "supports" },
+    { "source": "invest_strategic_corp", "target": "invest_family_office", "weight": 0.15, "type": "supports" },
+    { "source": "invest_angel_synd", "target": "invest_regional_fund", "weight": 0.15, "type": "supports" },
+
+    { "source": "invest_lead_fund", "target": "round_likely_close", "weight": 0.4, "type": "supports" },
+    { "source": "invest_strategic_corp", "target": "round_likely_close", "weight": 0.3, "type": "supports" },
+    { "source": "invest_tier1", "target": "round_likely_close", "weight": 0.35, "type": "supports" },
+    { "source": "invest_tier2", "target": "round_likely_close", "weight": 0.25, "type": "supports" },
+    { "source": "invest_angel_synd", "target": "round_likely_close", "weight": 0.2, "type": "supports" },
+    { "source": "invest_regional_fund", "target": "round_likely_close", "weight": 0.18, "type": "supports" },
+    { "source": "invest_family_office", "target": "round_likely_close", "weight": 0.15, "type": "supports" }
+  ],
+  "layoutType": "custom"
+}
