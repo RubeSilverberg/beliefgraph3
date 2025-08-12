@@ -15,6 +15,7 @@
           "id": { "type": "string" },
           "label": { "type": "string" },
           "type": { "type": "string", "enum": ["fact", "assertion", "and", "or", "note" ] },
+          "inert": { "type": "boolean", "description": "If true and type=fact, the fact is inert (does not propagate outward)" },
           "description": { "type": "string", "description": "Full sentence / long form of the node; short label stays in 'label'" },
           "prob": { "type": "number", "minimum": 0, "maximum": 1 },
           "cpt": {

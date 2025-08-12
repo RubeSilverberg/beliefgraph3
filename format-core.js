@@ -12,6 +12,7 @@
       const o={id:d.id,label:d.origLabel||d.label||d.id,type:nodeType(d)};
       if(d.hoverLabel) o.description=d.hoverLabel; // long sentence / full statement
       if(typeof d.prob==='number') o.prob=d.prob;
+      if(d.type==='fact' && d.inertFact) o.inert=true;
       if(d.cpt){const pc=pruneCpt(d.cpt); if(pc) o.cpt=pc;}
       const st=styleOut(d); if(st) o.style=st;
       return o;
@@ -45,6 +46,7 @@
       if(!el||!el.data) return;
       if(el.group==='nodes'||(!el.data.source&&!el.data.target)){
         const d=el.data; const o={id:d.id,label:d.origLabel||d.label||d.id,type:nodeType(d)};
+        if(d.type==='fact' && d.inertFact) o.inert=true;
         if(d.hoverLabel) o.description=d.hoverLabel;
         if(typeof d.prob==='number') o.prob=d.prob;
         if(d.cpt){const pc=pruneCpt(d.cpt); if(pc) o.cpt=pc;}
@@ -168,7 +170,7 @@
   }
   function expandToElements(minimal){
     const els=[]; const fallbackPositions = generateFallbackPositions(minimal);
-    minimal.nodes.forEach(n=>{ const d={id:n.id,label:n.label,origLabel:n.label,type:nodeType(n)}; if(n.description) d.hoverLabel=n.description; if(typeof n.prob==='number') d.prob=n.prob; if(n.cpt) d.cpt={...n.cpt}; if(n.style){ if(n.style.textColor) d.textColor=n.style.textColor; if(n.style.sizeIndex) d.sizeIndex=n.style.sizeIndex; if(n.style.floretColor) d.floretColor=n.style.floretColor; } const position = (minimal.layout?.positions?.[n.id]) || n.position || (fallbackPositions && fallbackPositions[n.id]); els.push({group:'nodes',data:d,position}); });
+  minimal.nodes.forEach(n=>{ const d={id:n.id,label:n.label,origLabel:n.label,type:nodeType(n)}; if(n.description) d.hoverLabel=n.description; if(typeof n.prob==='number') d.prob=n.prob; if(n.cpt) d.cpt={...n.cpt}; if(n.inert && d.type==='fact') d.inertFact=true; if(n.style){ if(n.style.textColor) d.textColor=n.style.textColor; if(n.style.sizeIndex) d.sizeIndex=n.style.sizeIndex; if(n.style.floretColor) d.floretColor=n.style.floretColor; } const position = (minimal.layout?.positions?.[n.id]) || n.position || (fallbackPositions && fallbackPositions[n.id]); els.push({group:'nodes',data:d,position}); });
     minimal.edges.forEach(e=>{ const d={id:e.id,source:e.source,target:e.target,type:e.type||'supports'}; if(typeof e.weight==='number'){ d.weight=e.weight; d.userAssignedWeight=e.weight; } if(e.rationale) d.rationale=e.rationale; if(e.contributingFactors && Array.isArray(e.contributingFactors) && e.contributingFactors.length){ d.contributingFactors=[...e.contributingFactors]; } if(e.cpt) d.cpt={...e.cpt}; els.push({group:'edges',data:d}); });
     return els;
   }
