@@ -1,0 +1,76 @@
+:root {
+  /* Color tokens (default / light) */
+  --bg-surface: #f7f9fb;
+  --bg-panel: #ffffff;
+  --bg-accent: #e3eefc;
+  --border-subtle: #d4dbe3;
+  --border-strong: #9ea9b5;
+  --text-primary: #1f2329;
+  --text-secondary: #5a6b7d;
+  --text-invert: #ffffff;
+  --node-assertion: #2f6fda;
+  --node-fact: #4a4f57;
+  --node-fact-inert-border: #ff9800;
+  --node-logic: #7a6adb;
+  --node-note: #88949f;
+  --accent-warn: #d9822b;
+  --accent-positive: #2f9d57;
+  --accent-negative: #b44747;
+  --accent-neutral: #5a6b7d;
+
+  /* Effects */
+  --elevation-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  --focus-ring: 0 0 0 3px rgba(47,111,218,0.35);
+
+  /* Typography */
+  --font-stack: 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+/* Dark theme (unused by default; toggled via body.dark) */
+body.design-dark {
+  --bg-surface: #1e2227;
+  --bg-panel: #262b31;
+  --bg-accent: #313842;
+  --border-subtle: #39414a;
+  --border-strong: #56616d;
+  --text-primary: #f0f3f6;
+  --text-secondary: #b2bcc6;
+  --text-invert: #0f1113;
+  --node-assertion: #4b8dff;
+  --node-fact: #5a6069;
+  --node-fact-inert-border: #ffb347;
+  --node-logic: #9386ff;
+  --node-note: #98a6b4;
+  --accent-warn: #ffae47;
+  --accent-positive: #44c273;
+  --accent-negative: #ff6666;
+  --accent-neutral: #7d8b99;
+  --elevation-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  --focus-ring: 0 0 0 3px rgba(75,141,255,0.4);
+}
+
+/* Design lab panel */
+#design-lab-panel {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: 300px;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border-subtle);
+  padding: 14px 16px 18px;
+  font-family: var(--font-stack);
+  overflow-y: auto;
+  box-shadow: var(--elevation-shadow);
+  z-index: 50;
+}
+#design-lab-panel h2 { margin: 0 0 12px; font-size: 18px; font-weight: 600; }
+#design-lab-panel fieldset { border: 1px solid var(--border-subtle); margin: 10px 0 14px; padding: 8px 10px 10px; border-radius: 6px; }
+#design-lab-panel legend { padding: 0 6px; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+#design-lab-panel label { display:block; font-size: 13px; margin: 3px 0; cursor: pointer; }
+#design-lab-panel button { cursor:pointer; font-family: var(--font-stack); font-size: 13px; padding: 6px 10px; margin: 4px 4px 4px 0; border-radius: 4px; border:1px solid var(--border-subtle); background: var(--bg-accent); }
+#design-lab-panel button.primary { background: var(--node-assertion); color: var(--text-invert); border: 1px solid var(--node-assertion); }
+#design-lab-panel .snapshots { margin-top: 16px; }
+#design-lab-panel .snapshot-thumb { width: 100%; border:1px solid var(--border-subtle); border-radius:4px; margin:6px 0; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+
+#cy-design { position: absolute; left:300px; top:0; right:0; bottom:0; }
+
+.badge-inert { position:absolute; width:10px; height:10px; background:var(--accent-warn); border-radius:50%; top:4px; right:4px; }

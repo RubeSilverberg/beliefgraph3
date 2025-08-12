@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Design Lab – Belief Graph</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="tokens.css" />
+<script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+<style>
+  body { background: var(--bg-surface); }
+  .compare-container { display:flex; gap:12px; margin-top:12px; }
+  .graph-wrapper { position:relative; flex:1; min-height:400px; border:1px solid var(--border-subtle); border-radius:6px; background:var(--bg-panel); }
+  .graph-wrapper h3 { position:absolute; left:8px; top:6px; margin:0; font:600 13px var(--font-stack); color:var(--text-secondary); }
+  canvas, .cytoscape-container { outline:none; }
+</style>
+</head>
+<body>
+  <div id="design-lab-panel">
+    <h2>Design Lab</h2>
+    <fieldset id="palette-group"><legend>Palette</legend></fieldset>
+    <fieldset id="nodes-group"><legend>Node Style</legend></fieldset>
+    <fieldset id="edges-group"><legend>Edges</legend></fieldset>
+    <fieldset id="tooltips-group"><legend>Tooltips</legend></fieldset>
+    <fieldset id="focus-group"><legend>Focus Fade</legend></fieldset>
+    <div>
+      <button id="applyVariants" class="primary">Apply</button>
+      <button id="snapshotBtn">Snapshot</button>
+      <button id="toggleDark">Dark Mode</button>
+    </div>
+    <label style="margin-top:10px; display:flex; align-items:center; gap:6px; font-size:12px;"><input type="checkbox" id="compareToggle" /> Compare mode</label>
+    <div class="snapshots"><h3 style="font-size:13px;margin:14px 0 6px;">Snapshots</h3><div id="snapshotList"></div></div>
+  </div>
+  <div id="cy-design"></div>
+  <script type="module" src="design-variants.js"></script>
+</body>
+</html>
