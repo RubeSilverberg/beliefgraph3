@@ -738,16 +738,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Set initial arrow directions based on current mode (default is lite)
   flipArrowDirections(mode);
 
-  // ===== Edge Visibility Interaction (faint instead of hide) =====
-  function faintAllEdges() {
-    cy.edges().addClass('faint-edge').removeClass('focus-edge');
-  }
-  function unfaintEdges(edges) {
-    edges.removeClass('faint-edge').addClass('focus-edge');
-  }
-  function restoreAllEdges(){
-    cy.edges().removeClass('faint-edge focus-edge');
-  }
+  // ===== Edge Visibility Interaction (inverted: faint by default; focus on press) =====
+  function faintAllEdges() { cy.edges().addClass('faint-edge').removeClass('focus-edge'); }
+  function focusEdges(edges) { edges.removeClass('faint-edge').addClass('focus-edge'); }
+  function focusAllEdges() { cy.edges().removeClass('faint-edge').addClass('focus-edge'); }
+  function returnToBaseline() { faintAllEdges(); }
   if (!cy._addedFaintEdgeStyle) {
     cy.style()
       .selector('edge.faint-edge')
@@ -757,23 +752,16 @@ document.addEventListener('DOMContentLoaded', () => {
       .update();
     cy._addedFaintEdgeStyle = true;
   }
-  cy.on('mousedown', (evt) => {
-    if (evt.target === cy) {
-      requestAnimationFrame(()=>faintAllEdges());
-    }
-  });
-  cy.on('mousedown', 'node', (evt) => {
-    const node = evt.target;
-    requestAnimationFrame(()=>{
-      faintAllEdges();
-      unfaintEdges(node.connectedEdges());
-    });
-  });
-  cy.on('mouseup', () => {
-    restoreAllEdges();
-  });
-  // Optional: double-click background to immediately restore full edge emphasis
-  cy.on('dblclick', (evt) => { if (evt.target === cy) restoreAllEdges(); });
+  // Baseline: edges faint
+  faintAllEdges();
+  // Background press: temporarily show all sharply
+  cy.on('mousedown', (evt) => { if (evt.target === cy) requestAnimationFrame(()=>focusAllEdges()); });
+  // Node press: show only connected edges sharply
+  cy.on('mousedown', 'node', (evt) => { const node = evt.target; requestAnimationFrame(()=>{ faintAllEdges(); focusEdges(node.connectedEdges()); }); });
+  // Mouse release anywhere: revert to baseline faint
+  cy.on('mouseup', () => { requestAnimationFrame(()=>returnToBaseline()); });
+  // Double click background: toggle between baseline faint and full focus (quality-of-life)
+  cy.on('dblclick', (evt) => { if (evt.target === cy) { const anyFocused = cy.edges('.focus-edge').length === cy.edges().length; if (anyFocused) faintAllEdges(); else focusAllEdges(); } });
 
   // (Legacy) cytoscape-edgehandles extension call removed – replaced by custom-edge-handles.js implementation.
   // If reintroducing the original extension later, insert its setup call here guarded by a feature flag.
