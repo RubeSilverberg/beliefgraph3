@@ -234,8 +234,9 @@ function canConnectNodes(cy, sourceNode, targetNode) {
     return false;
   }
   
-  // Prevent cycles
+  // Prevent cycles (show user-facing alert once per attempt)
   if (wouldCreateCycle(cy, sourceNode.id(), targetNode.id())) {
+    try { alert('Edge blocked: adding this connection would create a loop (cycle), which is currently disallowed.'); } catch(e) {}
     return false;
   }
   
