@@ -34,13 +34,54 @@
         location.href = 'tests/minimal-json/test-minimal-converter.html';
         return;
       }
+      // Hash helper for design lab (#design-lab or ?page=design-lab)
+      if(pid === 'main-app' && (location.hash === '#design-lab' || location.search.includes('page=design-lab'))){
+        console.log('[BeliefGraph] Redirecting to design lab via hash/query helper');
+        location.href = 'design-lab.html';
+        return;
+      }
       window.BELIEFGRAPH_PAGE_ID = pid;
       console.log('[BeliefGraph] Page ID:', pid, 'Path:', p);
       // Console helper command (no UI button)
       window.openMinimalConverter = function(){
         window.open('tests/minimal-json/test-minimal-converter.html','_blank');
       };
+      // Basic open (will fail if server rewrites all paths to index.html)
+      window.openDesignLab = function(){
+        window.open('design-lab.html','_blank');
+      };
+      // Robust open: fetch file then write into a new window so content renders even with SPA-style fallback
+      window.openDesignLabForce = async function(){
+        try {
+          const resp = await fetch('design-lab.html', { cache: 'no-store' });
+          const text = await resp.text();
+          const w = window.open('about:blank','_blank');
+          if(!w){ console.warn('[BeliefGraph] Pop-up blocked.'); return; }
+          w.document.open();
+          w.document.write(text);
+          w.document.close();
+          console.log('[BeliefGraph] Design lab injected via fetch fallback.');
+        } catch(e){
+          console.error('[BeliefGraph] Failed to fetch design-lab.html', e);
+        }
+      };
+      // Inline loader: replace current page DOM with design lab without navigation
+      window.loadDesignLabInline = async function(){
+        try {
+          const resp = await fetch('design-lab.html', { cache: 'no-store' });
+          const html = await resp.text();
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          // Preserve current url hash to allow back navigation
+          history.replaceState({}, '', '#design-lab-inline');
+          document.documentElement.replaceWith(doc.documentElement);
+          console.log('[BeliefGraph] Design lab loaded inline.');
+        } catch(e){
+          console.error('[BeliefGraph] Inline load failed', e);
+        }
+      };
       console.log('[BeliefGraph] Console helper available: openMinimalConverter()');
+      console.log('[BeliefGraph] Additional helpers: openDesignLab(), openDesignLabForce(), loadDesignLabInline()');
     })();
   </script>
   <!-- Mobile device warning (hidden by default; revealed via feature+UA detection) -->
