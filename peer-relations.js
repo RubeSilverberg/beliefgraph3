@@ -64,6 +64,31 @@ export function applyPeerInfluence(cy){
 	if(!window._peerOverlayHidden) _drawOverlays(cy); else _clearOverlays(cy);
 }
 
+export function ensurePeerRelationSymmetry(cy){
+	if(!cy) return;
+	let repaired = 0;
+	const byId = new Map();
+	cy.nodes().forEach(n => byId.set(n.id(), n));
+	cy.nodes().forEach(a => {
+		const links = _getLinks(a);
+		const filtered = [];
+		links.forEach(l => {
+			if(l.peerId === a.id()) return; // drop self relation
+			const b = byId.get(l.peerId);
+			if(!b){ repaired++; return; }
+			// ensure counterpart exists with same relation
+			const bLinks = _getLinks(b);
+			const match = bLinks.find(x => x.peerId === a.id());
+			if(!match){ bLinks.push({ peerId: a.id(), relation: l.relation, strength: l.strength }); _setLinks(b, bLinks); repaired++; }
+			else if(match.relation !== l.relation || match.strength !== l.strength){ match.relation = l.relation; match.strength = l.strength; repaired++; }
+			filtered.push(l);
+		});
+		_setLinks(a, filtered);
+	});
+	if(repaired) { applyPeerInfluence(cy); if(window.computeVisuals) window.computeVisuals(cy); }
+	return repaired;
+}
+
 // --- Overlay Drawing ---
 function _clearOverlays(cy){ const parent = cy.container().parentElement; if(parent) parent.querySelectorAll('.peer-rel-line').forEach(el => el.remove()); }
 function _drawOverlays(cy){
@@ -145,5 +170,6 @@ if(typeof window !== 'undefined'){
 	window.clearAllPeerRelationsForNode = (node)=> clearAllPeerRelationsForNode(window.cy, node);
 	window.togglePeerOverlay = ()=> { window._peerOverlayHidden = !window._peerOverlayHidden; if(window._peerOverlayHidden){ _clearOverlays(window.cy); } else { applyPeerInfluence(window.cy); } localStorage.setItem('peerOverlayHidden', window._peerOverlayHidden ? '1':'0'); };
 	const pref = localStorage.getItem('peerOverlayHidden'); if(pref==='1') window._peerOverlayHidden = true;
+		window.ensurePeerRelationSymmetry = (cy)=> ensurePeerRelationSymmetry(cy || window.cy);
 }
 

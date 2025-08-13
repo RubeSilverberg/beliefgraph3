@@ -189,6 +189,7 @@ function loadGraphWithAnnotations() {
           // Load graph elements
           cy.elements().remove();
           cy.add(fileContent.graph);
+          try { window.ensurePeerRelationSymmetry?.(cy); window.applyPeerInfluence?.(cy); } catch(e){ console.warn('Peer relation reload skipped', e); }
           
           // Load text annotations
           if (window.textAnnotations) {
@@ -198,6 +199,7 @@ function loadGraphWithAnnotations() {
           // Handle legacy format (just graph elements)
           cy.elements().remove();
           cy.add(fileContent);
+          try { window.ensurePeerRelationSymmetry?.(cy); window.applyPeerInfluence?.(cy); } catch(e){ console.warn('Peer relation reload skipped', e); }
         }
         
         convergeAll({ cy });

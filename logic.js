@@ -1020,7 +1020,9 @@ export function loadGraph() {
       try {
         const elements = JSON.parse(evt.target.result);
         cy.elements().remove();
-        cy.add(elements);
+  cy.add(elements);
+  // Peer relations: ensure symmetry & apply influence post-load
+  try { window.ensurePeerRelationSymmetry?.(cy); window.applyPeerInfluence?.(cy); } catch(e){ console.warn('Peer relation reload skipped', e); }
         convergeAll({ cy });
         cy.layout({ name: 'preset' }).run();
         window.computeVisuals?.(cy);
