@@ -252,6 +252,59 @@ window.cy.on('doubleTap', 'node', function(event) {
         list.appendChild(toggleInert);
       }
 
+      // --- Peer Relations (alignment / antagonism) ---
+      if(window.startPeerRelationMode){
+        const header = document.createElement('li');
+        header.textContent = 'Peer Relations';
+        header.style.cursor = 'default';
+        header.style.fontWeight = '600';
+        header.style.paddingTop = '4px';
+        header.style.color = '#444';
+        list.appendChild(header);
+
+        const addAlign = document.createElement('li');
+        addAlign.textContent = 'Set Alignment…';
+        addAlign.style.cursor = 'pointer';
+        addAlign.onclick = () => { window.startPeerRelationMode({ cy, sourceNode: node, relation: 'aligned' }); hideMenu(); };
+        list.appendChild(addAlign);
+
+        const addAntag = document.createElement('li');
+        addAntag.textContent = 'Set Antagonism…';
+        addAntag.style.cursor = 'pointer';
+        addAntag.onclick = () => { window.startPeerRelationMode({ cy, sourceNode: node, relation: 'antagonistic' }); hideMenu(); };
+        list.appendChild(addAntag);
+
+        if(window.listPeerRelations){
+          const listItem = document.createElement('li');
+            listItem.textContent = 'List / Remove Peer Relations…';
+            listItem.style.cursor = 'pointer';
+            listItem.onclick = () => {
+              hideMenu();
+              const rels = window.listPeerRelations(node) || [];
+              const dialog = document.createElement('div');
+              dialog.style.position='fixed'; dialog.style.top='10%'; dialog.style.left='50%'; dialog.style.transform='translateX(-50%)';
+              dialog.style.background='#fff'; dialog.style.padding='16px 20px'; dialog.style.border='1px solid #888'; dialog.style.borderRadius='8px'; dialog.style.zIndex=10000; dialog.style.maxWidth='360px'; dialog.style.font='14px/1.4 Arial,sans-serif';
+              dialog.innerHTML = `<h3 style="margin:0 0 10px;font:600 16px Arial,sans-serif;">Relations for ${(node.data('displayLabel')||node.data('origLabel')||node.id())}</h3>`;
+              if(!rels.length){ dialog.innerHTML += '<div style="color:#666;">None</div>'; }
+              rels.forEach(r=> {
+                const row = document.createElement('div'); row.style.display='flex'; row.style.alignItems='center'; row.style.justifyContent='space-between'; row.style.margin='4px 0';
+                const peerNode = cy.getElementById(r.peerId); const name = (peerNode && (peerNode.data('displayLabel')||peerNode.data('origLabel')||peerNode.id())) || r.peerId;
+                const color = r.relation==='aligned' ? '#2e7d32' : '#c62828';
+                row.innerHTML = `<span style="color:${color};font-weight:600;">${r.relation==='aligned'?'Align':'Antag'}</span> <span style="flex:1;margin-left:8px;">${name}</span>`;
+                const btn = document.createElement('button'); btn.textContent='Remove'; btn.style.fontSize='12px'; btn.onclick=()=> { if(window.removePeerRelation){ window.removePeerRelation(node, peerNode); if(window.applyPeerInfluence) window.applyPeerInfluence(cy); if(window.computeVisuals) window.computeVisuals(cy); dialog.remove(); } };
+                row.appendChild(btn); dialog.appendChild(row);
+              });
+              const controls = document.createElement('div'); controls.style.marginTop='12px'; controls.style.display='flex'; controls.style.flexWrap='wrap'; controls.style.gap='8px';
+              const clearAllBtn = document.createElement('button'); clearAllBtn.textContent='Clear All'; clearAllBtn.onclick=()=> { if(window.clearAllPeerRelationsForNode){ window.clearAllPeerRelationsForNode(node); if(window.applyPeerInfluence) window.applyPeerInfluence(cy); if(window.computeVisuals) window.computeVisuals(cy); dialog.remove(); } };
+              const toggleOverlayBtn = document.createElement('button'); toggleOverlayBtn.textContent= window._peerOverlayHidden? 'Show Overlay':'Hide Overlay'; toggleOverlayBtn.onclick=()=> { if(window.togglePeerOverlay){ window.togglePeerOverlay(); toggleOverlayBtn.textContent = window._peerOverlayHidden? 'Show Overlay':'Hide Overlay'; } };
+              const close = document.createElement('button'); close.textContent='Close'; close.onclick=()=> dialog.remove();
+              controls.appendChild(clearAllBtn); controls.appendChild(toggleOverlayBtn); controls.appendChild(close); dialog.appendChild(controls);
+              document.body.appendChild(dialog);
+            };
+          list.appendChild(listItem);
+        }
+      }
+
       const visualSignalsItem = document.createElement('li');
       visualSignalsItem.textContent = 'Visual Signals...';
       visualSignalsItem.style.cursor = 'pointer';

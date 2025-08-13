@@ -67,6 +67,7 @@ import {
 import { setupMenuAndEdgeModals } from './menu.js';
 import { setupCustomEdgeHandles, initializeCustomEdgeHandlesModeMonitoring } from './custom-edge-handles.js';
 import { TextAnnotations } from './text-annotations.js';
+import { applyPeerInfluence, installPeerRelationUI, startPeerRelationMode } from './peer-relations.js';
 // --- Quick Guide Button Logic ---
 document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('quick-guide-btn');
@@ -733,6 +734,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Make cy global if needed elsewhere
   window.cy = cy;
+  // Install peer relation UI and initial pass (safe no-op if none)
+  installPeerRelationUI(cy);
+
+  // Wrap global convergeAll once (idempotent) to ensure peer influence + visuals refresh after each convergence
+  if(!window._peerConvergeWrapped && window.convergeAll){
+    const baseConverge = window.convergeAll;
+    window.convergeAll = (opts) => {
+      const res = baseConverge(opts);
+      try { applyPeerInfluence((opts && opts.cy) || window.cy); if(window.computeVisuals && window.cy) window.computeVisuals(window.cy); } catch(e) { console.warn('Peer influence error', e); }
+      return res;
+    };
+    window._peerConvergeWrapped = true;
+  }
   
   // Initialize text annotations system
   window.textAnnotations = new TextAnnotations(document.body);

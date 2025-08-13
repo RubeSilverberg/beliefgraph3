@@ -359,6 +359,11 @@ export function computeVisuals(cy) {
       }
 
       let p = node.data('prob');
+      // Peer relation adjusted display probability (lite mode only)
+      const displayP = node.data('displayProb');
+      if(node.data('peerAdjusted') && typeof displayP === 'number'){
+        p = displayP;
+      }
       let pPct = typeof p === "number" ? Math.round(p * 100) : null;
 
       label += pPct !== null
@@ -730,8 +735,16 @@ export function showNodeHoverBox(cy, node) {
   if (nodeType === NODE_TYPE_FACT) {
     const inert = node.data('inertFact');
     const typeLine = inert ? 'INERT Fact node' : 'Fact node';
+    let extra = '';
+    const base = node.data('prob');
+    const adj = node.data('displayProb');
+    if(node.data('peerAdjusted') && typeof base === 'number' && typeof adj === 'number'){
+      const diff = adj - base;
+      const sign = diff > 0 ? '+' : '−';
+      extra = `<div style="margin-top:6px;font-size:13px;color:${diff>0?'#2e7d32':'#c62828'};">Peer adj: ${sign}${Math.round(Math.abs(diff)*100)}%</div>`;
+    }
     box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${combinedLabel}</div>
-                     <div style="color: ${inert ? '#e65100' : '#666'}; font-style: italic; font-weight:${inert ? '600':'400'};">${typeLine}</div>`;
+                     <div style="color: ${inert ? '#e65100' : '#666'}; font-style: italic; font-weight:${inert ? '600':'400'};">${typeLine}</div>${extra}`;
     container.parentElement.appendChild(box);
     return;
   }
@@ -803,14 +816,21 @@ export function showNodeHoverBox(cy, node) {
   } else {
     // --- Lite Mode ---
     if (nodeType === NODE_TYPE_ASSERTION) {
-      const lp = node.data('prob');
-      if (typeof lp !== "number") {
+      const base = node.data('prob');
+      const adj = node.data('displayProb');
+      const peerAdj = node.data('peerAdjusted') && typeof base === 'number' && typeof adj === 'number';
+      if (typeof base !== "number") {
         box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${combinedLabel}</div>
                          <div style="margin-bottom: 6px;">Current: <b style="color: #666;">—</b></div>
                          <div style="color: #e65100; font-style: italic;">No incoming information.</div>`;
       } else {
+        const shown = peerAdj ? adj : base;
         box.innerHTML = `<div style="font-size: 17px; font-weight: 500; color: #000; margin-bottom: 8px;">${combinedLabel}</div>
-                         <div style="margin-bottom: 6px;">Current: <b style="font-size: 18px; color: #1565c0;">${Math.round(100 * lp)}%</b></div>`;
+                         <div style="margin-bottom: 6px;">Current: <b style="font-size: 18px; color: #1565c0;">${Math.round(100 * shown)}%</b></div>`;
+        if(peerAdj){
+          const diff = adj - base; const sign = diff>0?'+':'−';
+          box.innerHTML += `<div style="margin-top:6px;font-size:13px;color:${diff>0?'#2e7d32':'#c62828'};">Peer adj: ${sign}${Math.round(Math.abs(diff)*100)}%</div>`;
+        }
       }
       // Apply robustness styling with dynamic color matching border
       const rlabel = node.data('robustnessLabel');
