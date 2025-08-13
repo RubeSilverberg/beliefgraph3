@@ -455,11 +455,13 @@ document.addEventListener('DOMContentLoaded', () => {
     style: {
       'border-style': 'dashed',
       'border-color': '#ff9800',
-      'border-width': 4,
-      'background-color': '#555',
-  'background-opacity': 1,
-      'text-outline-width': 2,
-      'text-outline-color': '#000'
+  'border-width': 4,
+  // Do not override background-color so user visual signals (softFloretColor) still apply
+  'shadow-blur': 12,
+  'shadow-color': '#ff980066',
+  'shadow-opacity': 1,
+  'shadow-offset-x': 0,
+  'shadow-offset-y': 0
     }
   },
   // AND logic: diamond, thicker border, bigger

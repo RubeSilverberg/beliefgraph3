@@ -5,3 +5,4 @@ This tool lets you build belief networks with minimal setup. Add nodes ('N' or r
 •	Assumptions: Heavy mode assumes independent inputs unless you use logic nodes.
 •	AND/OR nodes: Provided for modeling logical relationships when needed, but most users can ignore them.
 •	Other features: Optional adjustment for node size and color, as well as different ways to present explanatory info.
+•	Toggle facts 'on' and 'off' to see their unique contribution to the system.
