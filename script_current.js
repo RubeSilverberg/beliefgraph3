@@ -376,7 +376,7 @@ export function adjustNodeSize(node, change = 0, options = {}) {
   const fontSize = Math.round(baseFont + (sizeIndex - 3) * fontStep );
   node.data('fontSize', fontSize );
 
-  // Text sizing
+  // Text sizing (prefer user-facing label for stability)
   const text = (node.data('displayLabel') || node.data('label') || node.data('origLabel') || '').toString();
   const lines = text.split('\n');
   const longest = lines.reduce((max, line) => Math.max(max, line.length ), 0 );
@@ -744,7 +744,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const baseConverge = window.convergeAll;
     window.convergeAll = (opts) => {
       const res = baseConverge(opts);
-      try { applyPeerInfluence((opts && opts.cy) || window.cy); if(window.computeVisuals && window.cy) window.computeVisuals(window.cy); } catch(e) { console.warn('Peer influence error', e); }
+  try { applyPeerInfluence((opts && opts.cy) || window.cy); if(window.computeVisuals && window.cy) window.computeVisuals(window.cy); } catch(e) { console.warn('Peer influence error', e); }
       return res;
     };
     window._peerConvergeWrapped = true;
