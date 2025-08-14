@@ -3,7 +3,7 @@
 // Stored per node: data('peerLinks') = [{ peerId, relation: 'aligned'|'antagonistic', strength }]
 // Public exports: addPeerRelation, removePeerRelation, listPeerRelations, applyPeerInfluence, installPeerRelationUI, startPeerRelationMode
 
-const DEFAULT_STRENGTH = 0.30;
+const DEFAULT_STRENGTH = 0.15;
 const MAX_ABS_DELTA = 0.25;
 
 function _getLinks(node){ return node.data('peerLinks') || []; }
@@ -12,6 +12,9 @@ function _hasRelation(a,b,relation){ return _getLinks(a).some(l => l.peerId === 
 
 export function addPeerRelation(cy, a, b, relation, strength = DEFAULT_STRENGTH){
 	if(!cy || !a || !b) return; if(a.id() === b.id()) return; if(_hasRelation(a,b,relation)) return;
+	// Disallow relations involving facts
+	const ta = a.data('type'); const tb = b.data('type');
+	if(ta === 'fact' || tb === 'fact') return;
 	removePeerRelation(cy, a, b); // ensure at most one relation type per pair
 	const la = _getLinks(a); la.push({ peerId:b.id(), relation, strength }); _setLinks(a, la);
 	const lb = _getLinks(b); lb.push({ peerId:a.id(), relation, strength }); _setLinks(b, lb);
@@ -34,19 +37,44 @@ export function clearAllPeerRelationsForNode(cy, node){
 	});
 }
 
+// Remove any peer relations involving facts (run when node types change)
+export function pruneFactRelations(cy){
+	if(!cy) return; let removed = 0;
+	const toClear = [];
+	cy.nodes().forEach(n => {
+		if(n.data('type') !== 'fact') return;
+		const links = _getLinks(n);
+		if(links.length) toClear.push(n);
+	});
+	toClear.forEach(n => { clearAllPeerRelationsForNode(cy, n); removed++; });
+	// Also remove one-sided links pointing to facts
+	const factIds = new Set(cy.nodes().filter(n => n.data('type')==='fact').map(n => n.id()));
+	cy.nodes().forEach(n => {
+		if(factIds.has(n.id())) return;
+		const links = _getLinks(n);
+		const filtered = links.filter(l => !factIds.has(l.peerId));
+		if(filtered.length !== links.length){ _setLinks(n, filtered); removed++; }
+	});
+	return removed;
+}
+
 export function applyPeerInfluence(cy){
 	if(!cy) return;
+	// Prune any relations involving facts (in case of type changes)
+	pruneFactRelations(cy);
 	// Clear previous adjustment markers
 	cy.nodes().forEach(n => { n.removeData('displayProb'); n.removeData('peerAdjusted'); });
 	cy.nodes().forEach(node => {
 		const base = node.data('prob');
 		if(typeof base !== 'number') return; // only adjust lite-mode probabilities
+		if(node.data('type') === 'fact') return; // no adjustments to facts
 		const links = _getLinks(node);
 		if(!links.length) return;
 		let delta = 0;
 		for(const l of links){
 			const peer = cy.getElementById(l.peerId);
 			if(!peer || !peer.isNode()) continue;
+			if(peer.data('type') === 'fact') continue; // skip facts
 			const pp = peer.data('prob');
 			if(typeof pp !== 'number') continue;
 			const diff = pp - base; // positive if peer higher
@@ -98,15 +126,40 @@ function _drawOverlays(cy){
 	const pan = cy.pan();
 	const zoom = cy.zoom();
 	const mkKey = (a,b)=> a<b ? a+'__'+b : b+'__'+a;
+	// Helper: clip line from node center toward target to node's bounding box edge, then extend slightly outward
+	const clipFromCenter = (ele, cx, cy, tx, ty, outward=10) => {
+		const bb = ele.renderedBoundingBox ? ele.renderedBoundingBox() : ele.boundingBox();
+		const x1 = cx, y1 = cy, x2 = tx, y2 = ty;
+		const dx = x2 - x1, dy = y2 - y1;
+		const INF = 1e9;
+		let bestT = INF, ix = x1, iy = y1;
+		if (Math.abs(dx) > 1e-6) {
+			const tL = (bb.x1 - x1) / dx; const yL = y1 + tL*dy; if (tL > 0 && yL >= bb.y1 && yL <= bb.y2 && tL < bestT) { bestT = tL; ix = bb.x1; iy = yL; }
+			const tR = (bb.x2 - x1) / dx; const yR = y1 + tR*dy; if (tR > 0 && yR >= bb.y1 && yR <= bb.y2 && tR < bestT) { bestT = tR; ix = bb.x2; iy = yR; }
+		}
+		if (Math.abs(dy) > 1e-6) {
+			const tT = (bb.y1 - y1) / dy; const xT = x1 + tT*dx; if (tT > 0 && xT >= bb.x1 && xT <= bb.x2 && tT < bestT) { bestT = tT; ix = xT; iy = bb.y1; }
+			const tB = (bb.y2 - y1) / dy; const xB = x1 + tB*dx; if (tB > 0 && xB >= bb.x1 && xB <= bb.x2 && tB < bestT) { bestT = tB; ix = xB; iy = bb.y2; }
+		}
+		if (bestT === INF) return { x: x1, y: y1 }; // fallback
+		const len = Math.sqrt(dx*dx + dy*dy) || 1; const nx = dx/len, ny = dy/len;
+		return { x: ix + nx * outward, y: iy + ny * outward };
+	};
 	cy.nodes().forEach(a => {
+		if(a.data('type') === 'fact') return; // no overlays for facts
 		const links = _getLinks(a);
 		const posA = a.position();
 		links.forEach(l => {
 			const b = cy.getElementById(l.peerId); if(!b || a.id() === b.id()) return;
+			if(b.data('type') === 'fact') return; // no overlays to facts
 			const key = mkKey(a.id(), b.id()); if(drawn.has(key)) return; drawn.add(key);
 			const posB = b.position();
-			const x1 = posA.x * zoom + pan.x; const y1 = posA.y * zoom + pan.y;
-			const x2 = posB.x * zoom + pan.x; const y2 = posB.y * zoom + pan.y;
+			const x1c = posA.x * zoom + pan.x; const y1c = posA.y * zoom + pan.y;
+			const x2c = posB.x * zoom + pan.x; const y2c = posB.y * zoom + pan.y;
+			// Clip to each node's rendered bounding box to avoid overlapping labels and shapes
+			const p1 = clipFromCenter(a, x1c, y1c, x2c, y2c, 6);
+			const p2 = clipFromCenter(b, x2c, y2c, x1c, y1c, 6);
+			const x1 = p1.x, y1 = p1.y; const x2 = p2.x, y2 = p2.y;
 			const dx = x2 - x1; const dy = y2 - y1; const len = Math.sqrt(dx*dx + dy*dy); const angle = Math.atan2(dy,dx)*180/Math.PI;
 			const line = document.createElement('div');
 			line.className = 'peer-rel-line';
@@ -141,6 +194,8 @@ function _showBanner(text){
 }
 
 export function startPeerRelationMode({ cy, sourceNode, relation }){
+	// Disallow starting from facts
+	if(sourceNode.data('type') === 'fact') { _relationMode = null; return; }
 	_relationMode = { sourceId: sourceNode.id(), relation };
 	_showBanner(`Select a second node to set ${relation} with "${(sourceNode.data('displayLabel')||sourceNode.data('origLabel')||sourceNode.id())}"`);
 }
@@ -151,7 +206,9 @@ export function installPeerRelationUI(cy){
 		if(!_relationMode) return;
 		const source = cy.getElementById(_relationMode.sourceId);
 		const target = evt.target;
-		if(!source || source.id()===target.id()){ _relationMode=null; _clearBanner(); return; }
+	if(!source || source.id()===target.id()){ _relationMode=null; _clearBanner(); return; }
+	// Prevent creating relations with facts
+	if(source.data('type') === 'fact' || target.data('type') === 'fact'){ _relationMode=null; _clearBanner(); return; }
 		if(_hasRelation(source,target)) removePeerRelation(cy, source, target); else addPeerRelation(cy, source, target, _relationMode.relation);
 		applyPeerInfluence(cy);
 		if(window.computeVisuals) window.computeVisuals(cy);
@@ -168,6 +225,7 @@ if(typeof window !== 'undefined'){
 	window.startPeerRelationMode = (opts)=> startPeerRelationMode(opts);
 	window.applyPeerInfluence = (cy)=> applyPeerInfluence(cy || window.cy);
 	window.clearAllPeerRelationsForNode = (node)=> clearAllPeerRelationsForNode(window.cy, node);
+	window.pruneFactRelations = (cy)=> pruneFactRelations(cy || window.cy);
 	window.togglePeerOverlay = ()=> { window._peerOverlayHidden = !window._peerOverlayHidden; if(window._peerOverlayHidden){ _clearOverlays(window.cy); } else { applyPeerInfluence(window.cy); } localStorage.setItem('peerOverlayHidden', window._peerOverlayHidden ? '1':'0'); };
 	const pref = localStorage.getItem('peerOverlayHidden'); if(pref==='1') window._peerOverlayHidden = true;
 		window.ensurePeerRelationSymmetry = (cy)=> ensurePeerRelationSymmetry(cy || window.cy);

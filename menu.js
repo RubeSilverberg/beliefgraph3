@@ -59,10 +59,13 @@ window.cy.on('doubleTap', 'node', function(event) {
 
   // --- Robust hideMenu and outside-click handler ---
   let closeListener = null;
+  let activePeerSubMenu = null; // track open Peer Relations submenu to prevent permanence bugs
 
   function hideMenu() {
     menu.style.display = 'none';
     list.innerHTML = '';
+    // ensure any open peer submenu is removed
+    if (activePeerSubMenu) { try { activePeerSubMenu.remove(); } catch(_){} activePeerSubMenu = null; }
     if (closeListener) {
       document.removeEventListener('click', closeListener, true);
       document.removeEventListener('contextmenu', closeListener, true);
@@ -252,34 +255,39 @@ window.cy.on('doubleTap', 'node', function(event) {
         list.appendChild(toggleInert);
       }
 
-      // --- Peer Relations (alignment / antagonism) ---
-      if(window.startPeerRelationMode){
-        const header = document.createElement('li');
-        header.textContent = 'Peer Relations';
-        header.style.cursor = 'default';
-        header.style.fontWeight = '600';
-        header.style.paddingTop = '4px';
-        header.style.color = '#444';
-        list.appendChild(header);
+      // --- Peer Relations (submenu with tooltip) ---
+  if(window.startPeerRelationMode && nodeType !== NODE_TYPE_FACT){
+        function hideSubMenu(){ if(activePeerSubMenu){ try { activePeerSubMenu.remove(); } catch(_){} activePeerSubMenu = null; } }
 
-        const addAlign = document.createElement('li');
-        addAlign.textContent = 'Set Alignment…';
-        addAlign.style.cursor = 'pointer';
-        addAlign.onclick = () => { window.startPeerRelationMode({ cy, sourceNode: node, relation: 'aligned' }); hideMenu(); };
-        list.appendChild(addAlign);
+        const peerItem = document.createElement('li');
+        peerItem.textContent = 'Peer Relations...';
+        peerItem.style.cursor = 'pointer';
+        peerItem.title = 'Use Peer Relations to relate nodes without directed edges (avoids cycles).';
+        peerItem.onclick = (e) => {
+          e.stopPropagation();
+          if(activePeerSubMenu){ hideSubMenu(); return; }
+          // Build submenu
+          const subMenuEl = document.createElement('div');
+          subMenuEl.style.position = 'fixed';
+          subMenuEl.style.background = '#fff';
+          subMenuEl.style.border = '1px solid #aaa';
+          subMenuEl.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+          subMenuEl.style.zIndex = 10000;
+          const ul = document.createElement('ul');
+          ul.style.listStyle = 'none'; ul.style.margin = '0'; ul.style.padding = '4px 0';
+          subMenuEl.appendChild(ul);
 
-        const addAntag = document.createElement('li');
-        addAntag.textContent = 'Set Antagonism…';
-        addAntag.style.cursor = 'pointer';
-        addAntag.onclick = () => { window.startPeerRelationMode({ cy, sourceNode: node, relation: 'antagonistic' }); hideMenu(); };
-        list.appendChild(addAntag);
+          function addSubItem(text, handler){
+            const li = document.createElement('li');
+            li.textContent = text; li.style.cursor='pointer'; li.style.whiteSpace='nowrap';
+            li.onclick = () => { handler(); hideSubMenu(); hideMenu(); };
+            ul.appendChild(li);
+          }
 
-        if(window.listPeerRelations){
-          const listItem = document.createElement('li');
-            listItem.textContent = 'List / Remove Peer Relations…';
-            listItem.style.cursor = 'pointer';
-            listItem.onclick = () => {
-              hideMenu();
+          addSubItem('Set Alignment…', () => window.startPeerRelationMode({ cy, sourceNode: node, relation: 'aligned' }));
+          addSubItem('Set Antagonism…', () => window.startPeerRelationMode({ cy, sourceNode: node, relation: 'antagonistic' }));
+          if(window.listPeerRelations){
+            addSubItem('List / Remove Peer Relations…', () => {
               const rels = window.listPeerRelations(node) || [];
               const dialog = document.createElement('div');
               dialog.style.position='fixed'; dialog.style.top='10%'; dialog.style.left='50%'; dialog.style.transform='translateX(-50%)';
@@ -290,7 +298,8 @@ window.cy.on('doubleTap', 'node', function(event) {
                 const row = document.createElement('div'); row.style.display='flex'; row.style.alignItems='center'; row.style.justifyContent='space-between'; row.style.margin='4px 0';
                 const peerNode = cy.getElementById(r.peerId); const name = (peerNode && (peerNode.data('displayLabel')||peerNode.data('origLabel')||peerNode.id())) || r.peerId;
                 const color = r.relation==='aligned' ? '#2e7d32' : '#c62828';
-                row.innerHTML = `<span style="color:${color};font-weight:600;">${r.relation==='aligned'?'Align':'Antag'}</span> <span style="flex:1;margin-left:8px;">${name}</span>`;
+                const tag = r.relation==='aligned' ? 'Align' : 'Antag';
+                row.innerHTML = `<span style="color:${color};font-weight:600;">${tag}</span> <span style="flex:1;margin-left:8px;">${name}</span>`;
                 const btn = document.createElement('button'); btn.textContent='Remove'; btn.style.fontSize='12px'; btn.onclick=()=> { if(window.removePeerRelation){ window.removePeerRelation(node, peerNode); if(window.applyPeerInfluence) window.applyPeerInfluence(cy); if(window.computeVisuals) window.computeVisuals(cy); dialog.remove(); } };
                 row.appendChild(btn); dialog.appendChild(row);
               });
@@ -300,9 +309,24 @@ window.cy.on('doubleTap', 'node', function(event) {
               const close = document.createElement('button'); close.textContent='Close'; close.onclick=()=> dialog.remove();
               controls.appendChild(clearAllBtn); controls.appendChild(toggleOverlayBtn); controls.appendChild(close); dialog.appendChild(controls);
               document.body.appendChild(dialog);
-            };
-          list.appendChild(listItem);
-        }
+            });
+          }
+
+          document.body.appendChild(subMenuEl);
+          activePeerSubMenu = subMenuEl;
+          // Position submenu to the right of the clicked item
+          const itemRect = peerItem.getBoundingClientRect();
+          subMenuEl.style.left = (itemRect.right + 6) + 'px';
+          subMenuEl.style.top = (itemRect.top) + 'px';
+
+          // Close submenu when clicking outside of it (but not closing the main menu twice)
+          setTimeout(() => {
+            const handler = (ev) => { if(activePeerSubMenu && !activePeerSubMenu.contains(ev.target) && ev.target !== peerItem) { hideSubMenu(); } };
+            document.addEventListener('click', handler, { once:true, capture:true });
+            document.addEventListener('contextmenu', handler, { once:true, capture:true });
+          }, 0);
+        };
+        list.appendChild(peerItem);
       }
 
       const visualSignalsItem = document.createElement('li');
