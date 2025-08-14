@@ -116,6 +116,7 @@
     <div class="control-group help">
       <button id="quick-guide-btn" class="btn-help">Quick Guide</button>
       <button onclick="window.open('https://colab.research.google.com/drive/1SWjr3Fo8Uzb02KErN4BLh3in2_68ozjJ#scrollTo=1jVCcaxG3AT6', '_blank')" class="btn-help">Math Docs</button>
+  <button id="btnFeedback" class="btn-help" title="Report bug, ask a question, or send feedback">Feedback / Contact</button>
     </div>
   </div>
 
@@ -215,6 +216,133 @@
   <script type="module" src="script_current.js"></script>
   <script type="module" src="bayes-modal.js"></script>
   <script src="network-logger.js"></script>
+  <script>
+    // Reusable feedback/contact modal with copy-to-clipboard and mailto fallback
+    (function(){
+      const EMAIL = 'inferenceenginetool@gmail.com';
+      const SUBJECT = 'Belief Graph feedback / question';
+      const BODY = 'Hi,\n\nI would like to report a bug / ask a question / share feedback about Belief Graph.\n\nDetails:\n';
+
+      function openFeedbackContact(){
+        // Remove any existing modal
+        const prev = document.getElementById('feedback-contact-modal');
+        if(prev) prev.remove();
+
+        // Overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'feedback-contact-modal';
+        overlay.style.position = 'fixed';
+        overlay.style.inset = '0';
+        overlay.style.background = 'rgba(0,0,0,0.35)';
+        overlay.style.zIndex = 10002;
+
+        // Modal
+        const modal = document.createElement('div');
+        modal.style.position = 'fixed';
+        modal.style.left = '50%';
+        modal.style.top = '50%';
+        modal.style.transform = 'translate(-50%, -50%)';
+        modal.style.background = '#fff';
+        modal.style.border = '1px solid #888';
+        modal.style.borderRadius = '10px';
+        modal.style.padding = '18px 18px 14px 18px';
+        modal.style.minWidth = '320px';
+        modal.style.maxWidth = '90vw';
+        modal.style.boxShadow = '0 10px 30px rgba(0,0,0,0.2)';
+
+        const title = document.createElement('div');
+        title.textContent = 'Feedback / Contact';
+        title.style.font = '600 16px Arial, sans-serif';
+        title.style.marginBottom = '8px';
+        modal.appendChild(title);
+
+        const info = document.createElement('div');
+        info.textContent = 'Copy the email, or open your mail app:';
+        info.style.fontSize = '13px';
+        info.style.color = '#444';
+        info.style.marginBottom = '8px';
+        modal.appendChild(info);
+
+        const row = document.createElement('div');
+        row.style.display = 'grid';
+        row.style.gridTemplateColumns = '1fr auto';
+        row.style.gap = '8px';
+        row.style.alignItems = 'center';
+
+        const emailInput = document.createElement('input');
+        emailInput.type = 'text';
+        emailInput.value = EMAIL;
+        emailInput.readOnly = true;
+        emailInput.style.padding = '8px';
+        emailInput.style.border = '1px solid #bbb';
+        emailInput.style.borderRadius = '6px';
+        emailInput.style.fontSize = '14px';
+        emailInput.style.width = '100%';
+
+        const copyBtn = document.createElement('button');
+        copyBtn.textContent = 'Copy';
+        copyBtn.style.padding = '8px 10px';
+        copyBtn.style.fontSize = '13px';
+        copyBtn.onclick = async () => {
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              await navigator.clipboard.writeText(EMAIL);
+            } else {
+              emailInput.select();
+              document.execCommand('copy');
+            }
+            copyBtn.textContent = 'Copied!';
+            setTimeout(()=> copyBtn.textContent = 'Copy', 1200);
+          } catch(e) {
+            alert('Copy failed. Please select and copy manually.');
+          }
+        };
+
+        row.appendChild(emailInput);
+        row.appendChild(copyBtn);
+        modal.appendChild(row);
+
+        const actions = document.createElement('div');
+        actions.style.marginTop = '12px';
+        actions.style.display = 'flex';
+        actions.style.gap = '8px';
+        actions.style.flexWrap = 'wrap';
+
+        const openMailBtn = document.createElement('button');
+        openMailBtn.textContent = 'Open email app';
+        openMailBtn.onclick = () => {
+          const subject = encodeURIComponent(SUBJECT);
+          const body = encodeURIComponent(BODY);
+          window.location.href = `mailto:${EMAIL}?subject=${subject}&body=${body}`;
+        };
+
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = 'Close';
+        closeBtn.onclick = () => overlay.remove();
+
+        actions.appendChild(openMailBtn);
+        actions.appendChild(closeBtn);
+        modal.appendChild(actions);
+
+        overlay.appendChild(modal);
+        overlay.addEventListener('click', (e) => { if(e.target === overlay) overlay.remove(); });
+        document.body.appendChild(overlay);
+
+        // focus for quick selection
+        setTimeout(()=> emailInput.focus(), 50);
+      }
+
+      window.openFeedbackContact = openFeedbackContact;
+
+      // Hook up Help button
+      const btn = document.getElementById('btnFeedback');
+      if(btn){
+        btn.addEventListener('click', function(){
+          openFeedbackContact();
+        });
+      }
+    })();
+  </script>
   <!-- Mobile detection script (robust: UA + capability + media queries + size) -->
   <script>
     (function(){
