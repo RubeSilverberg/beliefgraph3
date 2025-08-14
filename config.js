@@ -13,7 +13,8 @@ export const ALLOWED_NODE_TYPES = [
 export const ALLOWED_EDGE_TYPES = [EDGE_TYPE_SUPPORTS, EDGE_TYPE_OPPOSES];
 
 // --- CONFIG ---
-export const DEBUG = true;
+// Default to false for public sharing; set window.DEBUG=true at runtime to re-enable verbose logs
+export const DEBUG = false;
 export const WEIGHT_MIN = 0.01;
 export const config = {
   bayesHeavyMode: false,

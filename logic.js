@@ -179,7 +179,8 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
   let converged = false, finalDelta = 0, iterations = 0;
 
   // 🔍 COMPREHENSIVE DEBUG LOG - Initialize debugging system
-  const DEBUG_COMPREHENSIVE = true;
+  // Off by default for public sharing; enable by setting window.DEBUG_COMPREHENSIVE = true in the console
+  const DEBUG_COMPREHENSIVE = (typeof window !== 'undefined') && !!window.DEBUG_COMPREHENSIVE;
   const debugLog = {
     totalNodes: cy.nodes().length,
     totalEdges: cy.edges().length,
