@@ -164,23 +164,6 @@ window.cy.on('doubleTap', 'node', function(event) {
         list.appendChild(li);
       });
 
-      // Global: Feedback / Contact
-      const feedbackItem = document.createElement('li');
-      feedbackItem.textContent = 'Feedback / Contact…';
-      feedbackItem.style.cursor = 'pointer';
-      feedbackItem.title = 'Report bug, ask a question, or send feedback';
-      feedbackItem.onclick = () => {
-        if (window.openFeedbackContact) {
-          window.openFeedbackContact();
-        } else {
-          // Fallback to mailto if modal function not present
-          const subject = encodeURIComponent('Belief Graph feedback / question');
-          const body = encodeURIComponent('Hi,\n\nI would like to report a bug / ask a question / share feedback about Belief Graph.\n\nDetails:\n');
-          window.location.href = `mailto:inferenceenginetool@gmail.com?subject=${subject}&body=${body}`;
-        }
-        hideMenu();
-      };
-      list.appendChild(feedbackItem);
 
     } else if (evt.target.isNode && evt.target.isNode()) {
       const node = evt.target;
