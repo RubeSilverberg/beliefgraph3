@@ -105,30 +105,28 @@ function propagateFromParentsRobust({ baseProb, parents, getProb, getWeight, eps
     });
   }
   
-  const totalAbsW = infos.reduce((sum, x) => sum + Math.abs(x.weight), 0);
+  // Per-parent saturation: contribution_i = sat(|w_i|) * w_i * (odds_i - priorOdds)
+  // where sat(x) = 1 - exp(-k * x)
   let oddsDelta = 0;
-  
-  if (debug) console.log(`    🧮 Individual contributions:`);
+  if (debug) console.log(`    🧮 Individual contributions (per-parent saturation):`);
   for (let i = 0; i < infos.length; ++i) {
     const { odds, weight } = infos[i];
-    const contribution = weight * (odds - priorOdds);
+    const sat = 1 - Math.exp(-saturationK * Math.abs(weight));
+    const contribution = sat * weight * (odds - priorOdds);
     oddsDelta += contribution;
     if (debug) {
       const edge = infos[i].parent;
       const parentNode = edge.source();
-      console.log(`      [${i+1}] ${parentNode.id()}: weight=${weight}, odds=${odds}, priorOdds=${priorOdds}, (odds-prior)=${odds-priorOdds}, contribution=${contribution}`);
+      console.log(`      [${i+1}] ${parentNode.id()}: weight=${weight}, sat=${sat}, odds=${odds}, priorOdds=${priorOdds}, (odds-prior)=${odds-priorOdds}, contribution=${contribution}`);
     }
   }
-  
-  if (debug) console.log(`    📈 Raw oddsDelta before saturation: ${oddsDelta}`);
-  
-  // Apply global saturation to oddsDelta
-  const saturation = 1 - Math.exp(-saturationK * totalAbsW);
-  oddsDelta *= saturation;
+
+  if (debug) console.log(`    📈 Total oddsDelta after per-parent saturation: ${oddsDelta}`);
+
   const updatedOdds = priorOdds + oddsDelta;
   const result = 1 / (1 + Math.exp(-updatedOdds));
   
-  if (debug) console.log(`    🔢 Calculation: baseProb=${baseProb}, priorOdds=${priorOdds}, totalAbsW=${totalAbsW}, saturation=${saturation}, oddsDelta=${oddsDelta}, updatedOdds=${updatedOdds}, result=${result}`);
+  if (debug) console.log(`    🔢 Calculation: baseProb=${baseProb}, priorOdds=${priorOdds}, oddsDelta=${oddsDelta}, updatedOdds=${updatedOdds}, result=${result}`);
   
   return result;
 }
