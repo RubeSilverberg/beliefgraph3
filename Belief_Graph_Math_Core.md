@@ -54,20 +54,21 @@ Lite mode uses an **iterative convergence approach** to propagate probabilities 
 3. **Weighted Influence:**
    $$\text{sign}_i = \begin{cases} -1 & \text{if edge opposes} \\ 1 & \text{otherwise} \end{cases}$$
    $$w_{eff,i} = w_i \times \text{sign}_i$$
-   $$\Delta_{odds} = \sum_{i \in \mathcal{E}} w_{eff,i} \times (\text{parentOdds}_i - \text{priorOdds})$$
-4. **Saturation Function:**
-   $$W_{total} = \sum_{i \in \mathcal{E}} |w_{eff,i}|$$
-   $$\text{saturation} = 1 - e^{-k_{sat} \times W_{total}}$$
-   $$\Delta_{final} = \Delta_{odds} \times \text{saturation}$$
+   $$\text{raw}_i = w_{eff,i} \times (\text{parentOdds}_i - \text{priorOdds})$$
+4. **Per-Parent Saturation:**
+   Apply saturation to each edge individually, then sum:
+   $$\text{sat}_i = 1 - e^{-k_{sat} \cdot |w_{eff,i}|}$$
+   $$\text{contrib}_i = \text{sat}_i \cdot \text{raw}_i$$
+   $$\Delta_{final} = \sum_{i \in \mathcal{E}} \text{contrib}_i$$
 5. **Final Probability:**
    $$\text{updatedOdds} = \text{priorOdds} + \Delta_{final}$$
    $$P_{final} = \frac{1}{1 + e^{-\text{updatedOdds}}}$$
 
-**Saturation Design for Iterative Convergence:**
-The saturation function is specifically designed for iterative systems. Over multiple iterations:
-- **Low total weights**: $\text{saturation} \approx W_{total}$ (linear accumulation)
-- **High total weights**: $\text{saturation} \to 1$ (prevents extreme swings)
-- **Multiple iterations**: Small incremental changes accumulate to proper final values
+**Saturation Design for Iterative Convergence (per-parent):**
+Per-edge saturation improves robustness:
+- For small $|w_{eff,i}|$: $\text{sat}_i \approx |w_{eff,i}|$ (approximately linear growth)
+- For large $|w_{eff,i}|$: $\text{sat}_i \to 1$ (caps any one edge’s leverage)
+- Many moderate edges can still accumulate via summation
 
 **Special Case: High-Weight Single Edge**
 When $|w_{eff}| \geq 0.99$:
@@ -131,6 +132,7 @@ Lite mode uses an **iterative convergence approach**:
 1. **Edge Convergence**: Update all edge weights (typically converges immediately for assertions)
 2. **Node Convergence**: Iteratively update all node probabilities until convergence
 3. **Convergence Check**: Continue until maximum change < tolerance or max iterations reached
+4. **Peer Overlay (visual)**: After node probabilities settle in Lite mode, an optional peer-relationship overlay can adjust a node’s display-only probability (see Peer Relations section). Core propagation probabilities remain unchanged.
 
 ### Heavy Mode: Single-Pass Topological Sort
 Heavy mode uses a single topological sort-based pass to update all node probabilities. No iterative updates or convergence checks are performed.
@@ -164,6 +166,34 @@ def topological_sort(nodes, edges):
 ```
 
 **Time Complexity:** $O(V + E)$, where $V$ is the number of nodes and $E$ is the number of edges.
+
+---
+
+##  Peer Relations (Visual Overlay)
+
+Peer relations are symmetric, display-layer adjustments between pairs of non-fact nodes. They do not affect the core propagation result $P_{final}$; instead, they compute a display probability $P_{disp}$ used for UI rendering.
+
+### Relation Types and Parameters
+- Relation $r \in \{\text{aligned}, \text{antagonistic}\}$
+- Strength $s \in [0, 1]$ with default $s = 0.15$
+- Per-node cap on absolute adjustment: $|\Delta| \leq 0.25$
+
+### Display Probability Update
+Given a node’s base probability $P$ (from Lite propagation) and a set of peers $\mathcal{R}$:
+$$\Delta = \sum_{(j,r,s)\in\mathcal{R}} \begin{cases}
+ s\cdot (P_j - P) & r=\text{aligned} \\
+ -s\cdot (P_j - P) & r=\text{antagonistic}
+\end{cases}$$
+$$\Delta_{clamped} = \max(-\Delta_{max}, \min(\Delta, \Delta_{max})) \quad \text{with } \Delta_{max}=0.25$$
+$$P_{disp} = \min(1, \max(0, P + \Delta_{clamped}))$$
+
+Notes:
+- Only non-fact nodes participate; any relation to a fact is ignored/pruned.
+- Relations are symmetric: if $(i,j,r,s)$ exists, so does $(j,i,r,s)$.
+- If $|P_{disp} - P| < 5\times 10^{-4}$, the overlay may be omitted for clarity.
+
+### Timing
+The overlay is recomputed after each convergence or when relations change. Toggling the overlay does not change underlying probabilities.
 
 ---
 
@@ -211,6 +241,10 @@ maxIters = 30                 # Maximum iterations for convergence
 
 # Weight bounds
 WEIGHT_MIN = 0.01             # Minimum edge weight magnitude
+
+# Peer relations (visual overlay)
+PEER_DEFAULT_STRENGTH = 0.15  # Default pair strength (aligned/antagonistic)
+PEER_MAX_ABS_DELTA = 0.25     # Max absolute display adjustment per node
 ```
 
 ---
