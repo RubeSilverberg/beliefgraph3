@@ -762,6 +762,8 @@ document.addEventListener('DOMContentLoaded', () => {
   flipArrowDirections(mode);
 
   // ===== Edge Visibility Interaction (inverted: faint by default; focus on press) =====
+  const EDGE_FADE_MIN_EDGES = 11; // override fading while edge count < 11 (i.e., until 11th edge exists)
+  function isFadingOverridden() { return cy.edges().length < EDGE_FADE_MIN_EDGES; }
   function faintAllEdges() { cy.edges().addClass('faint-edge').removeClass('focus-edge'); }
   function focusEdges(edges) { edges.removeClass('faint-edge').addClass('focus-edge'); }
   function focusAllEdges() { cy.edges().removeClass('faint-edge').addClass('focus-edge'); }
@@ -771,6 +773,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const VISIBLE_EDGE_THRESHOLD = 5; // if <= this many edges visible, sharpen
   let isPointerDown = false;
   function autoEdgeFocusCheck(){
+    // If fading is overridden for small graphs, keep all edges focused and skip logic
+    if (isFadingOverridden()) { focusAllEdges(); cy._autoEdgesFocused = true; return; }
     if (isPointerDown) return; // user actively interacting; defer
     const zoom = cy.zoom();
     // Quick short-circuit on zoom
@@ -805,17 +809,61 @@ document.addEventListener('DOMContentLoaded', () => {
       .update();
     cy._addedFaintEdgeStyle = true;
   }
-  // Baseline: edges faint
-  faintAllEdges();
-  // Background press: temporarily show all sharply
-  cy.on('mousedown', (evt) => { isPointerDown = true; if (evt.target === cy) requestAnimationFrame(()=>focusAllEdges()); });
-  // Node press: show only connected edges sharply
-  cy.on('mousedown', 'node', (evt) => { isPointerDown = true; const node = evt.target; requestAnimationFrame(()=>{ faintAllEdges(); focusEdges(node.connectedEdges()); }); });
-  // Mouse release anywhere: revert or auto-focus depending on viewport
-  cy.on('mouseup', () => { isPointerDown = false; requestAnimationFrame(()=>{ returnToBaseline(); autoEdgeFocusCheck(); }); });
-  // Double click background: toggle between baseline faint and full focus (quality-of-life)
-  cy.on('dblclick', (evt) => { if (evt.target === cy) { const anyFocused = cy.edges('.focus-edge').length === cy.edges().length; if (anyFocused) { faintAllEdges(); cy._autoEdgesFocused=false; } else { focusAllEdges(); cy._autoEdgesFocused=true; } } });
+  // Baseline: edges faint unless we override for small graphs
+  if (isFadingOverridden()) {
+    focusAllEdges();
+    cy._autoEdgesFocused = true;
+  } else {
+    faintAllEdges();
+  }
+  // Background press: temporarily show all sharply (skip if overridden)
+  cy.on('mousedown', (evt) => {
+    isPointerDown = true;
+    if (isFadingOverridden()) { return; }
+    if (evt.target === cy) requestAnimationFrame(()=>focusAllEdges());
+  });
+  // Node press: show only connected edges sharply (skip if overridden)
+  cy.on('mousedown', 'node', (evt) => {
+    isPointerDown = true;
+    if (isFadingOverridden()) { return; }
+    const node = evt.target;
+    requestAnimationFrame(()=>{ faintAllEdges(); focusEdges(node.connectedEdges()); });
+  });
+  // Mouse release anywhere: revert or auto-focus depending on viewport (skip revert if overridden)
+  cy.on('mouseup', () => {
+    isPointerDown = false;
+    if (isFadingOverridden()) { requestAnimationFrame(()=>focusAllEdges()); return; }
+    requestAnimationFrame(()=>{ returnToBaseline(); autoEdgeFocusCheck(); });
+  });
+  // Double click background: toggle between baseline faint and full focus (skip if overridden)
+  cy.on('dblclick', (evt) => {
+    if (isFadingOverridden()) { return; }
+    if (evt.target === cy) {
+      const anyFocused = cy.edges('.focus-edge').length === cy.edges().length;
+      if (anyFocused) { faintAllEdges(); cy._autoEdgesFocused=false; } else { focusAllEdges(); cy._autoEdgesFocused=true; }
+    }
+  });
   cy.on('zoom pan', () => autoEdgeFocusCheck());
+  // React to edges being added or removed – toggle override mode accordingly
+  function updateEdgeFadingState() {
+    const shouldOverride = isFadingOverridden();
+    if (cy._edgeFadingOverridden === shouldOverride) { return; }
+    cy._edgeFadingOverridden = shouldOverride;
+    if (shouldOverride) {
+      focusAllEdges();
+      cy._autoEdgesFocused = true;
+    } else {
+      faintAllEdges();
+      cy._autoEdgesFocused = false;
+      // Re-run auto-focus once to align with viewport conditions
+      autoEdgeFocusCheck();
+    }
+  }
+  cy._edgeFadingOverridden = isFadingOverridden();
+  cy.on('add remove', 'edge', () => {
+    // Defer until after Cytoscape applies the change
+    setTimeout(updateEdgeFadingState, 0);
+  });
   // Initial auto check post start
   setTimeout(autoEdgeFocusCheck, 50);
 
