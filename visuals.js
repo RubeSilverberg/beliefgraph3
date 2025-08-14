@@ -465,6 +465,20 @@ export function computeVisuals(cy) {
       floretColor: node.data('floretColor'),
       textColor: node.data('textColor')
     });
+    // After updating the label, ensure the node box resizes to the computed label (dash/percent)
+    if (typeof window !== 'undefined' && window.adjustNodeSize) {
+      const t = node.data('type');
+      if (t === NODE_TYPE_ASSERTION || t === NODE_TYPE_FACT) {
+        try {
+          window.adjustNodeSize(node, 0, { useComputedLabel: true });
+          if (typeof requestAnimationFrame === 'function') {
+            requestAnimationFrame(() => {
+              try { window.adjustNodeSize(node, 0, { useComputedLabel: true }); } catch (e) {}
+            });
+          }
+        } catch (e) {}
+      }
+    }
     if (DEBUG) logMath(node.id(), `Visual: ${label.replace(/\n/g, ' | ')}`);
   });
 

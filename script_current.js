@@ -376,8 +376,13 @@ export function adjustNodeSize(node, change = 0, options = {}) {
   const fontSize = Math.round(baseFont + (sizeIndex - 3) * fontStep );
   node.data('fontSize', fontSize );
 
-  // Text sizing (prefer user-facing label for stability)
-  const text = (node.data('displayLabel') || node.data('label') || node.data('origLabel') || '').toString();
+  // Text sizing: allow caller to prefer computed label (includes probability/dash) when needed
+  const useComputed = options && options.useComputedLabel;
+  const text = (
+    useComputed
+      ? (node.data('label') || node.data('displayLabel') || node.data('origLabel') || '')
+      : (node.data('displayLabel') || node.data('label') || node.data('origLabel') || '')
+  ).toString();
   const lines = text.split('\n');
   const longest = lines.reduce((max, line) => Math.max(max, line.length ), 0 );
 
