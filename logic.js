@@ -318,7 +318,7 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
           newProb = undefined;
           node.data('isVirgin', true);
         } else {
-          console.log('AND node calculation for:', node.id());
+          if (DEBUG_COMPREHENSIVE) console.log('AND node calculation for:', node.id());
           newProb = incomingEdges.reduce((acc, edge) => {
             const parent = edge.source();
             let parentProb = getCurrentIterProb(parent);
@@ -327,20 +327,20 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
             const cpt = edge.data('cpt') || {};
             const opposes = edge.data('opposes');
             const isInverse = !!cpt.inverse || !!opposes;
-            console.log(`  Edge ${edge.id()}: parent=${parent.id()}, parentProb=${parentProb}, inverse=${isInverse} (cpt.inverse=${!!cpt.inverse}, opposes=${!!opposes})`);
+            if (DEBUG_COMPREHENSIVE) console.log(`  Edge ${edge.id()}: parent=${parent.id()}, parentProb=${parentProb}, inverse=${isInverse} (cpt.inverse=${!!cpt.inverse}, opposes=${!!opposes})`);
             if (isInverse) {
               parentProb = 1 - parentProb;
-              console.log(`    After inverse: ${parentProb}`);
+              if (DEBUG_COMPREHENSIVE) console.log(`    After inverse: ${parentProb}`);
             }
             
-            console.log(`    Multiplying ${acc} * ${parentProb} = ${acc * parentProb}`);
+            if (DEBUG_COMPREHENSIVE) console.log(`    Multiplying ${acc} * ${parentProb} = ${acc * parentProb}`);
             return acc * parentProb;
           }, 1);
-          console.log(`  Final AND result: ${newProb}`);
+          if (DEBUG_COMPREHENSIVE) console.log(`  Final AND result: ${newProb}`);
           node.removeData('isVirgin');
         }
         currentIterProbs.set(node.id(), newProb);
-      } else if (nodeType === 'or') {
+  } else if (nodeType === 'or') {
         const incomingEdges = node.incomers('edge');
         if (incomingEdges.length === 0 || incomingEdges.some(edge => {
           const parent = edge.source();
