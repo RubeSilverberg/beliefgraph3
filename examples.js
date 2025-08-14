@@ -20,6 +20,11 @@ export const EXAMPLE_GRAPHS = [
     name: "D&D Faction Favorability Graph",
     description: "Track how party's actions affect relationship with factions in a D&D campaign.",
     filename: "dnd-faction-favorability.json"
+  },
+  {
+    name: "Funding Round Herd Dynamics",
+    description: "Signals and herding effects across investor types during a round.",
+    filename: "funding-round-herd.json"
   }
 ];
 

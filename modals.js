@@ -70,6 +70,8 @@ function openEditNoteModal(node) {
   modal.appendChild(textLabel);
 
   const textInput = document.createElement('textarea');
+  textInput.id = `note-edit-${node.id()}`;
+  textInput.name = `note-${node.id()}`;
   textInput.style.width = '100%';
   textInput.style.height = '80px';
   textInput.style.marginBottom = '18px';
@@ -164,12 +166,15 @@ function openEditRegularNodeModal(node) {
   modal.appendChild(displayLabelLabel);
 
   const displayInput = document.createElement('input');
+  displayInput.id = `display-label-${node.id()}`;
+  displayInput.name = `displayLabel-${node.id()}`;
   displayInput.type = 'text';
   displayInput.maxLength = 30;
   displayInput.style.width = '100%';
   displayInput.style.marginBottom = '10px';
   displayInput.value = node.data('displayLabel') || node.data('origLabel') || '';
   modal.appendChild(displayInput);
+  displayLabelLabel.htmlFor = displayInput.id;
 
   // Hover label (long)
   const hoverLabelLabel = document.createElement('label');
@@ -179,11 +184,14 @@ function openEditRegularNodeModal(node) {
   modal.appendChild(hoverLabelLabel);
 
   const hoverInput = document.createElement('input');
+  hoverInput.id = `hover-label-${node.id()}`;
+  hoverInput.name = `hoverLabel-${node.id()}`;
   hoverInput.type = 'text';
   hoverInput.style.width = '100%';
   hoverInput.style.marginBottom = '18px';
   hoverInput.value = node.data('hoverLabel') || '';
   modal.appendChild(hoverInput);
+  hoverLabelLabel.htmlFor = hoverInput.id;
 
   // Save and Cancel buttons
   const saveBtn = document.createElement('button');
@@ -674,6 +682,9 @@ export function openNotesModal(node) {
 
   // Textarea
   const textarea = document.createElement('textarea');
+  // Add id/name attributes to be friendly with form validators/extensions
+  textarea.id = 'notes-textarea';
+  textarea.name = 'notes';
   textarea.style.width = '100%';
   textarea.style.minHeight = '60px';
   textarea.style.fontSize = '14px';
@@ -740,6 +751,9 @@ export function openRationaleModal(element, type) {
 
   // Textarea
   const textarea = document.createElement('textarea');
+  // Add id/name attributes to satisfy validators/extensions
+  textarea.id = 'rationale-textarea';
+  textarea.name = 'rationale';
   textarea.style.width = '100%';
   textarea.style.minHeight = '60px';
   textarea.style.fontSize = '14px';
@@ -810,6 +824,8 @@ export function openCPTModalTwoPerParent({ node, parentId, existing, onSave, onP
   p0label.style.display = 'block';
   modal.appendChild(p0label);
   const p0input = document.createElement('input');
+  p0input.id = `cpt-input-${node.id()}-${parentId}-p0`;
+  p0input.name = `cpt-${node.id()}-${parentId}-p0`;
   p0input.type = 'number';
   p0input.min = 0;
   p0input.max = 1;
@@ -824,6 +840,8 @@ export function openCPTModalTwoPerParent({ node, parentId, existing, onSave, onP
   p1label.style.marginTop = '8px';
   modal.appendChild(p1label);
   const p1input = document.createElement('input');
+  p1input.id = `cpt-input-${node.id()}-${parentId}-p1`;
+  p1input.name = `cpt-${node.id()}-${parentId}-p1`;
   p1input.type = 'number';
   p1input.min = 0;
   p1input.max = 1;

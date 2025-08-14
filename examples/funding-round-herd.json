@@ -1,0 +1,2428 @@
+{
+  "graph": [
+    {
+      "data": {
+        "id": "lead_term_sheet_success",
+        "label": "Lead term sheet issued",
+        "origLabel": "Lead term sheet issued",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 123,
+        "textMaxWidth": 115,
+        "height": 56
+      },
+      "position": {
+        "x": -920.256698117377,
+        "y": -827.9227477295909
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "lead_term_sheet_fallthrough",
+        "label": "Lead term sheet fell through",
+        "origLabel": "Lead term sheet fell through",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 156,
+        "textMaxWidth": 148,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -735.9783343956178,
+        "y": -826.5614258003578
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "customer_loi_success",
+        "label": "Marquee customer LOI signed",
+        "origLabel": "Marquee customer LOI signed",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 150,
+        "textMaxWidth": 142,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -925.9975118492628,
+        "y": -703.8504717606562
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "customer_loi_failure",
+        "label": "Marquee customer LOI lost",
+        "origLabel": "Marquee customer LOI lost",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 139,
+        "textMaxWidth": 131,
+        "height": 56
+      },
+      "position": {
+        "x": -731.0267924695085,
+        "y": -704.0371967634128
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "diligence_red_flag_present",
+        "label": "Diligence red flag present",
+        "origLabel": "Diligence red flag present",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 145,
+        "textMaxWidth": 137,
+        "height": 56
+      },
+      "position": {
+        "x": -926.8025001104928,
+        "y": -589.9065448504101
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "diligence_red_flag_cleared",
+        "label": "Red flag cleared",
+        "origLabel": "Red flag cleared",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 89,
+        "textMaxWidth": 81,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -754.6205661127875,
+        "y": -590.0932698531665
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "valuation_cut_applied",
+        "label": "Valuation cut 15% applied",
+        "origLabel": "Valuation cut 15% applied",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 139,
+        "textMaxWidth": 131,
+        "height": 56
+      },
+      "position": {
+        "x": -923.6503853910381,
+        "y": -475.9626179401641
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "valuation_cut_not",
+        "label": "Valuation held firm",
+        "origLabel": "Valuation held firm",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 106,
+        "textMaxWidth": 98,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -744.5364325285123,
+        "y": -470.8637541038443
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "positive_press_hit",
+        "label": "Positive press hit",
+        "origLabel": "Positive press hit",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 100,
+        "textMaxWidth": 92,
+        "height": 56
+      },
+      "position": {
+        "x": -928.6304263361071,
+        "y": -371.9256257788745
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "positive_press_miss",
+        "label": "Press attempt missed",
+        "origLabel": "Press attempt missed",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 111,
+        "textMaxWidth": 103,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -743.2468443018223,
+        "y": -373.3178054240457
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "competitor_big_raise",
+        "label": "Competitor big raise",
+        "origLabel": "Competitor big raise",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 111,
+        "textMaxWidth": 103,
+        "height": 56
+      },
+      "position": {
+        "x": -920.3141426231092,
+        "y": -272.73139383719746
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "strategic_pilot_launched",
+        "label": "Strategic pilot launched",
+        "origLabel": "Strategic pilot launched",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 134,
+        "textMaxWidth": 126,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -914.4050617226728,
+        "y": -163.40881283683183
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "strategic_pilot_slipped",
+        "label": "Pilot launch slipped",
+        "origLabel": "Pilot launch slipped",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 111,
+        "textMaxWidth": 103,
+        "height": 56
+      },
+      "position": {
+        "x": -742.8873706541635,
+        "y": -159.95823226239045
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "founder_coach_hired",
+        "label": "Coach or replacement hired",
+        "origLabel": "Coach or replacement hired",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 145,
+        "textMaxWidth": 137,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -910.142410847981,
+        "y": -57.282562030334006
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "founder_no_change",
+        "label": "No leadership change",
+        "origLabel": "No leadership change",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 111,
+        "textMaxWidth": 103,
+        "height": 56
+      },
+      "position": {
+        "x": -736.5354611342632,
+        "y": -58.32993330298174
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "burn_reduced_hit",
+        "label": "Burn reduced 30%",
+        "origLabel": "Burn reduced 30%",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 89,
+        "textMaxWidth": 81,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -939.0183087237588,
+        "y": 46.53301582122361
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "burn_reduced_miss",
+        "label": "Burn target missed",
+        "origLabel": "Burn target missed",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 100,
+        "textMaxWidth": 92,
+        "height": 56
+      },
+      "position": {
+        "x": -736.4513275499878,
+        "y": 42.966215792983796
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "note_extended",
+        "label": "Convertible note extended",
+        "origLabel": "Convertible note extended",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 139,
+        "textMaxWidth": 131,
+        "height": 56
+      },
+      "position": {
+        "x": -917.1559314484725,
+        "y": 160.47694273146968
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "note_denied",
+        "label": "Note extension denied",
+        "origLabel": "Note extension denied",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 117,
+        "textMaxWidth": 109,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -724.118608190719,
+        "y": 161.3102945705833
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "key_hire_accepted",
+        "label": "VP Sales accepted",
+        "origLabel": "VP Sales accepted",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 95,
+        "textMaxWidth": 87,
+        "height": 56
+      },
+      "position": {
+        "x": -942.3603299337252,
+        "y": 265.26238697129196
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "key_hire_no",
+        "label": "VP Sales not filled",
+        "origLabel": "VP Sales not filled",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 106,
+        "textMaxWidth": 98,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -736.4411560428786,
+        "y": 268.69497630111
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": true,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "angels_prorata_in",
+        "label": "Existing angels pro-rata in",
+        "origLabel": "Existing angels pro-rata in",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 150,
+        "textMaxWidth": 142,
+        "height": 56
+      },
+      "position": {
+        "x": -916.8653655668187,
+        "y": 386.87434658301635
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "angels_prorata_out",
+        "label": "Angels not rolling",
+        "origLabel": "Angels not rolling",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 4,
+        "borderColor": "#ff9800",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 100,
+        "textMaxWidth": 92,
+        "height": 56,
+        "inertFact": true
+      },
+      "position": {
+        "x": -739.9063406696164,
+        "y": 382.710674118818
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "market_momentum",
+        "label": "Market momentum up",
+        "origLabel": "Market momentum up",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 100,
+        "textMaxWidth": 92,
+        "height": 56
+      },
+      "position": {
+        "x": -43.82414946410056,
+        "y": -9.637478437721825
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "and_lead_plus_loi",
+        "label": "AND\n—",
+        "origLabel": "Lead + LOI synergy",
+        "type": "and",
+        "isVirgin": true,
+        "textColor": "#000",
+        "hoverLabel": "Lead + LOI synergy",
+        "borderWidth": 3,
+        "borderColor": "#bbb",
+        "shape": "diamond",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 60,
+        "textMaxWidth": 52,
+        "height": 56
+      },
+      "position": {
+        "x": 109.9224747020788,
+        "y": -467.58687229460617
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "invest_lead_fund",
+        "label": "Lead Fund will invest\n71%",
+        "origLabel": "Lead Fund will invest",
+        "type": "assertion",
+        "prob": 0.7132214776693655,
+        "textColor": "#000",
+        "robustness": 0.7407597393541084,
+        "robustnessLabel": "High",
+        "borderWidth": 7,
+        "borderColor": "rgb(144,144,144)",
+        "shape": "roundrectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 117,
+        "textMaxWidth": 109,
+        "height": 56
+      },
+      "position": {
+        "x": -329.3947082098417,
+        "y": -223.5608821877932
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "invest_strategic_corp",
+        "label": "Strategic Corp VC will invest\n33%",
+        "origLabel": "Strategic Corp VC will invest",
+        "type": "assertion",
+        "prob": 0.3254016973759345,
+        "textColor": "#000",
+        "robustness": 0.4511883639059735,
+        "robustnessLabel": "Moderate",
+        "borderWidth": 5,
+        "borderColor": "rgb(181,181,181)",
+        "shape": "roundrectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 161,
+        "textMaxWidth": 153,
+        "height": 56
+      },
+      "position": {
+        "x": 655.5835044427923,
+        "y": -221.37335508482266
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "invest_tier1",
+        "label": "Tier-1 VC will invest\n36%",
+        "origLabel": "Tier-1 VC will invest",
+        "type": "assertion",
+        "prob": 0.36380712854944786,
+        "textColor": "#000",
+        "robustness": 0.7940249017951165,
+        "robustnessLabel": "High",
+        "borderWidth": 8,
+        "borderColor": "rgb(137,137,137)",
+        "shape": "roundrectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 117,
+        "textMaxWidth": 109,
+        "height": 56
+      },
+      "position": {
+        "x": 456.0590938172058,
+        "y": -216.0056690111
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "invest_tier2",
+        "label": "Tier-2 VC will invest\n45%",
+        "origLabel": "Tier-2 VC will invest",
+        "type": "assertion",
+        "prob": 0.4474772797504658,
+        "textColor": "#000",
+        "robustness": 0.5725850680512733,
+        "robustnessLabel": "Moderate",
+        "borderWidth": 6,
+        "borderColor": "rgb(165,165,165)",
+        "shape": "roundrectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 117,
+        "textMaxWidth": 109,
+        "height": 56
+      },
+      "position": {
+        "x": -141.62286013557298,
+        "y": -220.80738061338909
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "invest_angel_synd",
+        "label": "Angel Syndicate will invest\n70%",
+        "origLabel": "Angel Syndicate will invest",
+        "type": "assertion",
+        "prob": 0.7008345622392961,
+        "textColor": "#000",
+        "robustness": 0.5506710358827784,
+        "robustnessLabel": "Moderate",
+        "borderWidth": 6,
+        "borderColor": "rgb(168,168,168)",
+        "shape": "roundrectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 150,
+        "textMaxWidth": 142,
+        "height": 56
+      },
+      "position": {
+        "x": 42.57229783185985,
+        "y": -220.58596630365722
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "invest_regional_fund",
+        "label": "Regional Fund will invest\n65%",
+        "origLabel": "Regional Fund will invest",
+        "type": "assertion",
+        "prob": 0.6523050952429083,
+        "textColor": "#000",
+        "robustness": 0.5034146962085906,
+        "robustnessLabel": "Moderate",
+        "borderWidth": 5,
+        "borderColor": "rgb(174,174,174)",
+        "shape": "roundrectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 139,
+        "textMaxWidth": 131,
+        "height": 56
+      },
+      "position": {
+        "x": 245.37772389092532,
+        "y": -218.05387903898506
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "invest_family_office",
+        "label": "Family Office will invest\n50%",
+        "origLabel": "Family Office will invest",
+        "type": "assertion",
+        "prob": 0.49619188022778615,
+        "textColor": "#000",
+        "robustness": 0.1392920235749422,
+        "robustnessLabel": "Minimal",
+        "borderWidth": 2,
+        "borderColor": "rgb(220,220,220)",
+        "shape": "roundrectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 139,
+        "textMaxWidth": 131,
+        "height": 56
+      },
+      "position": {
+        "x": 656.2045070894046,
+        "y": -110.24463492223474
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "round_likely_close",
+        "label": "Round likely to close\n53%",
+        "origLabel": "Round likely to close",
+        "type": "assertion",
+        "prob": 0.5347543723244399,
+        "textColor": "#000",
+        "robustness": 0.8619307626891072,
+        "robustnessLabel": "Very High",
+        "borderWidth": 9,
+        "borderColor": "rgb(129,129,129)",
+        "shape": "roundrectangle",
+        "sizeIndex": 4,
+        "fontSize": 15,
+        "width": 117,
+        "textMaxWidth": 109,
+        "height": 56
+      },
+      "position": {
+        "x": 167.78177045649542,
+        "y": -10.887059233636492
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "source": "lead_term_sheet_success",
+        "target": "and_lead_plus_loi",
+        "type": "supports",
+        "weight": 0.5,
+        "userAssignedWeight": 0.5,
+        "id": "424a6f83-2054-4cfc-a8b1-d2ca8a95e2d5",
+        "computedWeight": 0.5,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "customer_loi_success",
+        "target": "and_lead_plus_loi",
+        "type": "supports",
+        "weight": 0.5,
+        "userAssignedWeight": 0.5,
+        "id": "989a7654-c48c-4dcc-8456-03045226e5a8",
+        "computedWeight": 0.5,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "and_lead_plus_loi",
+        "target": "invest_tier1",
+        "type": "supports",
+        "weight": 0.4,
+        "userAssignedWeight": 0.4,
+        "id": "2db8eb56-bfc6-4061-8e7a-5862c2cbf03e",
+        "computedWeight": 0.4,
+        "absWeight": 0,
+        "lineColor": "#ff9900",
+        "displayType": "supports",
+        "label": "Sm"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "and_lead_plus_loi",
+        "target": "invest_tier2",
+        "type": "supports",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "id": "0466eaaa-1f8c-4f57-9756-da592c3c813d",
+        "computedWeight": 0.35,
+        "absWeight": 0,
+        "lineColor": "#ff9900",
+        "displayType": "supports",
+        "label": "Sm"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "and_lead_plus_loi",
+        "target": "invest_strategic_corp",
+        "type": "supports",
+        "weight": 0.3,
+        "userAssignedWeight": 0.3,
+        "id": "1ff4d986-1547-4317-ac9f-3345eaabd37b",
+        "computedWeight": 0.3,
+        "absWeight": 0,
+        "lineColor": "#ff9900",
+        "displayType": "supports",
+        "label": "Sm"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "lead_term_sheet_success",
+        "target": "invest_lead_fund",
+        "type": "supports",
+        "weight": 0.55,
+        "userAssignedWeight": 0.55,
+        "id": "d82d3ef5-5a93-40fa-b55b-0b0841f00dfb",
+        "computedWeight": 0.55,
+        "absWeight": 0.55,
+        "lineColor": "rgb(125,125,125)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "lead_term_sheet_fallthrough",
+        "target": "invest_lead_fund",
+        "type": "supports",
+        "weight": -0.5,
+        "userAssignedWeight": -0.5,
+        "id": "ee7cf263-95a3-4eda-b587-d573f66b4d1d",
+        "computedWeight": -0.5,
+        "absWeight": 0.5,
+        "lineColor": "rgb(134,134,134)",
+        "displayType": "supports",
+        "label": "Med"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "customer_loi_success",
+        "target": "invest_tier1",
+        "type": "supports",
+        "weight": 0.45,
+        "userAssignedWeight": 0.45,
+        "id": "435123d7-6179-4e1e-ae70-8f38c4867507",
+        "computedWeight": 0.45,
+        "absWeight": 0.45,
+        "lineColor": "rgb(143,143,143)",
+        "displayType": "supports",
+        "label": "Sm"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "customer_loi_failure",
+        "target": "invest_tier1",
+        "type": "supports",
+        "weight": -0.4,
+        "userAssignedWeight": -0.4,
+        "id": "94b05ccd-0c53-486b-89b5-391789855be8",
+        "computedWeight": -0.4,
+        "absWeight": 0.4,
+        "lineColor": "rgb(152,152,152)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "customer_loi_success",
+        "target": "invest_strategic_corp",
+        "type": "supports",
+        "weight": 0.3,
+        "userAssignedWeight": 0.3,
+        "id": "bdb44e48-44da-4d18-a9e5-e4c8edbbcd5c",
+        "computedWeight": 0.3,
+        "absWeight": 0.3,
+        "lineColor": "rgb(170,170,170)",
+        "displayType": "supports",
+        "label": "Sm"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "customer_loi_failure",
+        "target": "invest_strategic_corp",
+        "type": "supports",
+        "weight": -0.25,
+        "userAssignedWeight": -0.25,
+        "id": "108e2d07-eb46-42a2-9bfe-461814569690",
+        "computedWeight": -0.25,
+        "absWeight": 0.25,
+        "lineColor": "rgb(179,179,179)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "diligence_red_flag_present",
+        "target": "invest_tier1",
+        "type": "supports",
+        "weight": -0.35,
+        "userAssignedWeight": -0.35,
+        "id": "6edc4eec-f3ee-4ad5-a372-75c13997ff88",
+        "computedWeight": -0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "diligence_red_flag_present",
+        "target": "invest_tier2",
+        "type": "supports",
+        "weight": -0.3,
+        "userAssignedWeight": -0.3,
+        "id": "fc5456f1-c39d-4ffb-8af5-bab49d5f79e8",
+        "computedWeight": -0.3,
+        "absWeight": 0.3,
+        "lineColor": "rgb(170,170,170)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "diligence_red_flag_cleared",
+        "target": "invest_tier1",
+        "type": "supports",
+        "weight": 0.25,
+        "userAssignedWeight": 0.25,
+        "id": "9c3dc0d4-1772-4edc-acad-34a2a48cb289",
+        "computedWeight": 0.25,
+        "absWeight": 0.25,
+        "lineColor": "rgb(179,179,179)",
+        "displayType": "supports",
+        "label": "Sm"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "diligence_red_flag_cleared",
+        "target": "invest_tier2",
+        "type": "supports",
+        "weight": 0.2,
+        "userAssignedWeight": 0.2,
+        "id": "6d78cab7-0a51-4705-aa0d-e37e691a93fb",
+        "computedWeight": 0.2,
+        "absWeight": 0.2,
+        "lineColor": "rgb(188,188,188)",
+        "displayType": "supports",
+        "label": "Min"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "valuation_cut_applied",
+        "target": "invest_lead_fund",
+        "type": "supports",
+        "weight": -0.25,
+        "userAssignedWeight": -0.25,
+        "id": "d356645e-735e-484d-85f7-83b863202701",
+        "computedWeight": -0.25,
+        "absWeight": 0.25,
+        "lineColor": "rgb(179,179,179)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "valuation_cut_applied",
+        "target": "invest_tier1",
+        "type": "supports",
+        "weight": 0.15,
+        "userAssignedWeight": 0.15,
+        "id": "5784d436-1c5e-4ae4-a175-27ee0c264d55",
+        "computedWeight": 0.15,
+        "absWeight": 0.15,
+        "lineColor": "rgb(197,197,197)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "valuation_cut_not",
+        "target": "invest_lead_fund",
+        "type": "supports",
+        "weight": 0.15,
+        "userAssignedWeight": 0.15,
+        "id": "fb652bb2-9735-4109-905e-2e83be440443",
+        "computedWeight": 0.15,
+        "absWeight": 0.15,
+        "lineColor": "rgb(197,197,197)",
+        "displayType": "supports",
+        "label": "Min"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "positive_press_hit",
+        "target": "invest_angel_synd",
+        "type": "supports",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "id": "cfba3374-f49e-407f-847e-4f40a7b483d3",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "positive_press_hit",
+        "target": "invest_regional_fund",
+        "type": "supports",
+        "weight": 0.3,
+        "userAssignedWeight": 0.3,
+        "id": "8eb2250b-175b-49ca-82c9-1aeb2a3f2fd3",
+        "computedWeight": 0.3,
+        "absWeight": 0.3,
+        "lineColor": "rgb(170,170,170)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "positive_press_miss",
+        "target": "invest_angel_synd",
+        "type": "supports",
+        "weight": -0.2,
+        "userAssignedWeight": -0.2,
+        "id": "bf74e46e-90a6-44e8-84bf-58efae5d0efb",
+        "computedWeight": -0.2,
+        "absWeight": 0.2,
+        "lineColor": "rgb(188,188,188)",
+        "displayType": "supports",
+        "label": "Min"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "competitor_big_raise",
+        "target": "invest_lead_fund",
+        "type": "supports",
+        "weight": 0.2,
+        "userAssignedWeight": 0.2,
+        "id": "7c8c0e20-b368-4087-a41a-81dd09c8c4b2",
+        "computedWeight": 0.2,
+        "absWeight": 0.2,
+        "lineColor": "rgb(188,188,188)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "competitor_big_raise",
+        "target": "invest_tier1",
+        "type": "supports",
+        "weight": 0.1,
+        "userAssignedWeight": 0.1,
+        "id": "1f7b9fd7-83d3-491d-be33-fa4d9d318d61",
+        "computedWeight": 0.1,
+        "absWeight": 0.1,
+        "lineColor": "rgb(206,206,206)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "strategic_pilot_launched",
+        "target": "invest_strategic_corp",
+        "type": "supports",
+        "weight": 0.5,
+        "userAssignedWeight": 0.5,
+        "id": "d539a849-5c05-431e-869f-a40b02ef6509",
+        "computedWeight": 0.5,
+        "absWeight": 0.5,
+        "lineColor": "rgb(134,134,134)",
+        "displayType": "supports",
+        "label": "Med"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "strategic_pilot_slipped",
+        "target": "invest_strategic_corp",
+        "type": "supports",
+        "weight": -0.35,
+        "userAssignedWeight": -0.35,
+        "id": "75ca60fd-7bf8-4778-a7cb-96d39c3c5faa",
+        "computedWeight": -0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "founder_coach_hired",
+        "target": "invest_tier2",
+        "type": "supports",
+        "weight": 0.2,
+        "userAssignedWeight": 0.2,
+        "id": "3df01040-d74a-4da5-aac1-3788d993152b",
+        "computedWeight": 0.2,
+        "absWeight": 0.2,
+        "lineColor": "rgb(188,188,188)",
+        "displayType": "supports",
+        "label": "Min"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "founder_no_change",
+        "target": "invest_tier2",
+        "type": "supports",
+        "weight": -0.15,
+        "userAssignedWeight": -0.15,
+        "id": "9ece39cd-b2b6-45af-ad97-3f3d5de51ae8",
+        "computedWeight": -0.15,
+        "absWeight": 0.15,
+        "lineColor": "rgb(197,197,197)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "burn_reduced_hit",
+        "target": "invest_lead_fund",
+        "type": "supports",
+        "weight": 0.25,
+        "userAssignedWeight": 0.25,
+        "id": "56084f1c-b977-480f-9f71-c41f6b707559",
+        "computedWeight": 0.25,
+        "absWeight": 0.25,
+        "lineColor": "rgb(179,179,179)",
+        "displayType": "supports",
+        "label": "Sm"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "burn_reduced_hit",
+        "target": "invest_tier1",
+        "type": "supports",
+        "weight": 0.2,
+        "userAssignedWeight": 0.2,
+        "id": "cf99f503-8ddb-402b-be79-5108fbc2fd72",
+        "computedWeight": 0.2,
+        "absWeight": 0.2,
+        "lineColor": "rgb(188,188,188)",
+        "displayType": "supports",
+        "label": "Min"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "burn_reduced_miss",
+        "target": "invest_lead_fund",
+        "type": "supports",
+        "weight": -0.2,
+        "userAssignedWeight": -0.2,
+        "id": "61669a80-ae4c-4fc9-8156-234c70ebf169",
+        "computedWeight": -0.2,
+        "absWeight": 0.2,
+        "lineColor": "rgb(188,188,188)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "note_extended",
+        "target": "invest_lead_fund",
+        "type": "supports",
+        "weight": 0.15,
+        "userAssignedWeight": 0.15,
+        "id": "9a9737fe-6b11-4cda-bac0-92b6c85f78d6",
+        "computedWeight": 0.15,
+        "absWeight": 0.15,
+        "lineColor": "rgb(197,197,197)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "note_denied",
+        "target": "invest_lead_fund",
+        "type": "supports",
+        "weight": -0.2,
+        "userAssignedWeight": -0.2,
+        "id": "4f306cce-8541-40f3-bd50-0d1ef0139ac9",
+        "computedWeight": -0.2,
+        "absWeight": 0.2,
+        "lineColor": "rgb(188,188,188)",
+        "displayType": "supports",
+        "label": "Min"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "key_hire_accepted",
+        "target": "invest_tier1",
+        "type": "supports",
+        "weight": 0.3,
+        "userAssignedWeight": 0.3,
+        "id": "bd03f9eb-b08b-4230-b2eb-78d9bd8caa0a",
+        "computedWeight": 0.3,
+        "absWeight": 0.3,
+        "lineColor": "rgb(170,170,170)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "key_hire_accepted",
+        "target": "invest_tier2",
+        "type": "supports",
+        "weight": 0.25,
+        "userAssignedWeight": 0.25,
+        "id": "1875b4da-34c7-41f6-b348-45114b79b3a1",
+        "computedWeight": 0.25,
+        "absWeight": 0.25,
+        "lineColor": "rgb(179,179,179)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "key_hire_no",
+        "target": "invest_tier1",
+        "type": "supports",
+        "weight": -0.25,
+        "userAssignedWeight": -0.25,
+        "id": "21de7c9a-668f-46a8-9cae-ff5edf0febde",
+        "computedWeight": -0.25,
+        "absWeight": 0.25,
+        "lineColor": "rgb(179,179,179)",
+        "displayType": "supports",
+        "label": "Sm"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "angels_prorata_in",
+        "target": "invest_angel_synd",
+        "type": "supports",
+        "weight": 0.3,
+        "userAssignedWeight": 0.3,
+        "id": "9d591535-809c-45ca-99e9-2764884c3e12",
+        "computedWeight": 0.3,
+        "absWeight": 0.3,
+        "lineColor": "rgb(170,170,170)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "angels_prorata_in",
+        "target": "invest_regional_fund",
+        "type": "supports",
+        "weight": 0.25,
+        "userAssignedWeight": 0.25,
+        "id": "22edddb9-f43f-40da-a5a5-44c57a62cb8b",
+        "computedWeight": 0.25,
+        "absWeight": 0.25,
+        "lineColor": "rgb(179,179,179)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "angels_prorata_out",
+        "target": "invest_angel_synd",
+        "type": "supports",
+        "weight": -0.25,
+        "userAssignedWeight": -0.25,
+        "id": "318300c6-4a16-4408-910a-bc96e92ee88b",
+        "computedWeight": -0.25,
+        "absWeight": 0.25,
+        "lineColor": "rgb(179,179,179)",
+        "displayType": "supports",
+        "label": "Sm"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "market_momentum",
+        "target": "round_likely_close",
+        "type": "supports",
+        "weight": 0.15,
+        "userAssignedWeight": 0.15,
+        "id": "b9b624b7-b828-4f9f-a21c-04ab478b0249",
+        "computedWeight": 0.15,
+        "absWeight": 0.15,
+        "lineColor": "rgb(197,197,197)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "invest_lead_fund",
+        "target": "invest_tier1",
+        "type": "supports",
+        "weight": 0.18,
+        "userAssignedWeight": 0.18,
+        "id": "7a734dfd-100e-44ef-afe8-28e49948b4d9",
+        "computedWeight": 0.18,
+        "absWeight": 0.18,
+        "lineColor": "rgb(192,192,192)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "invest_lead_fund",
+        "target": "invest_angel_synd",
+        "type": "supports",
+        "weight": 0.15,
+        "userAssignedWeight": 0.15,
+        "id": "6c8c299c-15b3-4fc6-8813-4186f99c74e7",
+        "computedWeight": 0.15,
+        "absWeight": 0.15,
+        "lineColor": "rgb(197,197,197)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "invest_tier1",
+        "target": "invest_tier2",
+        "type": "supports",
+        "weight": 0.15,
+        "userAssignedWeight": 0.15,
+        "id": "96f4c63c-d844-481e-ac08-e65fbbef892e",
+        "computedWeight": 0.15,
+        "absWeight": 0.15,
+        "lineColor": "rgb(197,197,197)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "invest_tier2",
+        "target": "invest_tier1",
+        "type": "supports",
+        "weight": 0.1,
+        "userAssignedWeight": 0.1,
+        "id": "ea1a3a6c-6337-4806-8a36-6ab734b25864",
+        "computedWeight": 0.1,
+        "absWeight": 0.1,
+        "lineColor": "rgb(206,206,206)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "invest_strategic_corp",
+        "target": "invest_family_office",
+        "type": "supports",
+        "weight": 0.15,
+        "userAssignedWeight": 0.15,
+        "id": "644d99f4-1287-4656-be34-72e1216cfcf3",
+        "computedWeight": 0.15,
+        "absWeight": 0.15,
+        "lineColor": "rgb(197,197,197)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "invest_angel_synd",
+        "target": "invest_regional_fund",
+        "type": "supports",
+        "weight": 0.15,
+        "userAssignedWeight": 0.15,
+        "id": "20d308f1-9345-4435-9aea-9be049ec2c4b",
+        "computedWeight": 0.15,
+        "absWeight": 0.15,
+        "lineColor": "rgb(197,197,197)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "invest_lead_fund",
+        "target": "round_likely_close",
+        "type": "supports",
+        "weight": 0.4,
+        "userAssignedWeight": 0.4,
+        "id": "32c9ea59-ba9c-470e-a105-bff23b805e35",
+        "computedWeight": 0.4,
+        "absWeight": 0.4,
+        "lineColor": "rgb(152,152,152)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "invest_strategic_corp",
+        "target": "round_likely_close",
+        "type": "supports",
+        "weight": 0.3,
+        "userAssignedWeight": 0.3,
+        "id": "bb4bdbbf-a59b-4e66-937f-c03310d7a0ab",
+        "computedWeight": 0.3,
+        "absWeight": 0.3,
+        "lineColor": "rgb(170,170,170)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "invest_tier1",
+        "target": "round_likely_close",
+        "type": "supports",
+        "weight": 0.35,
+        "userAssignedWeight": 0.35,
+        "id": "3af2158f-baf8-41b7-b1bf-0e5a9214a93d",
+        "computedWeight": 0.35,
+        "absWeight": 0.35,
+        "lineColor": "rgb(161,161,161)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "invest_tier2",
+        "target": "round_likely_close",
+        "type": "supports",
+        "weight": 0.25,
+        "userAssignedWeight": 0.25,
+        "id": "bcf2e849-0f43-42c1-9251-10c885e812de",
+        "computedWeight": 0.25,
+        "absWeight": 0.25,
+        "lineColor": "rgb(179,179,179)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "invest_angel_synd",
+        "target": "round_likely_close",
+        "type": "supports",
+        "weight": 0.2,
+        "userAssignedWeight": 0.2,
+        "id": "31f95180-e3ac-4b73-87d1-49c20a4a8886",
+        "computedWeight": 0.2,
+        "absWeight": 0.2,
+        "lineColor": "rgb(188,188,188)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "invest_regional_fund",
+        "target": "round_likely_close",
+        "type": "supports",
+        "weight": 0.18,
+        "userAssignedWeight": 0.18,
+        "id": "3e55a44a-4c4c-4e63-a400-f5e4a51140a3",
+        "computedWeight": 0.18,
+        "absWeight": 0.18,
+        "lineColor": "rgb(192,192,192)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "invest_family_office",
+        "target": "round_likely_close",
+        "type": "supports",
+        "weight": 0.15,
+        "userAssignedWeight": 0.15,
+        "id": "e4aba175-2d6a-4726-99c4-3971cebac9f0",
+        "computedWeight": 0.15,
+        "absWeight": 0.15,
+        "lineColor": "rgb(197,197,197)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    }
+  ],
+  "textAnnotations": [],
+  "version": "1.0"
+}

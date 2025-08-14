@@ -122,7 +122,10 @@ class TextAnnotations {
     const originalText = annotation.text;
     
     // Create textarea instead of input for better text handling
-    const textarea = document.createElement('textarea');
+  const textarea = document.createElement('textarea');
+  // Provide id/name so browser extensions don't complain
+  textarea.id = `annotation-input-${annotation.id}`;
+  textarea.name = `annotation-text-${annotation.id}`;
     textarea.value = originalText;
     textarea.style.width = '100%';
     textarea.style.border = 'none';
