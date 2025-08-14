@@ -262,7 +262,7 @@ window.cy.on('doubleTap', 'node', function(event) {
         const peerItem = document.createElement('li');
         peerItem.textContent = 'Peer Relations...';
         peerItem.style.cursor = 'pointer';
-        peerItem.title = 'Use Peer Relations to relate nodes without directed edges (avoids cycles).';
+        peerItem.title = 'The graph does not allow mutual relationships or completed cycles. Use this as alterntive.';
         peerItem.onclick = (e) => {
           e.stopPropagation();
           if(activePeerSubMenu){ hideSubMenu(); return; }
