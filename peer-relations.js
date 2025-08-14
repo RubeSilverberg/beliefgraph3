@@ -1,7 +1,7 @@
 // peer-relations.js (clean implementation with overlay toggle)
 // Symmetric peer relations (alignment / antagonism) adjust only displayProb (visual layer) – core prob propagation unchanged.
 // Stored per node: data('peerLinks') = [{ peerId, relation: 'aligned'|'antagonistic', strength }]
-// Public exports: addPeerRelation, removePeerRelation, listPeerRelations, applyPeerInfluence, installPeerRelationUI, startPeerRelationMode
+// Public exports: addPeerRelation, removePeerRelation, listPeerRelations, applyPeerInfluence, installPeerRelationUI, startPeerRelationMode, setPeerRelationStrength
 
 const DEFAULT_STRENGTH = 0.15;
 const MAX_ABS_DELTA = 0.25;
@@ -27,6 +27,18 @@ export function removePeerRelation(cy, a, b){
 }
 
 export function listPeerRelations(node){ return _getLinks(node); }
+
+// Update strength (symmetric) for an existing peer relation between a and b
+export function setPeerRelationStrength(cy, a, b, strength){
+	if(!cy || !a || !b) return;
+	const la = _getLinks(a);
+	const lb = _getLinks(b);
+	let changed = false;
+	la.forEach(l => { if(l.peerId === b.id()){ l.strength = strength; changed = true; } });
+	lb.forEach(l => { if(l.peerId === a.id()){ l.strength = strength; changed = true; } });
+	if(changed){ _setLinks(a, la); _setLinks(b, lb); }
+	return changed;
+}
 
 export function clearAllPeerRelationsForNode(cy, node){
 	if(!cy || !node) return;
@@ -165,7 +177,8 @@ function _drawOverlays(cy){
 			line.className = 'peer-rel-line';
 			line.style.position='absolute'; line.style.left=x1+'px'; line.style.top=y1+'px'; line.style.width=len+'px'; line.style.height='0';
 			const color = l.relation === 'aligned' ? '#2e7d32' : '#c62828';
-			line.style.borderTop = `2px ${l.relation === 'aligned' ? 'solid':'dashed'} ${color}`;
+			const widthPx = 1 + Math.round(((l.strength||0)*4)); // 1px to 3px roughly for 0..0.5
+			line.style.borderTop = `${widthPx}px ${l.relation === 'aligned' ? 'solid':'dashed'} ${color}`;
 			line.style.transformOrigin='0 0'; line.style.transform=`rotate(${angle}deg)`; line.style.pointerEvents='none'; line.style.opacity='0.6';
 			line.title = `${a.data('displayLabel')||a.id()} ↔ ${b.data('displayLabel')||b.id()} (${l.relation})`;
 			parent.appendChild(line);
@@ -222,6 +235,7 @@ if(typeof window !== 'undefined'){
 	window.listPeerRelations = listPeerRelations;
 	window.addPeerRelation = (a,b,r,str)=> addPeerRelation(window.cy, a, b, r, str);
 	window.removePeerRelation = (a,b)=> removePeerRelation(window.cy, a, b);
+	window.setPeerRelationStrength = (a,b,str)=> setPeerRelationStrength(window.cy, a, b, str);
 	window.startPeerRelationMode = (opts)=> startPeerRelationMode(opts);
 	window.applyPeerInfluence = (cy)=> applyPeerInfluence(cy || window.cy);
 	window.clearAllPeerRelationsForNode = (node)=> clearAllPeerRelationsForNode(window.cy, node);

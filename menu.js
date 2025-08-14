@@ -287,21 +287,65 @@ window.cy.on('doubleTap', 'node', function(event) {
           addSubItem('Set Alignment…', () => window.startPeerRelationMode({ cy, sourceNode: node, relation: 'aligned' }));
           addSubItem('Set Antagonism…', () => window.startPeerRelationMode({ cy, sourceNode: node, relation: 'antagonistic' }));
           if(window.listPeerRelations){
-            addSubItem('List / Remove Peer Relations…', () => {
+            addSubItem('Edit / Remove Peer Relations…', () => {
               const rels = window.listPeerRelations(node) || [];
               const dialog = document.createElement('div');
               dialog.style.position='fixed'; dialog.style.top='10%'; dialog.style.left='50%'; dialog.style.transform='translateX(-50%)';
               dialog.style.background='#fff'; dialog.style.padding='16px 20px'; dialog.style.border='1px solid #888'; dialog.style.borderRadius='8px'; dialog.style.zIndex=10000; dialog.style.maxWidth='360px'; dialog.style.font='14px/1.4 Arial,sans-serif';
               dialog.innerHTML = `<h3 style="margin:0 0 10px;font:600 16px Arial,sans-serif;">Relations for ${(node.data('displayLabel')||node.data('origLabel')||node.id())}</h3>`;
               if(!rels.length){ dialog.innerHTML += '<div style="color:#666;">None</div>'; }
+              const LEVELS = [
+                { label: 'Off', value: 0.00 },
+                { label: 'Weak', value: 0.10 },
+                { label: 'Moderate', value: 0.25 },
+                { label: 'Strong', value: 0.35 },
+                { label: 'Very strong', value: 0.50 }
+              ];
+
+              function nearestIndex(val){
+                if(typeof val !== 'number' || isNaN(val)) return 1; // default to Weak
+                let best = 0, bestD = Infinity;
+                for(let i=0;i<LEVELS.length;i++){ const d = Math.abs(LEVELS[i].value - val); if(d < bestD){ best=i; bestD=d; } }
+                return best;
+              }
+
               rels.forEach(r=> {
-                const row = document.createElement('div'); row.style.display='flex'; row.style.alignItems='center'; row.style.justifyContent='space-between'; row.style.margin='4px 0';
-                const peerNode = cy.getElementById(r.peerId); const name = (peerNode && (peerNode.data('displayLabel')||peerNode.data('origLabel')||peerNode.id())) || r.peerId;
+                const row = document.createElement('div');
+                row.style.display='grid'; row.style.gridTemplateColumns='auto 1fr auto'; row.style.gap='8px'; row.style.alignItems='center'; row.style.margin='6px 0';
+                const peerNode = cy.getElementById(r.peerId);
+                const name = (peerNode && (peerNode.data('displayLabel')||peerNode.data('origLabel')||peerNode.id())) || r.peerId;
                 const color = r.relation==='aligned' ? '#2e7d32' : '#c62828';
                 const tag = r.relation==='aligned' ? 'Align' : 'Antag';
-                row.innerHTML = `<span style="color:${color};font-weight:600;">${tag}</span> <span style="flex:1;margin-left:8px;">${name}</span>`;
+                const left = document.createElement('div'); left.innerHTML = `<span style="color:${color};font-weight:600;">${tag}</span>`;
+                const mid = document.createElement('div');
+                const nameEl = document.createElement('div'); nameEl.textContent = name; nameEl.style.marginBottom='4px';
+                const sliderWrap = document.createElement('div');
+                sliderWrap.style.display='flex';
+                sliderWrap.style.flexDirection='column';
+                sliderWrap.style.alignItems='stretch';
+                sliderWrap.style.gap='4px';
+                const lbl = document.createElement('span'); lbl.style.fontSize='12px'; lbl.style.color='#555';
+                const slider = document.createElement('input');
+                slider.type='range';
+                slider.min='0';
+                slider.max=String(LEVELS.length-1);
+                slider.step='1';
+                slider.style.width='100%';
+                const initIdx = nearestIndex(r.strength ?? 0);
+                slider.value = String(initIdx);
+                lbl.textContent = `Strength: ${LEVELS[initIdx].label}`;
+                slider.addEventListener('input', () => {
+                  const idx = Number(slider.value) | 0;
+                  const chosen = LEVELS[idx] || LEVELS[0];
+                  lbl.textContent = `Strength: ${chosen.label}`;
+                  if(window.setPeerRelationStrength){ window.setPeerRelationStrength(node, peerNode, chosen.value); }
+                  if(window.applyPeerInfluence) window.applyPeerInfluence(cy);
+                  if(window.computeVisuals) window.computeVisuals(cy);
+                });
+                sliderWrap.appendChild(lbl); sliderWrap.appendChild(slider);
+                mid.appendChild(nameEl); mid.appendChild(sliderWrap);
                 const btn = document.createElement('button'); btn.textContent='Remove'; btn.style.fontSize='12px'; btn.onclick=()=> { if(window.removePeerRelation){ window.removePeerRelation(node, peerNode); if(window.applyPeerInfluence) window.applyPeerInfluence(cy); if(window.computeVisuals) window.computeVisuals(cy); dialog.remove(); } };
-                row.appendChild(btn); dialog.appendChild(row);
+                row.appendChild(left); row.appendChild(mid); row.appendChild(btn); dialog.appendChild(row);
               });
               const controls = document.createElement('div'); controls.style.marginTop='12px'; controls.style.display='flex'; controls.style.flexWrap='wrap'; controls.style.gap='8px';
               const clearAllBtn = document.createElement('button'); clearAllBtn.textContent='Clear All'; clearAllBtn.onclick=()=> { if(window.clearAllPeerRelationsForNode){ window.clearAllPeerRelationsForNode(node); if(window.applyPeerInfluence) window.applyPeerInfluence(cy); if(window.computeVisuals) window.computeVisuals(cy); dialog.remove(); } };
