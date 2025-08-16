@@ -92,12 +92,21 @@ async function loadExampleAndApply(filename) {
     if (data.graph) {
       // New format with graph + annotations
       cy.add(data.graph);
-      if (data.textAnnotations && window.textAnnotations) {
-        window.textAnnotations.importAnnotations(data.textAnnotations);
+      if (window.textAnnotations) {
+        if (Array.isArray(data.textAnnotations)) {
+          window.textAnnotations.importAnnotations(data.textAnnotations);
+        } else {
+          // If the example omits annotations, ensure we clear any previous overlays
+          window.textAnnotations.clearAllAnnotations();
+        }
       }
     } else {
       // Legacy format - direct array
       cy.add(data);
+      // No annotation info in legacy examples: clear overlays so they don't linger
+      if (window.textAnnotations) {
+        window.textAnnotations.clearAllAnnotations();
+      }
     }
 
     // Initialize nodes and run convergence

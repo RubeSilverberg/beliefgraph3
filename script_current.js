@@ -191,15 +191,23 @@ function loadGraphWithAnnotations() {
           cy.add(fileContent.graph);
           try { window.ensurePeerRelationSymmetry?.(cy); window.applyPeerInfluence?.(cy); } catch(e){ console.warn('Peer relation reload skipped', e); }
           
-          // Load text annotations
+          // Load or clear text annotations
           if (window.textAnnotations) {
-            window.textAnnotations.importAnnotations(fileContent.textAnnotations);
+            if (Array.isArray(fileContent.textAnnotations)) {
+              window.textAnnotations.importAnnotations(fileContent.textAnnotations);
+            } else {
+              window.textAnnotations.clearAllAnnotations();
+            }
           }
         } else {
           // Handle legacy format (just graph elements)
           cy.elements().remove();
           cy.add(fileContent);
           try { window.ensurePeerRelationSymmetry?.(cy); window.applyPeerInfluence?.(cy); } catch(e){ console.warn('Peer relation reload skipped', e); }
+          // Legacy loads have no annotation data — clear any existing overlays
+          if (window.textAnnotations) {
+            window.textAnnotations.clearAllAnnotations();
+          }
         }
         
         convergeAll({ cy });

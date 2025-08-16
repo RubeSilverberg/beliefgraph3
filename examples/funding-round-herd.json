@@ -633,7 +633,7 @@
       },
       "group": "nodes",
       "removed": false,
-      "selected": true,
+      "selected": false,
       "selectable": true,
       "locked": false,
       "grabbable": true,
@@ -719,8 +719,8 @@
         "height": 56
       },
       "position": {
-        "x": -43.82414946410056,
-        "y": -9.637478437721825
+        "x": -410.1349797338177,
+        "y": 3.5799226544844593
       },
       "group": "nodes",
       "removed": false,
@@ -999,11 +999,11 @@
         "borderWidth": 9,
         "borderColor": "rgb(129,129,129)",
         "shape": "roundrectangle",
-        "sizeIndex": 4,
-        "fontSize": 15,
-        "width": 117,
-        "textMaxWidth": 109,
-        "height": 56
+        "sizeIndex": 17,
+        "fontSize": 29,
+        "width": 226,
+        "textMaxWidth": 218,
+        "height": 108
       },
       "position": {
         "x": 167.78177045649542,
@@ -1011,7 +1011,7 @@
       },
       "group": "nodes",
       "removed": false,
-      "selected": false,
+      "selected": true,
       "selectable": true,
       "locked": false,
       "grabbable": true,
@@ -2423,6 +2423,13 @@
       "classes": "faint-edge"
     }
   ],
-  "textAnnotations": [],
+  "textAnnotations": [
+    {
+      "id": 3,
+      "x": 988,
+      "y": 21,
+      "text": "Toggle real-world funding events - both positive and negative - to see how each affects different investor groups, and how those shifts roll up into the overall probability that the round will close."
+    }
+  ],
   "version": "1.0"
 }
