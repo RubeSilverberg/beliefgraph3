@@ -123,11 +123,20 @@ function addTextAnnotation() {
   }
   
   // Add annotation to center of current viewport
-  const viewport = window.cy.extent();
+  const cy = window.cy;
+  const viewport = cy.extent();
   const centerX = (viewport.x1 + viewport.x2) / 2;
   const centerY = (viewport.y1 + viewport.y2) / 2;
+  // Convert model coords -> rendered pixels -> page coords
+  const z = cy.zoom();
+  const pan = cy.pan();
+  const rect = cy.container().getBoundingClientRect();
+  const renderedX = centerX * z + pan.x;
+  const renderedY = centerY * z + pan.y;
+  const pageX = rect.left + renderedX;
+  const pageY = rect.top + renderedY;
   
-  const annotation = window.textAnnotations.createAnnotation(centerX, centerY, 'New note');
+  const annotation = window.textAnnotations.createAnnotation(pageX, pageY, 'New note');
   
   // Auto-edit the new annotation
   setTimeout(() => {

@@ -78,12 +78,11 @@ window.cy.on('doubleTap', 'node', function(event) {
   let lastEdgeTapTime = 0;
 
   cy.on('cxttap', evt => {
-    // Allow context menu in heavy mode for note nodes, but restrict other functionality
+    // In heavy mode, allow menu for note nodes and background (to add notes), but restrict other targets
     const isHeavyMode = window.getBayesMode && window.getBayesMode() === 'heavy';
     const isNoteNode = evt.target.isNode && evt.target.isNode() && evt.target.data('type') === NODE_TYPE_NOTE;
-    
-    // In heavy mode, only allow menu for note nodes
-    if (isHeavyMode && !isNoteNode) return;
+    const isBackground = (evt.target === cy);
+    if (isHeavyMode && !(isNoteNode || isBackground)) return;
     
     console.log('cxttap fired');
     evt.originalEvent.preventDefault();
@@ -144,9 +143,16 @@ window.cy.on('doubleTap', 'node', function(event) {
         {
           label: 'Add Note Here', action: () => {
             if (window.textAnnotations) {
-              // Convert Cytoscape position to screen coordinates
-              const annotation = window.textAnnotations.createAnnotation(evt.position.x, evt.position.y, 'New note');
-              
+              // Convert Cytoscape model coords -> rendered pixels -> page coords
+              const z = cy.zoom();
+              const pan = cy.pan();
+              const rect = cy.container().getBoundingClientRect();
+              const renderedX = evt.position.x * z + pan.x;
+              const renderedY = evt.position.y * z + pan.y;
+              const pageX = rect.left + renderedX;
+              const pageY = rect.top + renderedY;
+
+              const annotation = window.textAnnotations.createAnnotation(pageX, pageY, 'New note');
               // Auto-edit the new annotation
               setTimeout(() => {
                 window.textAnnotations.editAnnotation(annotation);
