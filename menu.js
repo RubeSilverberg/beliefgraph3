@@ -78,11 +78,8 @@ window.cy.on('doubleTap', 'node', function(event) {
   let lastEdgeTapTime = 0;
 
   cy.on('cxttap', evt => {
-    // In heavy mode, allow menu for note nodes and background (to add notes), but restrict other targets
-    const isHeavyMode = window.getBayesMode && window.getBayesMode() === 'heavy';
-    const isNoteNode = evt.target.isNode && evt.target.isNode() && evt.target.data('type') === NODE_TYPE_NOTE;
-    const isBackground = (evt.target === cy);
-    if (isHeavyMode && !(isNoteNode || isBackground)) return;
+  // Always show menu; selectively disable structural actions in heavy mode
+  const isHeavyMode = window.getBayesMode && window.getBayesMode() === 'heavy';
     
     console.log('cxttap fired');
     evt.originalEvent.preventDefault();
@@ -166,6 +163,10 @@ window.cy.on('doubleTap', 'node', function(event) {
         const li = document.createElement('li');
         li.textContent = label;
         li.style.cursor = 'pointer';
+        if (isHeavyMode && (label === 'Add Statement Here (N)' || label === 'Add Logic')) {
+          li.style.opacity = '0.5';
+          li.title = 'Disabled in Bayes Heavy mode';
+        }
         li.onclick = () => { action(); hideMenu(); };
         list.appendChild(li);
       });
@@ -231,7 +232,9 @@ window.cy.on('doubleTap', 'node', function(event) {
         const toggleLogic = document.createElement('li');
         toggleLogic.textContent = nodeType === NODE_TYPE_AND ? 'Convert to OR Node' : 'Convert to AND Node';
         toggleLogic.style.cursor = 'pointer';
+        if (isHeavyMode) { toggleLogic.style.opacity = '0.5'; toggleLogic.title = 'Disabled in Bayes Heavy mode'; }
         toggleLogic.onclick = () => {
+      if (window.getBayesMode && window.getBayesMode() === 'heavy') return; // disable structural edit in heavy
           const newType = nodeType === NODE_TYPE_AND ? NODE_TYPE_OR : NODE_TYPE_AND;
           node.data({ type: newType });
           convergeAll({ cy });
@@ -243,15 +246,17 @@ window.cy.on('doubleTap', 'node', function(event) {
 
       // Fact-only: inert toggle (prevents outgoing propagation while retaining displayed probability)
       if (nodeType === NODE_TYPE_FACT) {
-        const inert = !!node.data('inertFact');
+        const mode = window.getBayesMode ? window.getBayesMode() : 'lite';
+        const flag = mode === 'heavy' ? 'inertFactHeavy' : 'inertFact';
+        const inert = !!node.data(flag);
         const toggleInert = document.createElement('li');
-        toggleInert.textContent = inert ? 'Make Fact Active (propagate)' : 'Make Fact Inert (freeze influence)';
+        toggleInert.textContent = inert ? 'Make Fact Active (propagate)' : (mode === 'heavy' ? 'Make Fact Inert (heavy only)' : 'Make Fact Inert (lite only)');
         toggleInert.style.cursor = 'pointer';
         toggleInert.onclick = () => {
           if (inert) {
-            node.removeData('inertFact');
+            node.removeData(flag);
           } else {
-            node.data('inertFact', true);
+            node.data(flag, true);
           }
           // Recompute so children drop/add this parent contribution
           convergeAll({ cy });
@@ -401,6 +406,10 @@ window.cy.on('doubleTap', 'node', function(event) {
       const del = document.createElement('li');
       del.textContent = 'Delete Node';
       del.style.cursor = 'pointer';
+      if (window.getBayesMode && window.getBayesMode() === 'heavy') {
+        del.style.opacity = '0.5';
+        del.title = 'Disabled in Bayes Heavy mode';
+      }
       del.onclick = () => {
         if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
         node.remove();
@@ -436,6 +445,10 @@ window.cy.on('doubleTap', 'node', function(event) {
       const del = document.createElement('li');
       del.textContent = 'Delete This Edge';
       del.style.cursor = 'pointer';
+      if (window.getBayesMode && window.getBayesMode() === 'heavy') {
+        del.style.opacity = '0.5';
+        del.title = 'Disabled in Bayes Heavy mode';
+      }
       del.onclick = () => {
         if (window.getBayesMode && window.getBayesMode() === 'heavy') return;
         edge.remove();

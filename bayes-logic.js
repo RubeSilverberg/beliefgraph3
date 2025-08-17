@@ -102,7 +102,10 @@ function calculateAndMarginal(parentEdges) {
   // AND node: product of parent probabilities
   // Filter to only parents that have valid heavyProb
   const validParents = parentEdges.toArray().filter(edge => {
-    return typeof edge.source().data('heavyProb') === 'number';
+    const parent = edge.source();
+    const hasProb = typeof parent.data('heavyProb') === 'number';
+    const isInertFact = (parent.data('type') || '').toLowerCase() === 'fact' && !!parent.data('inertFactHeavy');
+    return hasProb && !isInertFact;
   });
   
   if (validParents.length === 0) return undefined; // Virgin node
@@ -124,7 +127,10 @@ function calculateOrMarginal(parentEdges) {
   // OR node: 1 - product of (1 - parent probabilities)
   // Filter to only parents that have valid heavyProb
   const validParents = parentEdges.toArray().filter(edge => {
-    return typeof edge.source().data('heavyProb') === 'number';
+    const parent = edge.source();
+    const hasProb = typeof parent.data('heavyProb') === 'number';
+    const isInertFact = (parent.data('type') || '').toLowerCase() === 'fact' && !!parent.data('inertFactHeavy');
+    return hasProb && !isInertFact;
   });
   
   if (validParents.length === 0) return undefined; // Virgin node
@@ -148,13 +154,15 @@ function calculateNaiveBayesMarginal(node, parentEdges) {
   // - Must have parent with valid heavyProb (non-virgin parent)
   const validEdges = parentEdges.toArray().filter(edge => {
     const cpt = edge.data('cpt');
-    const parentProb = edge.source().data('heavyProb');
+  const parentNode = edge.source();
+  const parentProb = parentNode.data('heavyProb');
+  const parentIsInert = ((parentNode.data('type') || '').toLowerCase() === 'fact') && !!parentNode.data('inertFactHeavy');
     
     const hasCPT = cpt && 
                    typeof cpt.condTrue === 'number' && 
                    typeof cpt.condFalse === 'number' && 
                    typeof cpt.baseline === 'number';
-    const hasParentProb = typeof parentProb === 'number';
+  const hasParentProb = typeof parentProb === 'number' && !parentIsInert;
     
     return hasCPT && hasParentProb;
   });
@@ -315,13 +323,15 @@ export function debugBayesCalculations(cy) {
 function debugAssertionCalculation(node, parentEdges) {
   const validEdges = parentEdges.toArray().filter(edge => {
     const cpt = edge.data('cpt');
-    const parentProb = edge.source().data('heavyProb');
+    const parentNode = edge.source();
+    const parentProb = parentNode.data('heavyProb');
+    const parentIsInert = ((parentNode.data('type') || '').toLowerCase() === 'fact') && !!parentNode.data('inertFactHeavy');
     
     const hasCPT = cpt && 
                    typeof cpt.condTrue === 'number' && 
                    typeof cpt.condFalse === 'number' && 
                    typeof cpt.baseline === 'number';
-    const hasParentProb = typeof parentProb === 'number';
+    const hasParentProb = typeof parentProb === 'number' && !parentIsInert;
     
     return hasCPT && hasParentProb;
   });
@@ -412,7 +422,13 @@ function debugAssertionCalculation(node, parentEdges) {
 function debugAndCalculation(parentEdges) {
   console.log(`   🧮 AND CALCULATION:`);
   let result = 1;
-  parentEdges.forEach((edge, i) => {
+  const validParents = parentEdges.toArray().filter(edge => {
+    const parent = edge.source();
+    const hasProb = typeof parent.data('heavyProb') === 'number';
+    const isInertFact = (parent.data('type') || '').toLowerCase() === 'fact' && !!parent.data('inertFactHeavy');
+    return hasProb && !isInertFact;
+  });
+  validParents.forEach((edge, i) => {
     let parentProb = edge.source().data('heavyProb') ?? 0.5;
     const cpt = edge.data('cpt') || {};
     if (cpt.inverse) {
@@ -429,7 +445,13 @@ function debugAndCalculation(parentEdges) {
 function debugOrCalculation(parentEdges) {
   console.log(`   🧮 OR CALCULATION:`);
   let result = 1;
-  parentEdges.forEach((edge, i) => {
+  const validParents = parentEdges.toArray().filter(edge => {
+    const parent = edge.source();
+    const hasProb = typeof parent.data('heavyProb') === 'number';
+    const isInertFact = (parent.data('type') || '').toLowerCase() === 'fact' && !!parent.data('inertFactHeavy');
+    return hasProb && !isInertFact;
+  });
+  validParents.forEach((edge, i) => {
     let parentProb = edge.source().data('heavyProb') ?? 0.5;
     const cpt = edge.data('cpt') || {};
     if (cpt.inverse) {

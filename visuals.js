@@ -266,10 +266,14 @@ export function computeVisuals(cy) {
       if (!node.data('userCustomTextColor')) {
         node.data('textColor', '#fff');
       }
-      // Inert fact embellishments (visual only – no inline INERT text)
-      if (node.data('inertFact')) {
+      // Derive mode-aware inert visual flag
+      const inertVisual = (bayesMode === 'heavy') ? !!node.data('inertFactHeavy') : !!node.data('inertFact');
+      if (inertVisual) {
+        node.data('inertVisual', true);
         borderColor = '#ff9800';
         borderWidth = 4;
+      } else if (node.data('inertVisual')) {
+        node.removeData('inertVisual');
       }
       // Ensure any legacy translucency flag is cleared so inert facts are fully opaque
       if (node.data('backgroundOpacity') !== undefined) node.removeData('backgroundOpacity');

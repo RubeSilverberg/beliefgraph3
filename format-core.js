@@ -12,7 +12,8 @@
       const o={id:d.id,label:d.origLabel||d.label||d.id,type:nodeType(d)};
       if(d.hoverLabel) o.description=d.hoverLabel; // long sentence / full statement
       if(typeof d.prob==='number') o.prob=d.prob;
-      if(d.type==='fact' && d.inertFact) o.inert=true;
+  // Export only lite inert to minimal format (heavy inert is runtime-only)
+  if(d.type==='fact' && d.inertFact) o.inert=true;
       if(d.cpt){const pc=pruneCpt(d.cpt); if(pc) o.cpt=pc;}
       const st=styleOut(d); if(st) o.style=st;
       return o;
@@ -46,7 +47,8 @@
       if(!el||!el.data) return;
       if(el.group==='nodes'||(!el.data.source&&!el.data.target)){
         const d=el.data; const o={id:d.id,label:d.origLabel||d.label||d.id,type:nodeType(d)};
-        if(d.type==='fact' && d.inertFact) o.inert=true;
+  // Import only lite inert from minimal
+  if(d.type==='fact' && d.inertFact) o.inert=true;
         if(d.hoverLabel) o.description=d.hoverLabel;
         if(typeof d.prob==='number') o.prob=d.prob;
         if(d.cpt){const pc=pruneCpt(d.cpt); if(pc) o.cpt=pc;}
