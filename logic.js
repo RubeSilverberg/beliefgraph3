@@ -1342,6 +1342,8 @@ if (typeof window !== 'undefined') {
   window.initializeNodeData = initializeNodeData;
   window.clearNodeDataForUnknownType = clearNodeDataForUnknownType;
   window.clearVisualOnlyData = clearVisualOnlyData;
+  // Make resetLayout available for modules that call window.resetLayout?.()
+  window.resetLayout = resetLayout;
   
   // Add debug helper functions to window for easy console access
   window.debugConvergeAll = () => convergeAll({ cy: window.cy, debug: true });

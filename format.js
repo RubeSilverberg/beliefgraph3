@@ -37,6 +37,8 @@ export function importAnyGraph(cy, json, { fit = true, validate = false, validat
 		cy.layout({ name: 'preset' }).run();
 		cy.fit();
 		cy.resize();
+		// Align with app behavior: run reset layout after imports
+		window.resetLayout?.();
 	}
 	if (minimal.annotations && window.textAnnotations) {
 		window.textAnnotations.importAnnotations(minimal.annotations);
