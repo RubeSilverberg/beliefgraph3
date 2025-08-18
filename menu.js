@@ -250,7 +250,7 @@ window.cy.on('doubleTap', 'node', function(event) {
         const flag = mode === 'heavy' ? 'inertFactHeavy' : 'inertFact';
         const inert = !!node.data(flag);
         const toggleInert = document.createElement('li');
-        toggleInert.textContent = inert ? 'Make Fact Active (propagate)' : (mode === 'heavy' ? 'Make Fact Inert (heavy only)' : 'Make Fact Inert (lite only)');
+        toggleInert.textContent = inert ? 'Make Fact Active (propagate)' : 'Make Fact Inert';
         toggleInert.style.cursor = 'pointer';
         toggleInert.onclick = () => {
           if (inert) {
@@ -268,7 +268,7 @@ window.cy.on('doubleTap', 'node', function(event) {
       }
 
       // --- Peer Relations (submenu with tooltip) ---
-  if(window.startPeerRelationMode && nodeType !== NODE_TYPE_FACT){
+  if(window.startPeerRelationMode && nodeType !== NODE_TYPE_FACT && (!window.getBayesMode || window.getBayesMode() !== 'heavy')){
         function hideSubMenu(){ if(activePeerSubMenu){ try { activePeerSubMenu.remove(); } catch(_){} activePeerSubMenu = null; } }
 
         const peerItem = document.createElement('li');

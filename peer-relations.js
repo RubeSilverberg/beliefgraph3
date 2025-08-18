@@ -241,6 +241,7 @@ if(typeof window !== 'undefined'){
 	window.clearAllPeerRelationsForNode = (node)=> clearAllPeerRelationsForNode(window.cy, node);
 	window.pruneFactRelations = (cy)=> pruneFactRelations(cy || window.cy);
 	window.togglePeerOverlay = ()=> { window._peerOverlayHidden = !window._peerOverlayHidden; if(window._peerOverlayHidden){ _clearOverlays(window.cy); } else { applyPeerInfluence(window.cy); } localStorage.setItem('peerOverlayHidden', window._peerOverlayHidden ? '1':'0'); };
+	window.clearPeerOverlay = ()=> { try { if(window.cy) _clearOverlays(window.cy); } catch(_){} };
 	const pref = localStorage.getItem('peerOverlayHidden'); if(pref==='1') window._peerOverlayHidden = true;
 		window.ensurePeerRelationSymmetry = (cy)=> ensurePeerRelationSymmetry(cy || window.cy);
 }

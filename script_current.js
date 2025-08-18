@@ -198,7 +198,10 @@ function loadGraphWithAnnotations() {
           // Load graph elements
           cy.elements().remove();
           cy.add(fileContent.graph);
-          try { window.ensurePeerRelationSymmetry?.(cy); window.applyPeerInfluence?.(cy); } catch(e){ console.warn('Peer relation reload skipped', e); }
+          try {
+            const m = window.getBayesMode ? window.getBayesMode() : 'lite';
+            if (m !== 'heavy') { window.ensurePeerRelationSymmetry?.(cy); window.applyPeerInfluence?.(cy); }
+          } catch(e){ console.warn('Peer relation reload skipped', e); }
           
           // Load or clear text annotations
           if (window.textAnnotations) {
@@ -212,7 +215,10 @@ function loadGraphWithAnnotations() {
           // Handle legacy format (just graph elements)
           cy.elements().remove();
           cy.add(fileContent);
-          try { window.ensurePeerRelationSymmetry?.(cy); window.applyPeerInfluence?.(cy); } catch(e){ console.warn('Peer relation reload skipped', e); }
+          try {
+            const m = window.getBayesMode ? window.getBayesMode() : 'lite';
+            if (m !== 'heavy') { window.ensurePeerRelationSymmetry?.(cy); window.applyPeerInfluence?.(cy); }
+          } catch(e){ console.warn('Peer relation reload skipped', e); }
           // Legacy loads have no annotation data — clear any existing overlays
           if (window.textAnnotations) {
             window.textAnnotations.clearAllAnnotations();
@@ -346,11 +352,32 @@ function handleModeProcesses(mode) {
   // Put any mode-specific logic here.
   // Example: enable/disable controls, lock out propagation, show modals, etc.
   if (mode === 'heavy') {
-    // Example: disable propagate button
-    // document.getElementById('propagateBtn').disabled = true;
+    // Hide and clear peer relation overlays in heavy mode
+    try {
+      // Remember previous overlay preference to restore when returning to lite
+      if (typeof window._peerOverlayPrevHidden === 'undefined') {
+        window._peerOverlayPrevHidden = !!window._peerOverlayHidden;
+      }
+      window._peerOverlayHidden = true;
+      // Clear any existing overlay lines immediately
+      if (window.clearPeerOverlay) window.clearPeerOverlay();
+      // Also clear any placement banner
+      const b = document.getElementById('peer-rel-banner'); if (b) b.remove();
+    } catch (e) { console.warn('Failed to clear peer overlays on heavy mode switch', e); }
   } else {
-    // Example: re-enable propagate button
-    // document.getElementById('propagateBtn').disabled = false;
+    // Restore overlay preference and redraw if applicable in lite mode
+    try {
+      if (typeof window._peerOverlayPrevHidden !== 'undefined') {
+        window._peerOverlayHidden = !!window._peerOverlayPrevHidden;
+        delete window._peerOverlayPrevHidden;
+      }
+      if (!window._peerOverlayHidden && window.applyPeerInfluence && window.cy) {
+        // Redraw overlays based on current relations
+        window.applyPeerInfluence(window.cy);
+      } else if (window.clearPeerOverlay) {
+        window.clearPeerOverlay();
+      }
+    } catch (e) { console.warn('Failed to restore peer overlays on lite mode switch', e); }
   }
 }
 
@@ -758,15 +785,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Make cy global if needed elsewhere
   window.cy = cy;
-  // Install peer relation UI and initial pass (safe no-op if none)
-  installPeerRelationUI(cy);
+  // Install peer relation UI only in lite mode
+  if (!window.getBayesMode || window.getBayesMode() !== 'heavy') {
+    installPeerRelationUI(cy);
+  }
 
   // Wrap global convergeAll once (idempotent) to ensure peer influence + visuals refresh after each convergence
   if(!window._peerConvergeWrapped && window.convergeAll){
     const baseConverge = window.convergeAll;
     window.convergeAll = (opts) => {
       const res = baseConverge(opts);
-  try { applyPeerInfluence((opts && opts.cy) || window.cy); if(window.computeVisuals && window.cy) window.computeVisuals(window.cy); } catch(e) { console.warn('Peer influence error', e); }
+  try {
+    const m = window.getBayesMode ? window.getBayesMode() : 'lite';
+    if (m !== 'heavy') {
+      applyPeerInfluence((opts && opts.cy) || window.cy);
+    }
+    if(window.computeVisuals && window.cy) window.computeVisuals(window.cy);
+  } catch(e) { console.warn('Peer influence error', e); }
       return res;
     };
     window._peerConvergeWrapped = true;
