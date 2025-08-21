@@ -38,7 +38,7 @@ import {
   // ...any other needed config exports
 } from './config.js';
 
-import { showExamplesMenu } from './examples.js';
+import { showExamplesMenu, loadExampleGraph } from './examples.js';
 
 import {
   resetLayout,
@@ -812,6 +812,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Set initial arrow directions based on current mode (default is lite)
   flipArrowDirections(mode);
+
+  // --- Auto-load the Watergate example on fresh start if there's no autosave/restore data ---
+  try {
+    const hasAutosave = !!localStorage.getItem('graphData') || !!localStorage.getItem('testGraphData') || !!localStorage.getItem('autosaveGraph');
+    if (!hasAutosave) {
+      // Silent attempt to load the example; failures should not interrupt startup
+      (async () => {
+        try {
+          const data = await loadExampleGraph('watergate-nodes.json');
+          if (data) {
+            // Prefer new format (data.graph) but accept legacy arrays
+            cy.elements().remove();
+            if (data.graph) {
+              cy.add(data.graph);
+              if (window.textAnnotations && Array.isArray(data.textAnnotations)) {
+                window.textAnnotations.importAnnotations(data.textAnnotations);
+              }
+            } else {
+              cy.add(data);
+            }
+
+            if (window.convergeAll) window.convergeAll({ cy });
+            if (window.computeVisuals) window.computeVisuals(cy);
+            // Apply preset positions first, then run resetLayout to set zoom/center based on node count.
+            cy.layout({ name: 'preset' }).run();
+            if (typeof resetLayout === 'function') resetLayout();
+            if (window.refreshSoftColors) window.refreshSoftColors();
+            // Resize after layout + reset so canvas sizes correctly
+            cy.resize();
+            console.log('Auto-loaded examples/watergate-nodes.json');
+          }
+        } catch (e) {
+          console.warn('Watergate example auto-load failed:', e);
+        }
+      })();
+    }
+  } catch (e) { console.warn('Auto-load check failed', e); }
 
   // ===== Edge Visibility Interaction (inverted: faint by default; focus on press) =====
   const EDGE_FADE_MIN_EDGES = 11; // override fading while edge count < 11 (i.e., until 11th edge exists)
