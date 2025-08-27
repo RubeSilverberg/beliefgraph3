@@ -301,3 +301,28 @@ Remain only to avoid breaking stale references; inert and safe to delete later:
 - `json-compatibility-checker.js` (stub) – real tool: `tests/dev-tools/json-compatibility-checker.js`
 
 Purpose: assist automated agents and contributors in ignoring obsolete entry points.
+
+## Do-calculus (Heavy Mode Only)
+
+This project ships a minimal, modular do-calculus helper designed for Bayes Heavy mode. It simulates Pearl-style interventions by cutting incoming edges to intervened nodes and freezing their probabilities during a transactional run.
+
+- Module: `do-calculus.js` (auto-loaded in `index.html`)
+- Global helper: `window.doCalc`
+- Heavy-only: If the current mode is not heavy, helpers become no-ops and just run your function.
+
+API:
+
+- `doCalc.computeDo({ A: 1, B: 0 })` → `{ probsById, getProb(id) }` snapshot of probabilities under the intervention
+- `doCalc.ate(xId, yId)` → `{ p1, p0, ate }` for P(Y|do(X=1)) - P(Y|do(X=0))
+- `doCalc.isDSeparated(X, Y, Z)` → boolean via moralized ancestral-graph test
+- `doCalc.satisfiesBackdoor(X, Y, Z)` → boolean (sufficient check by removing outgoing from X then d-sep)
+- `doCalc.withIntervention({ X: 1 }, () => { /* read cy, compute stats, etc. */ })` – runs your fn with the do() applied, then restores the graph.
+
+Example in console (after switching to Heavy mode):
+
+```js
+// Toggle to heavy mode in the UI, then:
+const { probsById, getProb } = doCalc.computeDo({ someNode: 1 });
+console.log('P(Y|do(someNode=1)) =', getProb('Y'));
+console.log('ATE(X→Y) =', doCalc.ate('X','Y'));
+```

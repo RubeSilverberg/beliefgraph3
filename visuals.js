@@ -161,7 +161,7 @@ export function autoUpdateNodeTypes(cy, fromConvergeAll = false) {
     const newType = incomingEdges.length === 0 ? NODE_TYPE_FACT : NODE_TYPE_ASSERTION;
     
     // Only update if type actually changed (avoid unnecessary re-renders)
-    if (currentType !== newType) {
+  if (currentType !== newType) {
       hasChanges = true;
       node.data('type', newType);
       
@@ -212,6 +212,17 @@ export function autoUpdateNodeTypes(cy, fromConvergeAll = false) {
         if (window.initializeNodeData) {
           window.initializeNodeData(node, 'assertion');
         }
+      }
+
+      // Clear any Heavy-mode do-calculus flags when crossing fact/assertion boundary
+      const a = (currentType||'').toLowerCase();
+      const b = (newType||'').toLowerCase();
+      const crossesCausalBoundary = (a === 'fact' && b === 'assertion') || (a === 'assertion' && b === 'fact');
+      if (crossesCausalBoundary) {
+        node.removeData('doFixed');
+        node.removeData('doValue');
+        // Drop heavyProb so it is recomputed next pass
+        node.removeData('heavyProb');
       }
       
       console.log(`Auto-updated node ${node.id()} from ${currentType} to ${newType}`);

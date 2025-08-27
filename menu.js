@@ -1,6 +1,6 @@
 console.log("Loaded menu.js");
 import { wouldCreateCycle } from './logic.js';
-import { openVisualSignalsModal, openContributingFactorsModal } from './modals.js';
+import { openVisualSignalsModal, openContributingFactorsModal, openDoCalculusModal } from './modals.js';
 export function setupMenuAndEdgeModals({
   cy,
   convergeAll,
@@ -170,6 +170,15 @@ window.cy.on('doubleTap', 'node', function(event) {
         li.onclick = () => { action(); hideMenu(); };
         list.appendChild(li);
       });
+
+      // Heavy mode utility: Do-Calculus quick query
+      if (isHeavyMode) {
+        const doCalcItem = document.createElement('li');
+        doCalcItem.textContent = 'Do-Calculus (Intervene/Query)';
+        doCalcItem.style.cursor = 'pointer';
+        doCalcItem.onclick = () => { openDoCalculusModal(cy); hideMenu(); };
+        list.appendChild(doCalcItem);
+      }
 
 
     } else if (evt.target.isNode && evt.target.isNode()) {
@@ -393,6 +402,26 @@ window.cy.on('doubleTap', 'node', function(event) {
         hideMenu();
       };
       list.appendChild(visualSignalsItem);
+
+  // Heavy mode utility on node: assertion-only Do-Calculus
+  if (isHeavyMode && nodeType === NODE_TYPE_ASSERTION) {
+        const doCalcItem = document.createElement('li');
+        doCalcItem.textContent = 'Do-Calculus for this node…';
+        doCalcItem.style.cursor = 'pointer';
+        doCalcItem.onclick = () => {
+          // Open modal then set X to current node (best effort; modal reads cy to build list)
+          openDoCalculusModal(cy);
+          // After a tick, try to set select to this node
+          setTimeout(() => {
+    const selX = document.getElementById('do-select-x');
+    const selY = document.getElementById('do-select-y');
+    if (selX) selX.value = node.id();
+    if (selY) selY.value = node.id();
+          }, 0);
+          hideMenu();
+        };
+        list.appendChild(doCalcItem);
+      }
 
       const notesItem = document.createElement('li');
       notesItem.textContent = 'View/Edit Notes...';

@@ -29,6 +29,12 @@ export function propagateBayesHeavy(cy) {
 
   // Single-pass calculation in dependency order
   sortedNodes.forEach(node => {
+    // Respect active do-intervention: keep node fixed
+    if (node.data('doFixed') === true) {
+      const v = node.data('doValue');
+      if (typeof v === 'number') node.data('heavyProb', Math.max(0, Math.min(1, v)));
+      return; // skip normal calculation
+    }
     const newProb = calculateNodeMarginal(node, cy);
     if (newProb !== undefined) {
       node.data('heavyProb', Math.max(0, Math.min(1, newProb)));

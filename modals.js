@@ -1036,3 +1036,107 @@ export function openContributingFactorsModal(edge) {
   showModal(modal);
   textarea.focus();
 }
+
+// --- Do-Calculus Quick Query Modal (Heavy mode only) ---
+export function openDoCalculusModal(cy) {
+  // Guard: heavy mode only
+  const mode = window.getBayesMode ? window.getBayesMode() : 'lite';
+  if (mode !== 'heavy') {
+    alert('Do-Calculus is available in Bayes Heavy mode only. Switch modes to use this.');
+    return;
+  }
+  if (!window.doCalc) {
+    alert('Do-Calculus engine not loaded. Make sure do-calculus.js is included.');
+    return;
+  }
+
+  hideModal('do-calculus-modal');
+
+  // Build modal
+  const modal = document.createElement('div');
+  modal.id = 'do-calculus-modal';
+  modal.className = 'hidden';
+  modal.style.position = 'fixed';
+  modal.style.background = '#fff';
+  modal.style.padding = '20px 22px 16px 22px';
+  modal.style.border = '2px solid #8e24aa';
+  modal.style.borderRadius = '8px';
+  modal.style.zIndex = 10001;
+  modal.style.boxShadow = '0 6px 30px #8e24aa55';
+  modal.style.minWidth = '360px';
+
+  const title = document.createElement('div');
+  title.textContent = 'Do-Calculus (Assertions Only, Heavy Mode)';
+  title.className = 'modal-title';
+  title.style.fontWeight = 'bold';
+  title.style.marginBottom = '12px';
+  modal.appendChild(title);
+  makeDraggable(modal, '.modal-title');
+
+  // Collect allowed candidates: both X and Y are assertions in this model
+  const assertionCandidates = cy.nodes().filter(n => (n.data('type')||'').toLowerCase() === 'assertion').toArray();
+
+  const row = document.createElement('div');
+  row.style.display = 'grid';
+  row.style.gridTemplateColumns = '1fr 1fr';
+  row.style.gap = '10px';
+
+  const xWrap = document.createElement('div');
+  const yWrap = document.createElement('div');
+  const xLbl = document.createElement('label'); xLbl.textContent = 'Intervene on assertion (X):';
+  const yLbl = document.createElement('label'); yLbl.textContent = 'Query assertion (Y):';
+  const xSel = document.createElement('select'); xSel.style.width='100%'; xSel.id = 'do-select-x';
+  const ySel = document.createElement('select'); ySel.style.width='100%'; ySel.id = 'do-select-y';
+  assertionCandidates.forEach(n => {
+    const id = n.id();
+    const name = n.data('displayLabel') || n.data('origLabel') || id;
+    const optX = document.createElement('option'); optX.value = id; optX.textContent = name; xSel.appendChild(optX);
+    const optY = document.createElement('option'); optY.value = id; optY.textContent = name; ySel.appendChild(optY);
+  });
+  xWrap.appendChild(xLbl); xWrap.appendChild(xSel);
+  yWrap.appendChild(yLbl); yWrap.appendChild(ySel);
+  row.appendChild(xWrap); row.appendChild(yWrap);
+  modal.appendChild(row);
+
+  const doRow = document.createElement('div');
+  doRow.style.marginTop = '10px';
+  const do0 = document.createElement('input'); do0.type='radio'; do0.name='doVal'; do0.id='do0'; do0.value='0';
+  const do1 = document.createElement('input'); do1.type='radio'; do1.name='doVal'; do1.id='do1'; do1.value='1'; do1.checked=true;
+  const l0 = document.createElement('label'); l0.htmlFor='do0'; l0.textContent='do(X=0)'; l0.style.marginRight='12px';
+  const l1 = document.createElement('label'); l1.htmlFor='do1'; l1.textContent='do(X=1)';
+  doRow.appendChild(do0); doRow.appendChild(l0); doRow.appendChild(do1); doRow.appendChild(l1);
+  modal.appendChild(doRow);
+
+  const actions = document.createElement('div');
+  actions.style.marginTop = '14px';
+  const runBtn = document.createElement('button'); runBtn.textContent = 'Compute'; runBtn.style.marginRight = '10px';
+  const closeBtn = document.createElement('button'); closeBtn.textContent = 'Close';
+  actions.appendChild(runBtn); actions.appendChild(closeBtn);
+  modal.appendChild(actions);
+
+  const out = document.createElement('div');
+  out.style.marginTop = '12px';
+  out.style.fontSize = '13px';
+  out.style.color = '#333';
+  modal.appendChild(out);
+
+  runBtn.onclick = () => {
+    const x = xSel.value; const y = ySel.value; const v = document.getElementById('do1').checked ? 1 : 0;
+  if (!x || !y) { out.textContent = 'Select both X (assertion) and Y (assertion).'; return; }
+    try {
+      const res = window.doCalc.computeDo({ [x]: v });
+      const py = res.getProb(y);
+      if (typeof py === 'number') {
+        out.innerHTML = `<strong>P(${y}|do(${x}=${v}))</strong> = ${(py*100).toFixed(2)}%`;
+      } else {
+        out.textContent = 'No probability available for Y under this intervention (check graph setup).';
+      }
+    } catch (e) {
+      console.error('Do-Calculus error', e);
+      out.textContent = 'Error computing intervention; see console.';
+    }
+  };
+  closeBtn.onclick = () => hideModal(modal.id);
+
+  showModal(modal);
+}
