@@ -1127,7 +1127,14 @@ export function openDoCalculusModal(cy) {
       const res = window.doCalc.computeDo({ [x]: v });
       const py = res.getProb(y);
       if (typeof py === 'number') {
-        out.innerHTML = `<strong>P(${y}|do(${x}=${v}))</strong> = ${(py*100).toFixed(2)}%`;
+        // Use human-friendly node names (option labels) rather than internal IDs
+        const xName = xSel.options[xSel.selectedIndex]?.textContent || x;
+        const yName = ySel.options[ySel.selectedIndex]?.textContent || y;
+        const pct = Math.round(py * 100);
+        out.innerHTML = `<div style="line-height:1.4">
+          <div><strong>${pct}%</strong> chance of <em>${yName}</em></div>
+          <div style="opacity:0.85">under intervention do(<em>${xName}</em> = ${v})</div>
+        </div>`;
       } else {
         out.textContent = 'No probability available for Y under this intervention (check graph setup).';
       }
