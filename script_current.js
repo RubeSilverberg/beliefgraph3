@@ -892,7 +892,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!cy._addedFaintEdgeStyle) {
     cy.style()
       .selector('edge.faint-edge')
-        .style({ 'opacity': 0.12 })
+  .style({ 'opacity': 0.2 })
       .selector('edge.focus-edge')
         .style({ 'opacity': 0.9 })
       .update();
