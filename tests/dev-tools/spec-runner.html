@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Spec Runner (Heavy/Lite/Do)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 16px; }
+    h1 { margin: 0 0 8px; font-size: 20px; }
+    .row { display: flex; gap: 16px; align-items: stretch; }
+    .col { flex: 1; min-width: 320px; }
+    textarea { width: 100%; min-height: 300px; font: 12px/1.4 monospace; padding: 8px; box-sizing: border-box; }
+    .btns { margin: 8px 0; display: flex; gap: 8px; flex-wrap: wrap; }
+    button { padding: 8px 12px; cursor: pointer; }
+    pre { background: #f7f7f7; padding: 10px; border: 1px solid #ddd; overflow: auto; white-space: pre-wrap; }
+    .note { font-size: 12px; color: #555; }
+    .ok { color: #1a7f37; }
+    .warn { color: #b54708; }
+    .err { color: #b42318; }
+  </style>
+</head>
+<body>
+  <h1>Spec Runner: paste one graph JSON at a time</h1>
+  <div class="note">Supports deterministic logic (OR/AND/NOT/THRESHOLD), heavy combine with positive/negative influences, do-interventions, and DBN unrolling (2027–2030). Use “Run” to compute runs and deltas; “Open in App” visualizes the baseline only.</div>
+
+  <div class="row" style="margin-top:12px;">
+    <div class="col">
+      <h3>Input JSON</h3>
+      <textarea id="specInput" placeholder="Paste the spec JSON here..."></textarea>
+      <div class="btns">
+        <button onclick="SpecRunnerUI.run()">Run</button>
+        <button onclick="SpecRunnerUI.openInApp()">Open in App (baseline)</button>
+        <button onclick="SpecRunnerUI.loadExample('graph1')">Load Graph 1</button>
+        <button onclick="SpecRunnerUI.loadExample('graph2')">Load Graph 2</button>
+        <button onclick="SpecRunnerUI.loadExample('graph3')">Load Graph 3</button>
+        <button onclick="SpecRunnerUI.clear()">Clear</button>
+      </div>
+      <div id="status" class="note"></div>
+    </div>
+    <div class="col">
+      <h3>Run Output</h3>
+      <pre id="runOutput">(no output yet)</pre>
+      <h3>Assumptions</h3>
+      <pre id="assumptions"></pre>
+    </div>
+  </div>
+
+  <script src="./spec-runner.js"></script>
+  <script>
+    const SpecRunnerUI = (()=>{
+      const $ = (id)=>document.getElementById(id);
+
+      function setStatus(msg, cls){ const el=$("status"); el.textContent=msg||""; el.className = "note " + (cls||""); }
+      function setOutput(obj){ $("runOutput").textContent = typeof obj==='string'? obj : JSON.stringify(obj, null, 2); }
+      function setAssumptions(lines){ $("assumptions").textContent = (lines||[]).join("\n"); }
+
+      async function run(){
+        try{
+          const txt = $("specInput").value.trim();
+          if(!txt){ setStatus('Nothing to run', 'warn'); return; }
+          const raw = JSON.parse(txt);
+          const { spec, assumptions } = window.SpecRunner.prepare(raw);
+          const result = window.SpecRunner.runAll(spec);
+          setOutput(result);
+          setAssumptions(assumptions);
+          setStatus(`Ran ${result.runs.length} scenario(s) for graph "${spec.graphId}"`, 'ok');
+        } catch(e){
+          console.error(e);
+          setStatus('Error: '+ e.message, 'err');
+          setOutput('(failed)');
+        }
+      }
+
+      function openInApp(){
+        try{
+          const txt = $("specInput").value.trim();
+          if(!txt){ setStatus('Nothing to open', 'warn'); return; }
+          const raw = JSON.parse(txt);
+          const { spec } = window.SpecRunner.prepare(raw);
+          const viz = window.SpecRunner.toElements(spec, { baseline: true });
+          localStorage.setItem('testGraphData', JSON.stringify({ graph: viz, textAnnotations: [] }));
+          window.open('../../index.html?import=testGraphData', '_blank');
+          setStatus('Baseline visualization opened in main app (new tab).', 'ok');
+        } catch(e){
+          console.error(e);
+          setStatus('Open in App failed: '+ e.message, 'err');
+        }
+      }
+
+      function clear(){ $("specInput").value=''; setOutput(''); setAssumptions(''); setStatus('Cleared'); }
+
+      function loadExample(which){
+        const ex = window.SpecRunner.examples[which];
+        if(!ex){ setStatus('No such example', 'warn'); return; }
+        $("specInput").value = JSON.stringify(ex, null, 2);
+        setStatus('Loaded '+which, 'ok');
+      }
+
+      return { run, openInApp, clear, loadExample };
+    })();
+  </script>
+</body>
+  
+</html>

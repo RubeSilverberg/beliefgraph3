@@ -45,6 +45,9 @@
     <button onclick="loadMinimalJson()">Load test-minimal.json (Complex)</button>
     <button onclick="loadUltraMinimal()">Load test-ultra-minimal.json (Simple)</button>
     <button onclick="loadAdnanCase()">Load Adnan.json (Your Case)</button>
+  <button onclick="loadExcelDeps()">Load excel-sheet-deps.json (from your Excel)</button>
+  <button onclick="loadExcelTopicDeps()">Load excel-topics-deps.json (richer)</button>
+  <button onclick="loadExcelLineageDeps()">Load excel-lineage-deps.json (cell-level)</button>
     <div id="minimal-output" class="output"></div>
   </div>
   
@@ -169,10 +172,10 @@
   try { minimal = JSON.parse(txt); }
   catch(_e){ minimal = parseLooseMinimal(txt); }
         const full = window.createFullJsonFromMinimalInput(minimal);
-        // Store in localStorage using existing key expectation
-        localStorage.setItem('testGraphData', JSON.stringify({ graph: full.graph, textAnnotations: [] }));
-        status.textContent='Stored + opening main app...';
-        window.open('../../index.html', '_blank');
+  // Store in localStorage using existing key expectation, then instruct app to import it
+  localStorage.setItem('testGraphData', JSON.stringify({ graph: full.graph, textAnnotations: [] }));
+  status.textContent='Stored + opening main app...';
+  window.open('../../index.html?import=testGraphData', '_blank');
       } catch(e){
         console.error(e);
         status.textContent='Error: '+ e.message;
@@ -212,6 +215,42 @@
       } catch (error) {
         document.getElementById('minimal-output').textContent = 
           'Error loading Adnan JSON: ' + error.message;
+      }
+    }
+    
+    async function loadExcelDeps() {
+      try {
+        const response = await fetch('excel-sheet-deps.json');
+        minimalData = await response.json();
+        document.getElementById('minimal-output').textContent = 
+          'Loaded excel-sheet-deps.json (sheet dependency graph):\n' + JSON.stringify(minimalData, null, 2);
+      } catch (error) {
+        document.getElementById('minimal-output').textContent = 
+          'Error loading excel-sheet-deps.json: ' + error.message + '\nIf blocked by browser file:// restrictions, use the Paste section above.';
+      }
+    }
+
+    async function loadExcelTopicDeps() {
+      try {
+        const response = await fetch('excel-topics-deps.json');
+        minimalData = await response.json();
+        document.getElementById('minimal-output').textContent = 
+          'Loaded excel-topics-deps.json (topic dependency graph):\n' + JSON.stringify(minimalData, null, 2);
+      } catch (error) {
+        document.getElementById('minimal-output').textContent = 
+          'Error loading excel-topics-deps.json: ' + error.message + '\nIf blocked by browser file:// restrictions, use the Paste section above.';
+      }
+    }
+
+    async function loadExcelLineageDeps() {
+      try {
+        const response = await fetch('excel-lineage-deps.json');
+        minimalData = await response.json();
+        document.getElementById('minimal-output').textContent = 
+          'Loaded excel-lineage-deps.json (cell-level lineage):\n' + JSON.stringify(minimalData, null, 2);
+      } catch (error) {
+        document.getElementById('minimal-output').textContent = 
+          'Error loading excel-lineage-deps.json: ' + error.message + '\nIf blocked by browser file:// restrictions, use the Paste section above.';
       }
     }
     
@@ -297,14 +336,14 @@
         return;
       }
       
-      // Save the full data to localStorage so the main tool can load it
+  // Save the full data to localStorage so the main tool can load it
   localStorage.setItem('testGraphData', JSON.stringify({ graph: fullData.graph, textAnnotations: [] }));
       document.getElementById('test-output').textContent = 
-        'Full JSON saved to localStorage as "testGraphData"\n' +
-        'You can now open the main tool and load this data';
+    'Full JSON saved to localStorage as "testGraphData"\n' +
+    'Opening the main tool with auto-import...';
       
-      // Open the main tool
-      window.open('../../index.html', '_blank');
+  // Open the main tool with an import instruction
+  window.open('../../index.html?import=testGraphData', '_blank');
     }
 
     function validateMinimalNow(){

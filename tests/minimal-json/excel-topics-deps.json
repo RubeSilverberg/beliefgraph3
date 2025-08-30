@@ -1,0 +1,109 @@
+{
+  "version": "2",
+  "nodes": [
+    {
+      "id": "AI_Solutions::Category",
+      "label": "Category",
+      "type": "fact",
+      "description": "Topic from sheet 'AI Solutions': Category\nExamples: AI Solutions!A1"
+    },
+    {
+      "id": "AI_Solutions::Solution",
+      "label": "Solution",
+      "type": "fact",
+      "description": "Topic from sheet 'AI Solutions': Solution\nExamples: AI Solutions!B1"
+    },
+    {
+      "id": "EdReports::2015_2016",
+      "label": "2015/2016",
+      "type": "fact",
+      "description": "Topic from sheet 'EdReports': 2015/2016\nExamples: EdReports!C5"
+    },
+    {
+      "id": "EdReports::14-_23_Slope",
+      "label": "14-'23 Slope",
+      "type": "fact",
+      "description": "Topic from sheet 'EdReports': 14-'23 Slope\nExamples: EdReports!H5"
+    },
+    {
+      "id": "Field Goal 1 Projections",
+      "label": "Field Goal 1 Projectio…",
+      "type": "assertion",
+      "description": "Sheet 'Field Goal 1 Projections' with 152 formulas referencing external topics"
+    },
+    {
+      "id": "FG1 Projection - Conservative",
+      "label": "FG1 Projection - Conse…",
+      "type": "assertion",
+      "description": "Sheet 'FG1 Projection - Conservative' with 156 formulas referencing external topics"
+    },
+    {
+      "id": "EdReports",
+      "label": "EdReports",
+      "type": "assertion",
+      "description": "Sheet 'EdReports' with 6 formulas referencing external topics"
+    },
+    {
+      "id": "Model",
+      "label": "Model",
+      "type": "assertion",
+      "description": "Sheet 'Model' with 3 formulas referencing external topics"
+    }
+  ],
+  "edges": [
+    {
+      "source": "AI_Solutions::Category",
+      "target": "Field Goal 1 Projections",
+      "type": "supports",
+      "weight": 0.5,
+      "contributingFactors": [
+        "40 ref(s) from AI Solutions::Category"
+      ]
+    },
+    {
+      "source": "AI_Solutions::Solution",
+      "target": "Field Goal 1 Projections",
+      "type": "supports",
+      "weight": 0.5,
+      "contributingFactors": [
+        "40 ref(s) from AI Solutions::Solution"
+      ]
+    },
+    {
+      "source": "EdReports::2015_2016",
+      "target": "FG1 Projection - Conservative",
+      "type": "supports",
+      "weight": 0.0241,
+      "contributingFactors": [
+        "2 ref(s) from EdReports::2015/2016"
+      ]
+    },
+    {
+      "source": "AI_Solutions::Category",
+      "target": "FG1 Projection - Conservative",
+      "type": "supports",
+      "weight": 0.4819,
+      "contributingFactors": [
+        "40 ref(s) from AI Solutions::Category"
+      ]
+    },
+    {
+      "source": "AI_Solutions::Solution",
+      "target": "FG1 Projection - Conservative",
+      "type": "supports",
+      "weight": 0.4819,
+      "contributingFactors": [
+        "40 ref(s) from AI Solutions::Solution"
+      ]
+    },
+    {
+      "source": "EdReports::14-_23_Slope",
+      "target": "FG1 Projection - Conservative",
+      "type": "supports",
+      "weight": 0.012,
+      "contributingFactors": [
+        "1 ref(s) from EdReports::14-'23 Slope"
+      ]
+    }
+  ]
+}

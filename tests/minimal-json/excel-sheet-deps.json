@@ -1,0 +1,112 @@
+{
+  "version": "2",
+  "nodes": [
+    {
+      "id": "Context + instructions",
+      "label": "Context + instructions",
+      "type": "assertion",
+      "description": "Sheet 'Context + instructions'. Contains 0 formulas; inbound cross-sheet refs: 0. Top sources: None."
+    },
+    {
+      "id": "Field Goal 1 Projections",
+      "label": "Field Goal 1 Projectio…",
+      "type": "assertion",
+      "description": "Sheet 'Field Goal 1 Projections'. Contains 152 formulas; inbound cross-sheet refs: 120. Top sources: AI Solutions (80), Field Goal 1 Projections (40)."
+    },
+    {
+      "id": "FG1 Projection - Conservative",
+      "label": "FG1 Projection - Conse…",
+      "type": "assertion",
+      "description": "Sheet 'FG1 Projection - Conservative'. Contains 156 formulas; inbound cross-sheet refs: 124. Top sources: AI Solutions (80), FG1 Projection - Conservative (41), EdReports (3)."
+    },
+    {
+      "id": "EdReports",
+      "label": "EdReports",
+      "type": "assertion",
+      "description": "Sheet 'EdReports'. Contains 6 formulas; inbound cross-sheet refs: 0. Top sources: None."
+    },
+    {
+      "id": "Dataset >>",
+      "label": "Dataset >>",
+      "type": "assertion",
+      "description": "Sheet 'Dataset >>'. Contains 0 formulas; inbound cross-sheet refs: 0. Top sources: None."
+    },
+    {
+      "id": "AI Solutions Methodology",
+      "label": "AI Solutions Methodolo…",
+      "type": "assertion",
+      "description": "Sheet 'AI Solutions Methodology'. Contains 0 formulas; inbound cross-sheet refs: 0. Top sources: None."
+    },
+    {
+      "id": "AI Solutions",
+      "label": "AI Solutions",
+      "type": "assertion",
+      "description": "Sheet 'AI Solutions'. Contains 0 formulas; inbound cross-sheet refs: 0. Top sources: None."
+    },
+    {
+      "id": "Evalueserve >>",
+      "label": "Evalueserve >>",
+      "type": "assertion",
+      "description": "Sheet 'Evalueserve >>'. Contains 0 formulas; inbound cross-sheet refs: 0. Top sources: None."
+    },
+    {
+      "id": "Top 40 AI solutions",
+      "label": "Top 40 AI solutions",
+      "type": "assertion",
+      "description": "Sheet 'Top 40 AI solutions'. Contains 0 formulas; inbound cross-sheet refs: 0. Top sources: None."
+    },
+    {
+      "id": "To delete >>",
+      "label": "To delete >>",
+      "type": "assertion",
+      "description": "Sheet 'To delete >>'. Contains 0 formulas; inbound cross-sheet refs: 0. Top sources: None."
+    },
+    {
+      "id": "Pivot",
+      "label": "Pivot",
+      "type": "assertion",
+      "description": "Sheet 'Pivot'. Contains 0 formulas; inbound cross-sheet refs: 0. Top sources: None."
+    },
+    {
+      "id": "Model",
+      "label": "Model",
+      "type": "assertion",
+      "description": "Sheet 'Model'. Contains 3 formulas; inbound cross-sheet refs: 0. Top sources: None."
+    },
+    {
+      "id": "Sheet3",
+      "label": "Sheet3",
+      "type": "assertion",
+      "description": "Sheet 'Sheet3'. Contains 0 formulas; inbound cross-sheet refs: 0. Top sources: None."
+    }
+  ],
+  "edges": [
+    {
+      "source": "AI Solutions",
+      "target": "Field Goal 1 Projections",
+      "type": "supports",
+      "weight": 0.6667,
+      "contributingFactors": [
+        "80 cross-sheet reference(s)"
+      ]
+    },
+    {
+      "source": "EdReports",
+      "target": "FG1 Projection - Conservative",
+      "type": "supports",
+      "weight": 0.0242,
+      "contributingFactors": [
+        "3 cross-sheet reference(s)"
+      ]
+    },
+    {
+      "source": "AI Solutions",
+      "target": "FG1 Projection - Conservative",
+      "type": "supports",
+      "weight": 0.6452,
+      "contributingFactors": [
+        "80 cross-sheet reference(s)"
+      ]
+    }
+  ]
+}

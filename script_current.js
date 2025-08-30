@@ -813,9 +813,49 @@ document.addEventListener('DOMContentLoaded', () => {
   // Set initial arrow directions based on current mode (default is lite)
   flipArrowDirections(mode);
 
+  // --- Optional URL-driven import from localStorage (e.g., ?import=testGraphData) ---
+  try {
+    const url = new URL(window.location.href);
+    const importKey = url.searchParams.get('import') || (window.location.hash === '#import-testGraphData' ? 'testGraphData' : null);
+    if (importKey) {
+      const raw = localStorage.getItem(importKey);
+      if (raw) {
+        let payload;
+        try { payload = JSON.parse(raw); } catch(_e) {}
+        if (payload) {
+          // Import shape: either { graph, textAnnotations } or raw elements array
+          cy.elements().remove();
+          if (payload.graph) {
+            cy.add(payload.graph);
+            if (window.textAnnotations && Array.isArray(payload.textAnnotations)) {
+              window.textAnnotations.importAnnotations(payload.textAnnotations);
+            } else if (window.textAnnotations) {
+              window.textAnnotations.clearAllAnnotations();
+            }
+          } else if (Array.isArray(payload)) {
+            cy.add(payload);
+            if (window.textAnnotations) window.textAnnotations.clearAllAnnotations();
+          }
+          if (window.convergeAll) window.convergeAll({ cy });
+          cy.layout({ name: 'preset' }).run();
+          if (window.computeVisuals) window.computeVisuals(cy);
+          if (typeof resetLayout === 'function') resetLayout();
+          cy.resize();
+          console.log(`[Import] Loaded graph from localStorage key "${importKey}" via URL parameter.`);
+        } else {
+          console.warn(`[Import] localStorage key "${importKey}" exists but JSON.parse failed.`);
+        }
+      } else {
+        console.warn(`[Import] localStorage key "${importKey}" not found.`);
+      }
+    }
+  } catch(e) {
+    console.warn('[Import] URL-driven import failed:', e);
+  }
+
   // --- Auto-load the Watergate example on fresh start if there's no autosave/restore data ---
   try {
-    const hasAutosave = !!localStorage.getItem('graphData') || !!localStorage.getItem('testGraphData') || !!localStorage.getItem('autosaveGraph');
+  const hasAutosave = !!localStorage.getItem('graphData') || !!localStorage.getItem('testGraphData') || !!localStorage.getItem('autosaveGraph');
     if (!hasAutosave) {
       // Silent attempt to load the example; failures should not interrupt startup
       (async () => {

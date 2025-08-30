@@ -1,0 +1,311 @@
+{
+  "version": "2",
+  "nodes": [
+    {
+      "id": "FG1 Projection - Conservative",
+      "label": "FG1 Projection - Conse…",
+      "type": "assertion",
+      "description": "Projection sheet 'FG1 Projection - Conservative'."
+    },
+    {
+      "id": "Field Goal 1 Projections",
+      "label": "Field Goal 1 Projectio…",
+      "type": "assertion",
+      "description": "Projection sheet 'Field Goal 1 Projections'."
+    },
+    {
+      "id": "FG1_Projection_-_Conservative_J8",
+      "label": "J8",
+      "type": "assertion",
+      "description": "Target cell FG1 Projection - Conservative!J8\nFormula: =INDEX('AI Solutions'!$A$1:$M$100,MATCH('FG1 Projection - Conservative'!C8,'AI Solutions'!$B$1:$B$100,0),6)"
+    },
+    {
+      "id": "AI_Solutions_A1",
+      "label": "A1",
+      "type": "fact",
+      "description": "Source AI Solutions!A1\nHeader: Category\nRow: Category"
+    },
+    {
+      "id": "AI_Solutions_B1",
+      "label": "B1",
+      "type": "fact",
+      "description": "Source AI Solutions!B1\nHeader: Solution\nRow: Category"
+    },
+    {
+      "id": "FG1_Projection_-_Conservative_J9",
+      "label": "J9",
+      "type": "assertion",
+      "description": "Target cell FG1 Projection - Conservative!J9\nFormula: =INDEX('AI Solutions'!$A$1:$M$100,MATCH('FG1 Projection - Conservative'!C9,'AI Solutions'!$B$1:$B$100,0),6)"
+    },
+    {
+      "id": "FG1_Projection_-_Conservative_J10",
+      "label": "J10",
+      "type": "assertion",
+      "description": "Target cell FG1 Projection - Conservative!J10\nFormula: =INDEX('AI Solutions'!$A$1:$M$100,MATCH('FG1 Projection - Conservative'!C10,'AI Solutions'!$B$1:$B$100,0),6)"
+    },
+    {
+      "id": "FG1_Projection_-_Conservative_J11",
+      "label": "J11",
+      "type": "assertion",
+      "description": "Target cell FG1 Projection - Conservative!J11\nFormula: =INDEX('AI Solutions'!$A$1:$M$100,MATCH('FG1 Projection - Conservative'!C11,'AI Solutions'!$B$1:$B$100,0),6)"
+    },
+    {
+      "id": "FG1_Projection_-_Conservative_J12",
+      "label": "J12",
+      "type": "assertion",
+      "description": "Target cell FG1 Projection - Conservative!J12\nFormula: =INDEX('AI Solutions'!$A$1:$M$100,MATCH('FG1 Projection - Conservative'!C12,'AI Solutions'!$B$1:$B$100,0),6)"
+    },
+    {
+      "id": "FG1_Projection_-_Conservative_J13",
+      "label": "J13",
+      "type": "assertion",
+      "description": "Target cell FG1 Projection - Conservative!J13\nFormula: =INDEX('AI Solutions'!$A$1:$M$100,MATCH('FG1 Projection - Conservative'!C13,'AI Solutions'!$B$1:$B$100,0),6)"
+    },
+    {
+      "id": "FG1_Projection_-_Conservative_J14",
+      "label": "J14",
+      "type": "assertion",
+      "description": "Target cell FG1 Projection - Conservative!J14\nFormula: =INDEX('AI Solutions'!$A$1:$M$100,MATCH('FG1 Projection - Conservative'!C14,'AI Solutions'!$B$1:$B$100,0),6)"
+    },
+    {
+      "id": "FG1_Projection_-_Conservative_J15",
+      "label": "J15",
+      "type": "assertion",
+      "description": "Target cell FG1 Projection - Conservative!J15\nFormula: =INDEX('AI Solutions'!$A$1:$M$100,MATCH('FG1 Projection - Conservative'!C15,'AI Solutions'!$B$1:$B$100,0),6)"
+    }
+  ],
+  "edges": [
+    {
+      "source": "FG1_Projection_-_Conservative_J8",
+      "target": "FG1 Projection - Conservative",
+      "type": "supports",
+      "weight": 0.6,
+      "contributingFactors": [
+        "Selected output cell"
+      ]
+    },
+    {
+      "source": "AI_Solutions_A1",
+      "target": "FG1_Projection_-_Conservative_J8",
+      "type": "supports",
+      "weight": 0.5,
+      "contributingFactors": [
+        "Header: Category",
+        "Row: Category"
+      ]
+    },
+    {
+      "source": "AI_Solutions_B1",
+      "target": "FG1_Projection_-_Conservative_J8",
+      "type": "supports",
+      "weight": 0.5,
+      "contributingFactors": [
+        "Header: Solution",
+        "Row: Category"
+      ]
+    },
+    {
+      "source": "FG1_Projection_-_Conservative_J9",
+      "target": "FG1 Projection - Conservative",
+      "type": "supports",
+      "weight": 0.6,
+      "contributingFactors": [
+        "Selected output cell"
+      ]
+    },
+    {
+      "source": "AI_Solutions_A1",
+      "target": "FG1_Projection_-_Conservative_J9",
+      "type": "supports",
+      "weight": 0.5,
+      "contributingFactors": [
+        "Header: Category",
+        "Row: Category"
+      ]
+    },
+    {
+      "source": "AI_Solutions_B1",
+      "target": "FG1_Projection_-_Conservative_J9",
+      "type": "supports",
+      "weight": 0.5,
+      "contributingFactors": [
+        "Header: Solution",
+        "Row: Category"
+      ]
+    },
+    {
+      "source": "FG1_Projection_-_Conservative_J10",
+      "target": "FG1 Projection - Conservative",
+      "type": "supports",
+      "weight": 0.6,
+      "contributingFactors": [
+        "Selected output cell"
+      ]
+    },
+    {
+      "source": "AI_Solutions_A1",
+      "target": "FG1_Projection_-_Conservative_J10",
+      "type": "supports",
+      "weight": 0.5,
+      "contributingFactors": [
+        "Header: Category",
+        "Row: Category"
+      ]
+    },
+    {
+      "source": "AI_Solutions_B1",
+      "target": "FG1_Projection_-_Conservative_J10",
+      "type": "supports",
+      "weight": 0.5,
+      "contributingFactors": [
+        "Header: Solution",
+        "Row: Category"
+      ]
+    },
+    {
+      "source": "FG1_Projection_-_Conservative_J11",
+      "target": "FG1 Projection - Conservative",
+      "type": "supports",
+      "weight": 0.6,
+      "contributingFactors": [
+        "Selected output cell"
+      ]
+    },
+    {
+      "source": "AI_Solutions_A1",
+      "target": "FG1_Projection_-_Conservative_J11",
+      "type": "supports",
+      "weight": 0.5,
+      "contributingFactors": [
+        "Header: Category",
+        "Row: Category"
+      ]
+    },
+    {
+      "source": "AI_Solutions_B1",
+      "target": "FG1_Projection_-_Conservative_J11",
+      "type": "supports",
+      "weight": 0.5,
+      "contributingFactors": [
+        "Header: Solution",
+        "Row: Category"
+      ]
+    },
+    {
+      "source": "FG1_Projection_-_Conservative_J12",
+      "target": "FG1 Projection - Conservative",
+      "type": "supports",
+      "weight": 0.6,
+      "contributingFactors": [
+        "Selected output cell"
+      ]
+    },
+    {
+      "source": "AI_Solutions_A1",
+      "target": "FG1_Projection_-_Conservative_J12",
+      "type": "supports",
+      "weight": 0.5,
+      "contributingFactors": [
+        "Header: Category",
+        "Row: Category"
+      ]
+    },
+    {
+      "source": "AI_Solutions_B1",
+      "target": "FG1_Projection_-_Conservative_J12",
+      "type": "supports",
+      "weight": 0.5,
+      "contributingFactors": [
+        "Header: Solution",
+        "Row: Category"
+      ]
+    },
+    {
+      "source": "FG1_Projection_-_Conservative_J13",
+      "target": "FG1 Projection - Conservative",
+      "type": "supports",
+      "weight": 0.6,
+      "contributingFactors": [
+        "Selected output cell"
+      ]
+    },
+    {
+      "source": "AI_Solutions_A1",
+      "target": "FG1_Projection_-_Conservative_J13",
+      "type": "supports",
+      "weight": 0.5,
+      "contributingFactors": [
+        "Header: Category",
+        "Row: Category"
+      ]
+    },
+    {
+      "source": "AI_Solutions_B1",
+      "target": "FG1_Projection_-_Conservative_J13",
+      "type": "supports",
+      "weight": 0.5,
+      "contributingFactors": [
+        "Header: Solution",
+        "Row: Category"
+      ]
+    },
+    {
+      "source": "FG1_Projection_-_Conservative_J14",
+      "target": "FG1 Projection - Conservative",
+      "type": "supports",
+      "weight": 0.6,
+      "contributingFactors": [
+        "Selected output cell"
+      ]
+    },
+    {
+      "source": "AI_Solutions_A1",
+      "target": "FG1_Projection_-_Conservative_J14",
+      "type": "supports",
+      "weight": 0.5,
+      "contributingFactors": [
+        "Header: Category",
+        "Row: Category"
+      ]
+    },
+    {
+      "source": "AI_Solutions_B1",
+      "target": "FG1_Projection_-_Conservative_J14",
+      "type": "supports",
+      "weight": 0.5,
+      "contributingFactors": [
+        "Header: Solution",
+        "Row: Category"
+      ]
+    },
+    {
+      "source": "FG1_Projection_-_Conservative_J15",
+      "target": "FG1 Projection - Conservative",
+      "type": "supports",
+      "weight": 0.6,
+      "contributingFactors": [
+        "Selected output cell"
+      ]
+    },
+    {
+      "source": "AI_Solutions_A1",
+      "target": "FG1_Projection_-_Conservative_J15",
+      "type": "supports",
+      "weight": 0.5,
+      "contributingFactors": [
+        "Header: Category",
+        "Row: Category"
+      ]
+    },
+    {
+      "source": "AI_Solutions_B1",
+      "target": "FG1_Projection_-_Conservative_J15",
+      "type": "supports",
+      "weight": 0.5,
+      "contributingFactors": [
+        "Header: Solution",
+        "Row: Category"
+      ]
+    }
+  ]
+}

@@ -72,6 +72,19 @@
       </ul>
     </div>
 
+    <div class="card">
+      <h2>Excel → Minimal JSON (Sheet Dependency Graph)</h2>
+      <p>Generate a quick sheet-level dependency graph from an Excel workbook. Each sheet becomes a node; cross-sheet formula references become edges with weights.</p>
+      <ol>
+        <li>Install Python dep once (host shell): <code>pip install openpyxl</code></li>
+        <li>Run the script (adjust filename as needed):<br/>
+          <code>python3 tests/dev-tools/excel_to_minimal.py "Field Goal 1 Projections (1).xlsx"</code>
+        </li>
+        <li>Open the converter page and load <code>tests/minimal-json/excel-sheet-deps.json</code>, then Convert → Open in App.</li>
+      </ol>
+      <p class="note">This is a low-lift provenance map unique to your data; no UI changes required.</p>
+    </div>
+
     <p class="note">Tip: Keeping dev-only scripts here avoids cluttering the app root and keeps <code>index.html</code> clean.</p>
   </body>
   </html>
