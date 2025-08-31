@@ -853,10 +853,10 @@ document.addEventListener('DOMContentLoaded', () => {
     console.warn('[Import] URL-driven import failed:', e);
   }
 
-  // --- Auto-load the Watergate example on fresh start if there's no autosave/restore data ---
+  // --- Auto-load the Watergate example when canvas is empty (safe default) ---
   try {
-  const hasAutosave = !!localStorage.getItem('graphData') || !!localStorage.getItem('testGraphData') || !!localStorage.getItem('autosaveGraph');
-    if (!hasAutosave) {
+    const graphIsEmpty = cy.nodes().length === 0;
+    if (graphIsEmpty) {
       // Silent attempt to load the example; failures should not interrupt startup
       (async () => {
         try {
