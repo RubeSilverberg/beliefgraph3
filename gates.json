@@ -1,0 +1,1667 @@
+{
+  "graph": [
+    {
+      "data": {
+        "id": "Rel_Grantee",
+        "label": "Rel_Grantee\n—",
+        "origLabel": "Rel_Grantee",
+        "type": "assertion",
+        "textColor": "#000",
+        "borderWidth": 1,
+        "borderColor": "#222",
+        "shape": "rectangle",
+        "isVirgin": true
+      },
+      "position": {
+  "x": -600,
+  "y": -220
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "Rel_InNetwork",
+        "label": "Rel_InNetwork",
+        "origLabel": "Rel_InNetwork",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle"
+      },
+      "position": {
+  "x": -600,
+  "y": -280
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "Rel_None",
+        "label": "Rel_None",
+        "origLabel": "Rel_None",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle"
+      },
+      "position": {
+  "x": -600,
+  "y": -340
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "Fund_Low",
+        "label": "Fund_Low",
+        "origLabel": "Fund_Low",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle"
+      },
+      "position": {
+  "x": -600,
+  "y": -640
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "Fund_Medium",
+        "label": "Fund_Medium",
+        "origLabel": "Fund_Medium",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle"
+      },
+      "position": {
+  "x": -600,
+  "y": -580
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "Fund_High",
+        "label": "Fund_High",
+        "origLabel": "Fund_High",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle"
+      },
+      "position": {
+  "x": -600,
+  "y": -520
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "Model_GPT",
+        "label": "Model_GPT",
+        "origLabel": "Model_GPT",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle"
+      },
+      "position": {
+  "x": -600,
+  "y": -20
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "Model_Proprietary",
+        "label": "Model_Proprietary",
+        "origLabel": "Model_Proprietary",
+        "type": "fact",
+        "prob": 0.995,
+        "textColor": "#fff",
+        "borderWidth": 2,
+        "borderColor": "#444",
+        "shape": "rectangle"
+      },
+      "position": {
+  "x": -600,
+  "y": 40
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "Rel_PICK_Grantee",
+        "label": "AND\n—",
+        "origLabel": "Rel_PICK_Grantee",
+        "type": "and",
+        "isVirgin": true,
+        "textColor": "#000",
+        "hoverLabel": "Rel_PICK_Grantee",
+        "borderWidth": 3,
+        "borderColor": "#bbb",
+        "shape": "diamond"
+      },
+      "position": {
+  "x": -250,
+  "y": -220
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "Rel_PICK_InNetwork",
+        "label": "AND\n—",
+        "origLabel": "Rel_PICK_InNetwork",
+        "type": "and",
+        "isVirgin": true,
+        "textColor": "#000",
+        "hoverLabel": "Rel_PICK_InNetwork",
+        "borderWidth": 3,
+        "borderColor": "#bbb",
+        "shape": "diamond"
+      },
+      "position": {
+  "x": -250,
+  "y": -280
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "Rel_PICK_None",
+        "label": "AND\n—",
+        "origLabel": "Rel_PICK_None",
+        "type": "and",
+        "isVirgin": true,
+        "textColor": "#000",
+        "hoverLabel": "Rel_PICK_None",
+        "borderWidth": 3,
+        "borderColor": "#bbb",
+        "shape": "diamond"
+      },
+      "position": {
+        "x": -250,
+        "y": -340
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "NOT_Rel_Grantee",
+        "label": "NOT_Rel_Grantee\n—",
+        "origLabel": "NOT_Rel_Grantee",
+        "type": "assertion",
+        "isVirgin": true,
+        "textColor": "#000",
+        "borderWidth": 1,
+        "borderColor": "#222",
+        "shape": "roundrectangle"
+      },
+      "position": {
+  "x": -450,
+  "y": -220
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "NOT_Rel_InNetwork",
+        "label": "NOT_Rel_InNetwork\n88%",
+        "origLabel": "NOT_Rel_InNetwork",
+        "type": "assertion",
+        "prob": 0.8833269191886987,
+        "textColor": "#000",
+        "robustness": 0.5506710358827784,
+        "robustnessLabel": "Moderate",
+        "borderWidth": 6,
+        "borderColor": "rgb(168,168,168)",
+        "shape": "roundrectangle"
+      },
+      "position": {
+        "x": -450,
+        "y": -280
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "NOT_Rel_None",
+        "label": "NOT_Rel_None\n88%",
+        "origLabel": "NOT_Rel_None",
+        "type": "assertion",
+        "prob": 0.8833269191886987,
+        "textColor": "#000",
+        "robustness": 0.5506710358827784,
+        "robustnessLabel": "Moderate",
+        "borderWidth": 6,
+        "borderColor": "rgb(168,168,168)",
+        "shape": "roundrectangle"
+      },
+      "position": {
+        "x": -450,
+        "y": -340
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "Fund_PICK_High",
+        "label": "AND\n78%",
+        "origLabel": "Fund_PICK_High",
+        "type": "and",
+        "prob": 0.7763651139325807,
+        "textColor": "#000",
+        "hoverLabel": "Fund_PICK_High",
+        "borderWidth": 3,
+        "borderColor": "#bbb",
+        "shape": "diamond"
+      },
+      "position": {
+        "x": -250,
+        "y": -520
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "Fund_PICK_Medium",
+        "label": "AND\n78%",
+        "origLabel": "Fund_PICK_Medium",
+        "type": "and",
+        "prob": 0.7763651139325807,
+        "textColor": "#000",
+        "hoverLabel": "Fund_PICK_Medium",
+        "borderWidth": 3,
+        "borderColor": "#bbb",
+        "shape": "diamond"
+      },
+      "position": {
+        "x": -250,
+        "y": -580
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "Fund_PICK_Low",
+        "label": "AND\n78%",
+        "origLabel": "Fund_PICK_Low",
+        "type": "and",
+        "prob": 0.7763651139325807,
+        "textColor": "#000",
+        "hoverLabel": "Fund_PICK_Low",
+        "borderWidth": 3,
+        "borderColor": "#bbb",
+        "shape": "diamond"
+      },
+      "position": {
+        "x": -250,
+        "y": -640
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "NOT_Fund_High",
+        "label": "NOT_Fund_High\n88%",
+        "origLabel": "NOT_Fund_High",
+        "type": "assertion",
+        "prob": 0.8833269191886987,
+        "textColor": "#000",
+        "robustness": 0.5506710358827784,
+        "robustnessLabel": "Moderate",
+        "borderWidth": 6,
+        "borderColor": "rgb(168,168,168)",
+        "shape": "roundrectangle"
+      },
+      "position": {
+        "x": -450,
+        "y": -520
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "NOT_Fund_Medium",
+        "label": "NOT_Fund_Medium\n88%",
+        "origLabel": "NOT_Fund_Medium",
+        "type": "assertion",
+        "prob": 0.8833269191886987,
+        "textColor": "#000",
+        "robustness": 0.5506710358827784,
+        "robustnessLabel": "Moderate",
+        "borderWidth": 6,
+        "borderColor": "rgb(168,168,168)",
+        "shape": "roundrectangle"
+      },
+      "position": {
+        "x": -450,
+        "y": -580
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "NOT_Fund_Low",
+        "label": "NOT_Fund_Low\n88%",
+        "origLabel": "NOT_Fund_Low",
+        "type": "assertion",
+        "prob": 0.8833269191886987,
+        "textColor": "#000",
+        "robustness": 0.5506710358827784,
+        "robustnessLabel": "Moderate",
+        "borderWidth": 6,
+        "borderColor": "rgb(168,168,168)",
+        "shape": "roundrectangle"
+      },
+      "position": {
+        "x": -450,
+        "y": -640
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "Model_PICK_GPT",
+        "label": "AND\n88%",
+        "origLabel": "Model_PICK_GPT",
+        "type": "and",
+        "prob": 0.8789102845927551,
+        "textColor": "#000",
+        "hoverLabel": "Model_PICK_GPT",
+        "borderWidth": 3,
+        "borderColor": "#bbb",
+        "shape": "diamond"
+      },
+      "position": {
+        "x": -250,
+        "y": -20
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "Model_PICK_Proprietary",
+        "label": "AND\n88%",
+        "origLabel": "Model_PICK_Proprietary",
+        "type": "and",
+        "prob": 0.8789102845927551,
+        "textColor": "#000",
+        "hoverLabel": "Model_PICK_Proprietary",
+        "borderWidth": 3,
+        "borderColor": "#bbb",
+        "shape": "diamond"
+      },
+      "position": {
+        "x": -250,
+        "y": 40
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "NOT_Model_GPT",
+        "label": "NOT_Model_GPT\n88%",
+        "origLabel": "NOT_Model_GPT",
+        "type": "assertion",
+        "prob": 0.8833269191886987,
+        "textColor": "#000",
+        "robustness": 0.5506710358827784,
+        "robustnessLabel": "Moderate",
+        "borderWidth": 6,
+        "borderColor": "rgb(168,168,168)",
+        "shape": "roundrectangle"
+      },
+      "position": {
+        "x": -450,
+        "y": -20
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "NOT_Model_Proprietary",
+        "label": "NOT_Model_Proprietary\n88%",
+        "origLabel": "NOT_Model_Proprietary",
+        "type": "assertion",
+        "prob": 0.8833269191886987,
+        "textColor": "#000",
+        "robustness": 0.5506710358827784,
+        "robustnessLabel": "Moderate",
+        "borderWidth": 6,
+        "borderColor": "rgb(168,168,168)",
+        "shape": "roundrectangle"
+      },
+      "position": {
+        "x": -450,
+        "y": 40
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "Winnability_Pearson_2028",
+        "label": "Winnability_Pearson_2028\n89%",
+        "origLabel": "Winnability_Pearson_2028",
+        "type": "assertion",
+        "prob": 0.8893366481772782,
+        "textColor": "#000",
+        "robustness": 0,
+        "robustnessLabel": "Minimal",
+        "borderWidth": 2,
+        "borderColor": "rgb(238,238,238)",
+        "shape": "roundrectangle"
+      },
+      "position": {
+        "x": 200,
+        "y": -300
+      },
+      "group": "nodes",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": false,
+      "classes": ""
+    },
+    {
+      "data": {
+        "id": "Rel_Grantee->Rel_PICK_Grantee#0",
+        "source": "Rel_Grantee",
+        "target": "Rel_PICK_Grantee",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 0,
+        "lineColor": "#ff9900",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "NOT_Rel_InNetwork->Rel_PICK_Grantee#1",
+        "source": "NOT_Rel_InNetwork",
+        "target": "Rel_PICK_Grantee",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "NOT_Rel_None->Rel_PICK_Grantee#2",
+        "source": "NOT_Rel_None",
+        "target": "Rel_PICK_Grantee",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "Rel_InNetwork->Rel_PICK_InNetwork#0",
+        "source": "Rel_InNetwork",
+        "target": "Rel_PICK_InNetwork",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "NOT_Rel_Grantee->Rel_PICK_InNetwork#1",
+        "source": "NOT_Rel_Grantee",
+        "target": "Rel_PICK_InNetwork",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 0,
+        "lineColor": "#ff9900",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "NOT_Rel_None->Rel_PICK_InNetwork#2",
+        "source": "NOT_Rel_None",
+        "target": "Rel_PICK_InNetwork",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "Rel_None->Rel_PICK_None#0",
+        "source": "Rel_None",
+        "target": "Rel_PICK_None",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "NOT_Rel_Grantee->Rel_PICK_None#1",
+        "source": "NOT_Rel_Grantee",
+        "target": "Rel_PICK_None",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 0,
+        "lineColor": "#ff9900",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "NOT_Rel_InNetwork->Rel_PICK_None#2",
+        "source": "NOT_Rel_InNetwork",
+        "target": "Rel_PICK_None",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "Rel_Grantee->NOT_Rel_Grantee#0",
+        "source": "Rel_Grantee",
+        "target": "NOT_Rel_Grantee",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 0,
+        "lineColor": "#ff9900",
+        "displayType": "supports",
+        "label": "—"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "Rel_InNetwork->NOT_Rel_InNetwork#0",
+        "source": "Rel_InNetwork",
+        "target": "NOT_Rel_InNetwork",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 0.8,
+        "lineColor": "rgb(80,80,80)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "Rel_None->NOT_Rel_None#0",
+        "source": "Rel_None",
+        "target": "NOT_Rel_None",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 0.8,
+        "lineColor": "rgb(80,80,80)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "Fund_High->Fund_PICK_High#0",
+        "source": "Fund_High",
+        "target": "Fund_PICK_High",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "NOT_Fund_Medium->Fund_PICK_High#1",
+        "source": "NOT_Fund_Medium",
+        "target": "Fund_PICK_High",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "NOT_Fund_Low->Fund_PICK_High#2",
+        "source": "NOT_Fund_Low",
+        "target": "Fund_PICK_High",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "Fund_Medium->Fund_PICK_Medium#0",
+        "source": "Fund_Medium",
+        "target": "Fund_PICK_Medium",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "NOT_Fund_High->Fund_PICK_Medium#1",
+        "source": "NOT_Fund_High",
+        "target": "Fund_PICK_Medium",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "NOT_Fund_Low->Fund_PICK_Medium#2",
+        "source": "NOT_Fund_Low",
+        "target": "Fund_PICK_Medium",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "Fund_Low->Fund_PICK_Low#0",
+        "source": "Fund_Low",
+        "target": "Fund_PICK_Low",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "NOT_Fund_High->Fund_PICK_Low#1",
+        "source": "NOT_Fund_High",
+        "target": "Fund_PICK_Low",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "NOT_Fund_Medium->Fund_PICK_Low#2",
+        "source": "NOT_Fund_Medium",
+        "target": "Fund_PICK_Low",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "Fund_High->NOT_Fund_High#0",
+        "source": "Fund_High",
+        "target": "NOT_Fund_High",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 0.8,
+        "lineColor": "rgb(80,80,80)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "Fund_Medium->NOT_Fund_Medium#0",
+        "source": "Fund_Medium",
+        "target": "NOT_Fund_Medium",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 0.8,
+        "lineColor": "rgb(80,80,80)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "Fund_Low->NOT_Fund_Low#0",
+        "source": "Fund_Low",
+        "target": "NOT_Fund_Low",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 0.8,
+        "lineColor": "rgb(80,80,80)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "Model_GPT->Model_PICK_GPT#0",
+        "source": "Model_GPT",
+        "target": "Model_PICK_GPT",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "NOT_Model_Proprietary->Model_PICK_GPT#1",
+        "source": "NOT_Model_Proprietary",
+        "target": "Model_PICK_GPT",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "Model_Proprietary->Model_PICK_Proprietary#0",
+        "source": "Model_Proprietary",
+        "target": "Model_PICK_Proprietary",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "NOT_Model_GPT->Model_PICK_Proprietary#1",
+        "source": "NOT_Model_GPT",
+        "target": "Model_PICK_Proprietary",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 1,
+        "lineColor": "rgb(44,44,44)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "Model_GPT->NOT_Model_GPT#0",
+        "source": "Model_GPT",
+        "target": "NOT_Model_GPT",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 0.8,
+        "lineColor": "rgb(80,80,80)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "Model_Proprietary->NOT_Model_Proprietary#0",
+        "source": "Model_Proprietary",
+        "target": "NOT_Model_Proprietary",
+        "type": "supports",
+        "weight": 0.8,
+        "computedWeight": 0.8,
+        "absWeight": 0.8,
+        "lineColor": "rgb(80,80,80)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "e0_Rel_PICK_Grantee_Winnability_Pearson_2028",
+        "source": "Rel_PICK_Grantee",
+        "target": "Winnability_Pearson_2028",
+        "type": "supports",
+        "weight": 0.6,
+        "computedWeight": 0.6,
+        "absWeight": 0,
+        "lineColor": "#ff9900",
+        "displayType": "supports",
+        "label": "—"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "e1_Rel_PICK_InNetwork_Winnability_Pearson_2028",
+        "source": "Rel_PICK_InNetwork",
+        "target": "Winnability_Pearson_2028",
+        "type": "supports",
+        "weight": 0.6,
+        "computedWeight": 0.6,
+        "absWeight": 0,
+        "lineColor": "#ff9900",
+        "displayType": "supports",
+        "label": "—"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "e2_Rel_PICK_None_Winnability_Pearson_2028",
+        "source": "Rel_PICK_None",
+        "target": "Winnability_Pearson_2028",
+        "type": "supports",
+        "weight": 0.6,
+        "computedWeight": 0.6,
+        "absWeight": 0,
+        "lineColor": "#ff9900",
+        "displayType": "supports",
+        "label": "—"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "e3_Fund_PICK_High_Winnability_Pearson_2028",
+        "source": "Fund_PICK_High",
+        "target": "Winnability_Pearson_2028",
+        "type": "supports",
+        "weight": 0.6,
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "e4_Fund_PICK_Medium_Winnability_Pearson_2028",
+        "source": "Fund_PICK_Medium",
+        "target": "Winnability_Pearson_2028",
+        "type": "supports",
+        "weight": 0.6,
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "e5_Fund_PICK_Low_Winnability_Pearson_2028",
+        "source": "Fund_PICK_Low",
+        "target": "Winnability_Pearson_2028",
+        "type": "supports",
+        "weight": 0.6,
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "e6_Model_PICK_GPT_Winnability_Pearson_2028",
+        "source": "Model_PICK_GPT",
+        "target": "Winnability_Pearson_2028",
+        "type": "supports",
+        "weight": 0.6,
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "id": "e7_Model_PICK_Proprietary_Winnability_Pearson_2028",
+        "source": "Model_PICK_Proprietary",
+        "target": "Winnability_Pearson_2028",
+        "type": "supports",
+        "weight": 0.6,
+        "computedWeight": 0.6,
+        "absWeight": 0.6,
+        "lineColor": "rgb(116,116,116)",
+        "displayType": "supports",
+        "label": ""
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    },
+    {
+      "data": {
+        "source": "NOT_Fund_Medium",
+        "target": "Rel_Grantee",
+        "rationale": "",
+        "id": "d365d0e8-e686-40c3-8d71-74dd969eb1c2",
+        "lineColor": "#ff9900",
+        "absWeight": 0,
+        "displayType": "supports",
+        "label": "—"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "group": "edges",
+      "removed": false,
+      "selected": false,
+      "selectable": true,
+      "locked": false,
+      "grabbable": true,
+      "pannable": true,
+      "classes": "faint-edge"
+    }
+  ],
+  "textAnnotations": [],
+  "version": "1.0"
+}

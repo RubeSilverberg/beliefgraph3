@@ -442,6 +442,103 @@
       ],
       combine:{ target:'Adoption_2030', method:'independent_parents_or_logistic', params:{ influences:{ MarketAccess:0.35, Funding_Boost:0.05 }, bias:0.0 } },
       runs:[ {runId:'baseline',mode:'heavy'} ]
+    },
+    // Minimal Gates lite-mode toy (V2): explicit mutually-exclusive fact toggles → Winnability
+    gatesToy: {
+      graphId: 'gates_winnability_toy_v2',
+      mode: 'heavy',
+      nodes: [
+        // Relationship facts (mutually exclusive; default None)
+        { id: 'Rel_Grantee', kind: 'assertion' },
+        { id: 'Rel_InNetwork', kind: 'assertion' },
+        { id: 'Rel_None', kind: 'assertion', prior: { p: 1 } },
+
+        // Funding facts (mutually exclusive; default Low)
+        { id: 'Fund_Low', kind: 'assertion', prior: { p: 1 } },
+        { id: 'Fund_Medium', kind: 'assertion' },
+        { id: 'Fund_High', kind: 'assertion' },
+
+        // Model facts (binary; default Proprietary)
+        { id: 'Model_GPT', kind: 'assertion' },
+        { id: 'Model_Proprietary', kind: 'assertion', prior: { p: 1 } },
+
+        // AND/NOT gating to enforce one-of-k selection per group
+        { id: 'Rel_PICK_Grantee', kind: 'logic', deterministic: { type: 'AND', inputs: ['Rel_Grantee','NOT_Rel_InNetwork','NOT_Rel_None'] } },
+        { id: 'Rel_PICK_InNetwork', kind: 'logic', deterministic: { type: 'AND', inputs: ['Rel_InNetwork','NOT_Rel_Grantee','NOT_Rel_None'] } },
+        { id: 'Rel_PICK_None', kind: 'logic', deterministic: { type: 'AND', inputs: ['Rel_None','NOT_Rel_Grantee','NOT_Rel_InNetwork'] } },
+        { id: 'NOT_Rel_Grantee', kind: 'logic', deterministic: { type: 'NOT', inputs: ['Rel_Grantee'] } },
+        { id: 'NOT_Rel_InNetwork', kind: 'logic', deterministic: { type: 'NOT', inputs: ['Rel_InNetwork'] } },
+        { id: 'NOT_Rel_None', kind: 'logic', deterministic: { type: 'NOT', inputs: ['Rel_None'] } },
+
+        { id: 'Fund_PICK_High', kind: 'logic', deterministic: { type: 'AND', inputs: ['Fund_High','NOT_Fund_Medium','NOT_Fund_Low'] } },
+        { id: 'Fund_PICK_Medium', kind: 'logic', deterministic: { type: 'AND', inputs: ['Fund_Medium','NOT_Fund_High','NOT_Fund_Low'] } },
+        { id: 'Fund_PICK_Low', kind: 'logic', deterministic: { type: 'AND', inputs: ['Fund_Low','NOT_Fund_High','NOT_Fund_Medium'] } },
+        { id: 'NOT_Fund_High', kind: 'logic', deterministic: { type: 'NOT', inputs: ['Fund_High'] } },
+        { id: 'NOT_Fund_Medium', kind: 'logic', deterministic: { type: 'NOT', inputs: ['Fund_Medium'] } },
+        { id: 'NOT_Fund_Low', kind: 'logic', deterministic: { type: 'NOT', inputs: ['Fund_Low'] } },
+
+        { id: 'Model_PICK_GPT', kind: 'logic', deterministic: { type: 'AND', inputs: ['Model_GPT','NOT_Model_Proprietary'] } },
+        { id: 'Model_PICK_Proprietary', kind: 'logic', deterministic: { type: 'AND', inputs: ['Model_Proprietary','NOT_Model_GPT'] } },
+        { id: 'NOT_Model_GPT', kind: 'logic', deterministic: { type: 'NOT', inputs: ['Model_GPT'] } },
+        { id: 'NOT_Model_Proprietary', kind: 'logic', deterministic: { type: 'NOT', inputs: ['Model_Proprietary'] } },
+
+        // Target
+        { id: 'Winnability_Pearson_2028', kind: 'target' }
+      ],
+      edges: [
+        // Relationship influences
+        { from: 'Rel_PICK_Grantee', to: 'Winnability_Pearson_2028', sign: '+' },
+        { from: 'Rel_PICK_InNetwork', to: 'Winnability_Pearson_2028', sign: '+' },
+        { from: 'Rel_PICK_None', to: 'Winnability_Pearson_2028', sign: '+' },
+        // Funding influences
+        { from: 'Fund_PICK_High', to: 'Winnability_Pearson_2028', sign: '+' },
+        { from: 'Fund_PICK_Medium', to: 'Winnability_Pearson_2028', sign: '+' },
+        { from: 'Fund_PICK_Low', to: 'Winnability_Pearson_2028', sign: '+' },
+        // Model influences
+        { from: 'Model_PICK_GPT', to: 'Winnability_Pearson_2028', sign: '+' },
+        { from: 'Model_PICK_Proprietary', to: 'Winnability_Pearson_2028', sign: '+' }
+      ],
+      combine: {
+        target: 'Winnability_Pearson_2028',
+        method: 'independent_parents_or_logistic',
+        params: {
+          // Weights implicitly apply only to the selected (picked) nodes
+          influences: {
+            // Relationship
+            Rel_PICK_Grantee: 0.60,
+            Rel_PICK_InNetwork: 0.35,
+            Rel_PICK_None: 0.00,
+            // Funding
+            Fund_PICK_High: 0.60,
+            Fund_PICK_Medium: 0.35,
+            Fund_PICK_Low: 0.15,
+            // Model
+            Model_PICK_GPT: 0.35,
+            Model_PICK_Proprietary: 0.15
+          },
+          bias: 0.00
+        }
+      },
+      runs: [
+        // Baseline: None + Low + Proprietary
+        { runId: 'baseline', mode: 'do', do: [
+          { node: 'Rel_None', set: 'yes' },
+          { node: 'Fund_Low', set: 'yes' },
+          { node: 'Model_Proprietary', set: 'yes' }
+        ] },
+        // Single-lever toggles
+        { runId: 'rel_grantee', mode: 'do', do: [ { node: 'Rel_Grantee', set: 'yes' } ] },
+        { runId: 'rel_innetwork', mode: 'do', do: [ { node: 'Rel_InNetwork', set: 'yes' } ] },
+        { runId: 'fund_medium', mode: 'do', do: [ { node: 'Fund_Medium', set: 'yes' } ] },
+        { runId: 'fund_high', mode: 'do', do: [ { node: 'Fund_High', set: 'yes' } ] },
+        { runId: 'model_gpt', mode: 'do', do: [ { node: 'Model_GPT', set: 'yes' } ] },
+        // All favorable
+        { runId: 'all_on', mode: 'do', do: [
+          { node: 'Rel_Grantee', set: 'yes' },
+          { node: 'Fund_High', set: 'yes' },
+          { node: 'Model_GPT', set: 'yes' }
+        ] }
+      ]
     }
   };
 
