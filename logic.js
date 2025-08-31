@@ -313,6 +313,7 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
           const parentProb = getCurrentIterProb(parent);
           // Treat inert facts as if they have no probability for propagation purposes
           if (parent.data('type') === 'fact' && parent.data('inertFact')) return true;
+          if (edge.data('inertEdge')) return true;
           return typeof parentProb !== 'number';
         })) {
           newProb = undefined;
@@ -328,6 +329,7 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
             const opposes = edge.data('opposes');
             const isInverse = !!cpt.inverse || !!opposes;
             if (DEBUG_COMPREHENSIVE) console.log(`  Edge ${edge.id()}: parent=${parent.id()}, parentProb=${parentProb}, inverse=${isInverse} (cpt.inverse=${!!cpt.inverse}, opposes=${!!opposes})`);
+            if (edge.data('inertEdge')) { if (DEBUG_COMPREHENSIVE) console.log('    Skipping due to inertEdge'); return acc; }
             if (isInverse) {
               parentProb = 1 - parentProb;
               if (DEBUG_COMPREHENSIVE) console.log(`    After inverse: ${parentProb}`);
@@ -346,6 +348,7 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
           const parent = edge.source();
           const parentProb = getCurrentIterProb(parent);
           if (parent.data('type') === 'fact' && parent.data('inertFact')) return true;
+          if (edge.data('inertEdge')) return true;
           return typeof parentProb !== 'number';
         })) {
           newProb = undefined;
@@ -355,6 +358,7 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
           incomingEdges.forEach(edge => {
             const parent = edge.source();
             let parentProb = getCurrentIterProb(parent);
+            if (edge.data('inertEdge')) { if (DEBUG_COMPREHENSIVE) console.log(`  Edge ${edge.id()} skipped (inertEdge)`); return; }
             
             // Check if edge has inverse relationship (NOT) - check both lite mode (opposes) and heavy mode (cpt.inverse)
             const cpt = edge.data('cpt') || {};
@@ -386,9 +390,10 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
           const parentProb = getCurrentIterProb(parentNode);
           const edgeWeight = e.data('weight');
           const computedWeight = e.data('computedWeight');
+          const inertEdge = !!e.data('inertEdge');
           
           // Inert facts: act like they have no probability for outgoing influence
-          const parentHasProb = typeof parentProb === 'number' && !(parentNode.data('type') === 'fact' && parentNode.data('inertFact'));
+          const parentHasProb = typeof parentProb === 'number' && !(parentNode.data('type') === 'fact' && parentNode.data('inertFact')) && !inertEdge;
           const weightIsValid = edgeWeight && edgeWeight !== 0;
           const isValidEdge = parentHasProb && weightIsValid;
           
@@ -410,7 +415,7 @@ export function convergeNodes({ cy, tolerance = 0.001, maxIters = 30 }) {
           
           if (DEBUG_COMPREHENSIVE) {
             console.log(`     🔗 Edge ${e.id()}: ${parentNode.id()} → ${node.id()}`);
-            console.log(`       👤 Parent: type=${parentNode.data('type')}, prob=${parentProb} (hasProb=${parentHasProb})`);
+            console.log(`       👤 Parent: type=${parentNode.data('type')}, prob=${parentProb} (hasProb=${parentHasProb}), inertEdge=${inertEdge}`);
             console.log(`       ⚖️ Weight: original=${edgeWeight}, computed=${computedWeight} (valid=${weightIsValid})`);
             console.log(`       ✅ Valid: ${isValidEdge} ${!isValidEdge ? `(${edgeValidation.invalidReason})` : ''}`);
           }

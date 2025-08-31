@@ -453,6 +453,53 @@ window.cy.on('doubleTap', 'node', function(event) {
       const targetNode = edge.target();
       const targetType = targetNode.data('type');
 
+      // Edge inert toggle (non-structural, per-mode). Only for legit edges.
+      (function(){
+        const mode = window.getBayesMode ? window.getBayesMode() : 'lite';
+        const flag = mode === 'heavy' ? 'inertEdgeHeavy' : 'inertEdge';
+        const parent = edge.source();
+        const parentType = parent.data('type');
+        const parentIsFact = parentType === NODE_TYPE_FACT;
+        const parentInert = mode === 'heavy' ? (parentIsFact && !!parent.data('inertFactHeavy'))
+                                             : (parentIsFact && !!parent.data('inertFact'));
+        const isInert = !!edge.data(flag);
+        const cpt = edge.data('cpt');
+        const edgeWeight = edge.data('weight');
+        const parentProb = mode === 'heavy' ? parent.data('heavyProb') : parent.data('prob');
+
+        // Determine if this edge would be valid/legit ignoring its own inert flag
+        let baseLegit = false;
+        if (!parentInert) {
+          if (targetType === NODE_TYPE_AND || targetType === NODE_TYPE_OR) {
+            baseLegit = (typeof parentProb === 'number');
+          } else {
+            if (mode === 'heavy') {
+              const hasCPT = cpt && typeof cpt.baseline === 'number' && typeof cpt.condTrue === 'number' && typeof cpt.condFalse === 'number';
+              baseLegit = hasCPT && (typeof parentProb === 'number');
+            } else {
+              baseLegit = (typeof parentProb === 'number') && !!edgeWeight && edgeWeight !== 0;
+            }
+          }
+        }
+
+        if (baseLegit) {
+          const toggleItem = document.createElement('li');
+          toggleItem.textContent = isInert ? 'Make Edge Active (propagate)' : 'Make Edge Inert';
+          toggleItem.style.cursor = 'pointer';
+          toggleItem.onclick = () => {
+            if (isInert) {
+              edge.removeData(flag);
+            } else {
+              edge.data(flag, true);
+            }
+            convergeAll({ cy });
+            computeVisuals(cy);
+            hideMenu();
+          };
+          list.appendChild(toggleItem);
+        }
+      })();
+
       const rationaleItem = document.createElement('li');
       rationaleItem.textContent = 'View/Edit Rationale...';
       rationaleItem.style.cursor = 'pointer';

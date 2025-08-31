@@ -111,7 +111,8 @@ function calculateAndMarginal(parentEdges) {
     const parent = edge.source();
     const hasProb = typeof parent.data('heavyProb') === 'number';
     const isInertFact = (parent.data('type') || '').toLowerCase() === 'fact' && !!parent.data('inertFactHeavy');
-    return hasProb && !isInertFact;
+    const inertEdge = !!edge.data('inertEdgeHeavy');
+    return hasProb && !isInertFact && !inertEdge;
   });
   
   if (validParents.length === 0) return undefined; // Virgin node
@@ -136,7 +137,8 @@ function calculateOrMarginal(parentEdges) {
     const parent = edge.source();
     const hasProb = typeof parent.data('heavyProb') === 'number';
     const isInertFact = (parent.data('type') || '').toLowerCase() === 'fact' && !!parent.data('inertFactHeavy');
-    return hasProb && !isInertFact;
+    const inertEdge = !!edge.data('inertEdgeHeavy');
+    return hasProb && !isInertFact && !inertEdge;
   });
   
   if (validParents.length === 0) return undefined; // Virgin node
@@ -163,12 +165,13 @@ function calculateNaiveBayesMarginal(node, parentEdges) {
   const parentNode = edge.source();
   const parentProb = parentNode.data('heavyProb');
   const parentIsInert = ((parentNode.data('type') || '').toLowerCase() === 'fact') && !!parentNode.data('inertFactHeavy');
+  const inertEdge = !!edge.data('inertEdgeHeavy');
     
     const hasCPT = cpt && 
                    typeof cpt.condTrue === 'number' && 
                    typeof cpt.condFalse === 'number' && 
                    typeof cpt.baseline === 'number';
-  const hasParentProb = typeof parentProb === 'number' && !parentIsInert;
+  const hasParentProb = typeof parentProb === 'number' && !parentIsInert && !inertEdge;
     
     return hasCPT && hasParentProb;
   });

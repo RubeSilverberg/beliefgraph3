@@ -46,16 +46,24 @@ export function weightToShortLabel(weight, isOpposing = false) {
  */
 export function getEdgeLabel(edge) {
   const bayesMode = window.getBayesMode ? window.getBayesMode() : 'lite';
+  // Edge-level inert toggle is per-mode and should mute labels
+  if (bayesMode === 'heavy') {
+    if (edge.data('inertEdgeHeavy')) return '—';
+  } else {
+    if (edge.data('inertEdge')) return '—';
+  }
   
   if (bayesMode === 'heavy') {
     const cpt = edge.data('cpt') || {};
     const targetNode = edge.target();
     const parentNode = edge.source();
     const parentProb = parentNode.data('heavyProb');
+  const inertEdge = !!edge.data('inertEdgeHeavy');
     const targetType = targetNode.data('type');
     
     // Special case: edges TO AND/OR nodes only need parent probability
     if (targetType === NODE_TYPE_AND || targetType === NODE_TYPE_OR) {
+      if (inertEdge) return '—';
       const isVirgin = typeof parentProb !== "number";
       if (isVirgin) {
         return "—"; // Em dash for unassigned logic edges
@@ -71,7 +79,7 @@ export function getEdgeLabel(edge) {
                    typeof cpt.baseline === 'number' && 
                    typeof cpt.condTrue === 'number' && 
                    typeof cpt.condFalse === 'number';
-    const hasParentProb = typeof parentProb === "number";
+  const hasParentProb = typeof parentProb === "number" && !inertEdge;
     
     if (!hasCPT) {
       // Category 1: Unassigned Virgin - no CPT data
@@ -91,6 +99,7 @@ export function getEdgeLabel(edge) {
   const targetNode = edge.target();
   const parentNode = edge.source();
   let parentProb = parentNode.data('prob');
+  const inertEdgeLite = !!edge.data('inertEdge');
   // Inert facts: show their value but do not allow propagation; treat as undefined for edge activation logic
   const parentIsInert = parentNode.data('type') === NODE_TYPE_FACT && parentNode.data('inertFact');
   if (parentIsInert) {
@@ -102,6 +111,7 @@ export function getEdgeLabel(edge) {
   
   // Special case for AND/OR nodes in Lite mode - they only need parent probability
   if (targetType === NODE_TYPE_AND || targetType === NODE_TYPE_OR) {
+    if (inertEdgeLite) return '—';
     const isVirgin = typeof parentProb !== "number";
     if (isVirgin) {
       return "—"; // Em dash for unassigned logic edges
@@ -113,7 +123,7 @@ export function getEdgeLabel(edge) {
   }
   
   // Check if this is a virgin edge (no parent prob OR no weight)
-  const isVirgin = parentIsInert || typeof parentProb !== 'number' || !edgeWeight || edgeWeight === 0;
+  const isVirgin = inertEdgeLite || parentIsInert || typeof parentProb !== 'number' || !edgeWeight || edgeWeight === 0;
   
   // Debug logging to track virgin detection
   if (DEBUG) {
@@ -302,13 +312,14 @@ export function computeVisuals(cy) {
         const validHeavyEdges = incomingEdges.filter(e => {
           const cpt = e.data('cpt');
           const parentProb = e.source().data('heavyProb');
+          const inertEdge = !!e.data('inertEdgeHeavy');
           
           // Three-category system: edge is valid if it has CPT AND parent has probability
           const hasCPT = cpt && 
                          typeof cpt.baseline === 'number' && 
                          typeof cpt.condTrue === 'number' && 
                          typeof cpt.condFalse === 'number';
-          const hasParentProb = typeof parentProb === 'number';
+          const hasParentProb = typeof parentProb === 'number' && !inertEdge;
           
           return hasCPT && hasParentProb;
         });
@@ -345,12 +356,13 @@ export function computeVisuals(cy) {
         const parentNode = e.source();
         const parentProb = parentNode.data('prob');
         const edgeWeight = e.data('weight');
+        const inertEdge = !!e.data('inertEdge');
         const parentIsInert = parentNode.data('type') === NODE_TYPE_FACT && parentNode.data('inertFact');
-        const isValid = !parentIsInert && typeof parentProb === 'number' && edgeWeight && edgeWeight !== 0;
+        const isValid = !inertEdge && !parentIsInert && typeof parentProb === 'number' && edgeWeight && edgeWeight !== 0;
         
         // Debug logging for edge validity
         if (DEBUG) {
-          console.log(`Node ${node.id()} - Edge ${e.id()}: parentProb=${parentProb}, edgeWeight=${edgeWeight}, parentIsInert=${parentIsInert}, isValid=${isValid}`);
+          console.log(`Node ${node.id()} - Edge ${e.id()}: parentProb=${parentProb}, edgeWeight=${edgeWeight}, parentIsInert=${parentIsInert}, inertEdge=${inertEdge}, isValid=${isValid}`);
         }
         
         return isValid;
@@ -515,11 +527,12 @@ export function computeVisuals(cy) {
       const cpt = edge.data('cpt');
       const targetType = edge.target().data('type');
       const parentProb = edge.source().data('heavyProb');
+  const inertEdge = !!edge.data('inertEdgeHeavy');
       
       // Special handling for edges to AND/OR nodes
       if (targetType === NODE_TYPE_AND || targetType === NODE_TYPE_OR) {
         // For logic nodes, virginity is based only on parent having probability
-        isVirgin = typeof parentProb !== "number";
+        isVirgin = inertEdge || typeof parentProb !== "number";
         
         if (!isVirgin) {
           absWeight = 1; // Full weight since logic is deterministic
@@ -534,7 +547,7 @@ export function computeVisuals(cy) {
                        typeof cpt.baseline === 'number' && 
                        typeof cpt.condTrue === 'number' && 
                        typeof cpt.condFalse === 'number';
-        const hasParentProb = typeof parentProb === "number";
+        const hasParentProb = !inertEdge && typeof parentProb === "number";
         
         if (!hasCPT) {
           // Category 1: Unassigned Virgin - no CPT data
@@ -577,11 +590,12 @@ export function computeVisuals(cy) {
       const parentProb = edge.source().data('prob');
       const edgeWeight = edge.data('weight');
       const targetType = edge.target().data('type');
+  const inertEdgeLite = !!edge.data('inertEdge');
       
       // Special case: edges TO and/or nodes are never virgin (they use deterministic logic)
       if (targetType === NODE_TYPE_AND || targetType === NODE_TYPE_OR) {
         // Edge is virgin only if parent has no probability
-        isVirgin = typeof parentProb !== "number";
+        isVirgin = inertEdgeLite || typeof parentProb !== "number";
         if (!isVirgin) {
           absWeight = 1; // Full weight since logic is deterministic
           // Check for inverse relationship (NOT) for visual styling
@@ -592,14 +606,14 @@ export function computeVisuals(cy) {
         }
       } else {
         // Standard assertion nodes: virgin if parent has no prob OR weight is 0/unset
-        isVirgin = typeof parentProb !== "number" || !edgeWeight || edgeWeight === 0;
+        isVirgin = inertEdgeLite || typeof parentProb !== "number" || !edgeWeight || edgeWeight === 0;
         
         // Debug logging to track virgin detection
         if (DEBUG) {
           console.log(`Edge ${edge.id()} (computeVisuals): parentProb=${parentProb}, edgeWeight=${edgeWeight}, isVirgin=${isVirgin}`);
         }
         
-        if (!isVirgin) {
+  if (!isVirgin) {
           absWeight = Math.abs(edgeWeight);
           edgeType = edge.data('type') || 'supports';
         }
